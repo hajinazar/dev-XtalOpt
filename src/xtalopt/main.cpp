@@ -188,9 +188,10 @@ int main(int argc, char* argv[])
                << "working directory";
     }
 
-    // If the runtime file doesn't exist, write one
-    if (!QFile(xtalopt.CLIRuntimeFile()).exists())
-      XtalOpt::XtalOptCLIOptions::writeInitialRuntimeFile(xtalopt);
+    // hardExit is always set to false in resume
+    // Also, runtime file is always re-written at resume
+    xtalopt.m_hardExit = false;
+    XtalOpt::XtalOptCLIOptions::writeInitialRuntimeFile(xtalopt);
 
     // Emit that we are starting a session
     emit xtalopt.sessionStarted();

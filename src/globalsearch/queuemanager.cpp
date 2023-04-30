@@ -237,7 +237,8 @@ void QueueManager::checkHardExit()
   }
   trackerReadLocker.unlock();
 
-  if (pending == 0 && total >= m_opt->cutoff) {
+  // One more time; check the hardExit flag!
+  if (m_opt->m_hardExit && (pending == 0 && total >= m_opt->cutoff)) {
     m_opt->warning(tr("Preparing for hard exit (total, finished, and pending runs: %1 , %2 , %3)")
         .arg(m_opt->cutoff).arg(total).arg(pending));
 

@@ -586,14 +586,11 @@ bool XtalOpt::save(QString filename, bool notify)
   settings->setValue("opt/perm_strainStdev_max", perm_strainStdev_max);
   settings->setValue("opt/perm_ex", perm_ex);
 
-  // Hardness settings
-  settings->setValue("opt/calculateHardness", m_calculateHardness.load());
-  settings->setValue("opt/hardnessFitnessWeight",
-                     m_hardnessFitnessWeight.load());
-
+  // Multi-objective, aflow-hardness, hardExit, localQueue, ...
   settings->setValue("opt/hardExit", m_hardExit);
-  // Multi-Objective
   settings->setValue("opt/localQueue", m_localQueue);
+  settings->setValue("opt/calculateHardness", m_calculateHardness.load());
+  settings->setValue("opt/hardnessFitnessWeight", m_hardnessFitnessWeight.load());
   settings->setValue("opt/featuresReDo", m_featuresReDo);
   settings->setValue("opt/features_num", getFeaturesNum());
   settings->beginWriteArray("opt/features");
@@ -1153,22 +1150,22 @@ bool XtalOpt::readSettings(const QString& filename)
     settings->value("opt/perm_strainStdev_max", 0.5).toDouble();
   perm_ex = settings->value("opt/perm_ex", 4).toUInt();
 
-  // Hardness stuff
-  m_calculateHardness =
-    settings->value("opt/calculateHardness", false).toBool();
-  m_hardnessFitnessWeight =
-    settings->value("opt/hardnessFitnessWeight", -1.0).toDouble();
-
-  // Multi-objective (and hardExit) stuff
-  if(isStateFile)
+  if (isStateFile)
   {
-    m_hardExit = settings->value("opt/hardExit", false).toBool();
-    setFeaturesNum(settings->value("opt/features_num", 0).toInt());
-    if (getFeaturesNum())
-      m_calculateFeatures = true;
+    // Multi-objective, aflow-hardness, hardExit, localQueue, ...
+    //
+    // hardExit shouldn't be read in resuming; it causes the code to quit immediately!
+    // Instead; always set it to false in resuming for which settings are being read here.
+    m_hardExit = false;
+    //
     m_localQueue = settings->value("opt/localQueue", false).toBool();
+    m_calculateHardness = settings->value("opt/calculateHardness", false).toBool();
+    m_hardnessFitnessWeight = settings->value("opt/hardnessFitnessWeight", -1.0).toDouble();
     m_featuresReDo = settings->value("opt/featuresReDo", false).toBool();
     resetFeatures();
+    int tmpnum = settings->value("opt/features_num", 0).toInt();
+    m_calculateFeatures = (tmpnum > 0) ? true : false;
+    setFeaturesNum(tmpnum);
     int size = settings->beginReadArray("opt/features");
     for (size_t i = 0; i < size; i++) {
       settings->setArrayIndex(i);
@@ -1179,7 +1176,7 @@ bool XtalOpt::readSettings(const QString& filename)
     }
     settings->endArray();
     // Double-check weights (and re-construct features list for gui)
-    if(!processFitnessWeights()) 
+    if (!processFitnessWeights())
       return false;
   }
 

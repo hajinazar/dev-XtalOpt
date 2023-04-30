@@ -161,6 +161,12 @@ void OptBase::performHardExit()
   // Wait for a minute just to make sure that all remote files are transferred
   sleep(60); 
 
+  // One more time; check the hardExit flag!
+  if (!m_hardExit) {
+    warning("hardExit canceled!");
+    return;
+  }
+
   m_dialog = nullptr;
 
   // Save one last time
@@ -1431,6 +1437,9 @@ void OptBase::readOptimizerTemplatesFromSettings(
 
   SETTINGS(settingsFile.c_str());
 
+  optim->setLocalRunCommand(settings->value(getIDString().toLower() + "/edit/optimizer/" +
+                            QString::number(optStep) + "/localRunCommand",
+                            optim->getIDString().toLower()).toString());
   settings->beginGroup(getIDString().toLower() + "/edit/optimizer/" +
                        QString::number(optStep) + "/" +
                        optim->getIDString().toLower());
@@ -1527,6 +1536,9 @@ void OptBase::writeOptimizerTemplatesToSettings(
 
   SETTINGS(settingsFilename.c_str());
   // Optimizer templates
+  settings->setValue(getIDString().toLower() + "/edit/optimizer/" +
+                     QString::number(optStep) + "/localRunCommand" ,
+                     optim->getLocalRunCommand());
   settings->beginGroup(getIDString().toLower() + "/edit/optimizer/" +
                        QString::number(optStep) + "/" +
                        optim->getIDString().toLower());

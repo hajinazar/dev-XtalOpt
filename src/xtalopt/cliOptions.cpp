@@ -1286,9 +1286,9 @@ void XtalOptCLIOptions::writeInitialRuntimeFile(XtalOpt& xtalopt)
   text += QString("chanceOfFutureMitosis = ") +
           QString::number(xtalopt.chance_of_mitosis) + "\n";
 
-  text += QString("featuresReDo = ") + fromBool(xtalopt.m_featuresReDo) + "\n";
   text += QString("hardExit = ") + fromBool(xtalopt.m_hardExit) + "\n";
   text += QString("localQueue = ") + fromBool(xtalopt.m_localQueue) + "\n";
+  text += QString("featuresReDo = ") + fromBool(xtalopt.m_featuresReDo) + "\n";
 
   text += QString("\n# Mutator Settings\n");
   text += QString("percentChanceStripple = ") +
@@ -1517,12 +1517,12 @@ void XtalOptCLIOptions::processRuntimeOptions(
       xtalopt.m_cancelJobAfterTime = toBool(options[option]);
     } else if (CICompare("hoursForAutoCancelJob", option)) {
       xtalopt.m_hoursForCancelJobAfterTime = options[option].toDouble();
-    } else if (CICompare("featuresReDo", option)) {
-      xtalopt.m_featuresReDo = toBool(options[option]);
     } else if (CICompare("hardExit", option)) {
       xtalopt.m_hardExit = toBool(options[option]);
     } else if (CICompare("localQueue", option)) {
       xtalopt.m_localQueue = toBool(options[option]);
+    } else if (CICompare("featuresReDo", option)) {
+      xtalopt.m_featuresReDo = toBool(options[option]);
     } else {
       qDebug() << "Warning: option," << option << ", is not a valid runtime"
                << "option! It is being ignored.";
