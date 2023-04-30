@@ -166,11 +166,10 @@ void TabPlot::updatePlot()
   // Lock plot mutex
   m_plot_mutex->lockForWrite();
 
-  // x-y axis, with Hardness and without features, have 16 items
-  // symbol menu, has (with Hardness without features) 11 items
   // Here, we want to make sure that features are shown only if they are present
-  int numaxisitems = m_opt->getFeaturesNum() + 16;
-  int numsymbitems = m_opt->getFeaturesNum() + 11;
+  // To show the proper number of them, we set the starting point to Featurei_*
+  int numaxisitems = m_opt->getFeaturesNum() + Featurei_T;
+  int numsymbitems = m_opt->getFeaturesNum() + Featurei_L;
   ui.combo_xAxis->setMaxCount(numaxisitems);
   ui.combo_yAxis->setMaxCount(numaxisitems);
   ui.combo_labelType->setMaxCount(numsymbitems);
@@ -462,8 +461,9 @@ void TabPlot::plotTrends()
               break;
           }
           break;
-        // Features in multi-objective run. Right now, with hardness,
-        // the index for first feature is 16 (enum starts at 0)
+        // Features in multi-objective run.
+        // Their index in the list of options starts from Featurei_T,
+        //   so the proper index for feature value array is "ind - Featurei_T"
         case Featurei_T ... Featuref_T:
           // Skip xtals that don't have features calculated
           if (xtal->getStrucFeatStatus() == Structure::FS_NotCalculated) {
@@ -472,10 +472,10 @@ void TabPlot::plotTrends()
           }
           switch (j) {
             case 0:
-              x = xtal->getStrucFeatValues(ind - 16);
+              x = xtal->getStrucFeatValues(ind - Featurei_T);
               break;
             default:
-              y = xtal->getStrucFeatValues(ind - 16);
+              y = xtal->getStrucFeatValues(ind - Featurei_T);
               break;
           }
           break;
@@ -538,13 +538,17 @@ void TabPlot::plotTrends()
         case Structure_L:
           s = QString::number(i);
           break;
+        case StructureID_L:
+          s = xtal->getIDString();
+          break;
         case Formula_Units_L:
           s = QString::number(xtal->getFormulaUnits());
           break;
-        // Features in multi-objective run. Right now, with hardness,
-        // the index for first feature label is 11 (enum starts at 0)
+        // Features in multi-objective run.
+        // Their index in the list of options starts from Featurei_L,
+        //   so the proper index for feature value array is "labelTyep - Featurei_L"
         case Featurei_L ... Featuref_L:
-          s = QString::number(xtal->getStrucFeatValues(labelType - 11));
+          s = QString::number(xtal->getStrucFeatValues(labelType - Featurei_L));
           break;
         }
       QwtText text(s);
@@ -616,9 +620,10 @@ void TabPlot::plotTrends()
         label = tr("Formula Units");
         break;
       // Features in multi-objective run. Right now, with hardness,
-      // the index for first feature is 16 (enum starts at 0)
+      // Their index in the list of options starts from Featurei_L,
+      //   but their "shown" index starts from 1; so we have "ind - Featurei_T + 1"
       case Featurei_T ... Featuref_T:
-        label = tr("Feature%1").arg(ind - 16 + 1);
+        label = tr("Feature%1").arg(ind - Featurei_T + 1);
         break;
       }
     if (j == 0)

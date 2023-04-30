@@ -360,6 +360,11 @@
            </item>
            <item>
             <property name="text">
+             <string>Structure ID</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Formula Units</string>
             </property>
            </item>

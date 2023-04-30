@@ -100,6 +100,7 @@ public:
     Volume_L,
     Generation_L,
     Structure_L,
+    StructureID_L,
     Formula_Units_L,
     Featurei_L,
     Feature1_L,
