@@ -58,28 +58,12 @@ public:
     Volume_T,
     Volume_per_FU_T,
     Formula_Units_T,
+    // The feature entries: up to 50 entries will appear in the menu only; if multi-objective run.
+    // Note: (1) Always put Feature* entries right after the last "fixed" entry (previous ones)!
+    //       (2) Don't ever add any entries between below Feature* entries!
     Featurei_T,
-    Feature1_T,
-    Feature2_T,
-    Feature3_T,
-    Feature4_T,
-    Feature5_T,
-    Feature6_T,
-    Feature7_T,
-    Feature8_T,
-    Feature9_T,
-    Feature10_T,
-    Feature11_T,
-    Feature12_T,
-    Feature13_T,
-    Feature14_T,
-    Feature15_T,
-    Feature16_T,
-    Feature17_T,
-    Feature18_T,
-    Feature19_T,
-    Feature20_T,
-    Featuref_T
+    Featuref_T = Featurei_T + 50
+    //
   };
 
   enum PlotType
@@ -102,28 +86,12 @@ public:
     Structure_L,
     StructureID_L,
     Formula_Units_L,
+    // The feature entries: up to 50 entries will appear in the menu; only if multi-objective run.
+    // Note: (1) Always put Feature* entries right after the last "fixed" entry (previous ones)!
+    //       (2) Don't ever add any entries between below Feature* entries!
     Featurei_L,
-    Feature1_L,
-    Feature2_L,
-    Feature3_L,
-    Feature4_L,
-    Feature5_L,
-    Feature6_L,
-    Feature7_L,
-    Feature8_L,
-    Feature9_L,
-    Feature10_L,
-    Feature11_L,
-    Feature12_L,
-    Feature13_L,
-    Feature14_L,
-    Feature15_L,
-    Feature16_L,
-    Feature17_L,
-    Feature18_L,
-    Feature19_L,
-    Feature20_L,
-    Featuref_L
+    Featuref_L = Featurei_L + 50
+    //
   };
 
 public slots:
