@@ -207,16 +207,27 @@ void QueueManager::checkLoop()
   if (!m_opt->readOnly && !m_opt->isStarting) {
     checkPopulation();
     checkRunning();
-    // Check for hard exit (if the flag is on)
-    if (m_opt->m_hardExit) checkHardExit(); 
+    // Check if soft/hard exit flag is on
+    if (m_opt->m_softExit || m_opt->m_hardExit) 
+      checkTheExit(); 
   }
 
   QTimer::singleShot(1000, this, SLOT(checkLoop()));
 }
 
-void QueueManager::checkHardExit()
+void QueueManager::checkTheExit()
 {
-  // This function checks to see if hard exit condition is met (i.e., no running/pending jobs)
+  // This function, calls the performTheExit function depending on the type of exit.
+  // For a hard exit, it is done immediately; for a soft exit checks for no running/pending job
+
+  // If hard exit
+  if (m_opt->m_hardExit) {
+    m_opt->warning(tr("Performing a hard exit ..."));
+    m_opt->performTheExit();
+    return;
+  }
+   
+  // If not a hard exit; then we're here for a soft exit
   int total = 0;
   int pending = 0;
 
@@ -237,12 +248,12 @@ void QueueManager::checkHardExit()
   }
   trackerReadLocker.unlock();
 
-  // One more time; check the hardExit flag!
-  if (m_opt->m_hardExit && (pending == 0 && total >= m_opt->cutoff)) {
+  // One more time; check the softExit flag!
+  if (m_opt->m_softExit && (pending == 0 && total >= m_opt->cutoff)) {
     m_opt->warning(tr("Preparing for hard exit (total, finished, and pending runs: %1 , %2 , %3)")
         .arg(m_opt->cutoff).arg(total).arg(pending));
 
-    m_opt->performHardExit();
+    m_opt->performTheExit();
   }
 }
 

@@ -392,9 +392,11 @@ protected:
   void checkPopulation();
 
   /**
-   * Check to see if condition for hard exit is met.
+   * Check the conditions for soft/hard exit.
+   * For a soft exit, checks for no running/pending jobs.
+   * For a hard exit, the acting function will be called immediately.
    */
-  void checkHardExit();
+  void checkTheExit();
 
   /**
    * Monitors the Structures in getAllRunningStructures() and

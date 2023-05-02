@@ -35,6 +35,7 @@ namespace XtalOpt {
 
 static const QStringList keywords = { "features",
                                       "featuresReDo",
+                                      "softExit",
                                       "hardExit",
                                       "localQueue",
                                       "empiricalFormula",
@@ -451,7 +452,7 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.using_one_pool = toBool(options.value("usingOneGenePool", "false"));
   xtalopt.chance_of_mitosis =
     options.value("chanceOfFutureMitosis", "50").toUInt();
-  xtalopt.m_hardExit = toBool(options.value("hardExit", "false"));
+  xtalopt.m_softExit = toBool(options.value("softExit", "false"));
   xtalopt.m_featuresReDo = toBool(options.value("featuresReDo", "false"));
   xtalopt.m_localQueue = toBool(options.value("localQueue", "false"));
 
@@ -1286,7 +1287,7 @@ void XtalOptCLIOptions::writeInitialRuntimeFile(XtalOpt& xtalopt)
   text += QString("chanceOfFutureMitosis = ") +
           QString::number(xtalopt.chance_of_mitosis) + "\n";
 
-  text += QString("hardExit = ") + fromBool(xtalopt.m_hardExit) + "\n";
+  text += QString("softExit = ") + fromBool(xtalopt.m_softExit) + "\n";
   text += QString("localQueue = ") + fromBool(xtalopt.m_localQueue) + "\n";
   text += QString("featuresReDo = ") + fromBool(xtalopt.m_featuresReDo) + "\n";
 
@@ -1517,6 +1518,8 @@ void XtalOptCLIOptions::processRuntimeOptions(
       xtalopt.m_cancelJobAfterTime = toBool(options[option]);
     } else if (CICompare("hoursForAutoCancelJob", option)) {
       xtalopt.m_hoursForCancelJobAfterTime = options[option].toDouble();
+    } else if (CICompare("softExit", option)) {
+      xtalopt.m_softExit = toBool(options[option]);
     } else if (CICompare("hardExit", option)) {
       xtalopt.m_hardExit = toBool(options[option]);
     } else if (CICompare("localQueue", option)) {

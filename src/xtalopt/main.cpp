@@ -188,9 +188,11 @@ int main(int argc, char* argv[])
                << "working directory";
     }
 
-    // hardExit is always set to false in resume
+    // softExit is always set to false in resume
     // Also, runtime file is always re-written at resume
-    xtalopt.m_hardExit = false;
+    //   This is basically to avoid issues with softExit flag
+    //   written to run-time file in the previous run.
+    xtalopt.m_softExit = false;
     XtalOpt::XtalOptCLIOptions::writeInitialRuntimeFile(xtalopt);
 
     // Emit that we are starting a session

@@ -586,8 +586,8 @@ bool XtalOpt::save(QString filename, bool notify)
   settings->setValue("opt/perm_strainStdev_max", perm_strainStdev_max);
   settings->setValue("opt/perm_ex", perm_ex);
 
-  // Multi-objective, aflow-hardness, hardExit, localQueue, ...
-  settings->setValue("opt/hardExit", m_hardExit);
+  // Multi-objective, aflow-hardness, softExit, localQueue, ...
+  settings->setValue("opt/softExit", m_softExit);
   settings->setValue("opt/localQueue", m_localQueue);
   settings->setValue("opt/calculateHardness", m_calculateHardness.load());
   settings->setValue("opt/hardnessFitnessWeight", m_hardnessFitnessWeight.load());
@@ -1152,11 +1152,11 @@ bool XtalOpt::readSettings(const QString& filename)
 
   if (isStateFile)
   {
-    // Multi-objective, aflow-hardness, hardExit, localQueue, ...
+    // Multi-objective, aflow-hardness, softExit, localQueue, ...
     //
-    // hardExit shouldn't be read in resuming; it causes the code to quit immediately!
+    // softExit shouldn't be read in resuming; it causes the code to quit immediately!
     // Instead; always set it to false in resuming for which settings are being read here.
-    m_hardExit = false;
+    m_softExit = false;
     //
     m_localQueue = settings->value("opt/localQueue", false).toBool();
     m_calculateHardness = settings->value("opt/calculateHardness", false).toBool();
@@ -5357,7 +5357,7 @@ void XtalOpt::printOptionSettings(QTextStream& stream) const
   }
 
   // Write multi-objective (and hardexit) stuff
-  stream << "hardExit: " << toString(m_hardExit) << "\n";
+  stream << "softExit: " << toString(m_softExit) << "\n";
   stream << "\nFeatures settings:\n";
   stream << "features_num: " << QString::number(getFeaturesNum()) << "\n";
   stream << "localQueue: " << toString(m_localQueue) << "\n";

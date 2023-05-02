@@ -257,30 +257,6 @@ public:
                      QList<FeatureType> features_opt = {});
 
   /**
-   * Performs a hard exit (in cli mode) after writing state files, closing ssh, etc.
-   */
-  void performHardExit();
-
-  /**
-   * Wrapper for calculating the features for multi-objective run
-   * @param s The structure whose features is to be calculated.
-   */
-  void calculateFeatures(Structure* s);
-
-  /**
-   * Starts multi-objective run for structure by generating/copying relevant files, and running feature scripts
-   * @param s The structure whose features is to be calculated.
-   */
-  void startFeatureCalculations(Structure* s);
-
-  /**
-   * Finalizes the multi-objective run for a structure by waiting for output files to appear, transferring output
-   * files (if they're on a remote server) and processing them, updating structure info, and signal the finished job.
-   * @param s The structure whose features is to be calculated.
-   */
-  void finishFeatureCalculations(Structure* s);
-
-  /**
    * Use Aflow machine learning to calculate the hardness of structure
    * @param s. Note that @param s will not be updated immediately, but
    * it will be updated with the bulk modulus, shear modulus, and hardness
@@ -597,7 +573,35 @@ public:
   /// Whether readOnly mode is enabled (e.g. no connection to server)
   bool readOnly;
 
-  /// Perform a hard exit once maximum number of structures are generated (cli mode only)
+  /**
+   * Wrapper for calculating the features for multi-objective run
+   * @param s The structure whose features is to be calculated.
+   */
+  void calculateFeatures(Structure* s);
+
+  /**
+   * Starts multi-objective run for structure by generating/copying relevant files, and running feature scripts
+   * @param s The structure whose features is to be calculated.
+   */
+  void startFeatureCalculations(Structure* s);
+
+  /**
+   * Finalizes the multi-objective run for a structure by waiting for output files to appear, transferring output
+   * files (if they're on a remote server) and processing them, updating structure info, and signal the finished job.
+   * @param s The structure whose features is to be calculated.
+   */
+  void finishFeatureCalculations(Structure* s);
+
+  /**
+   * Performs a soft/hard exit after writing state files, closing ssh, etc.
+   */
+  void performTheExit();
+
+  /// Quit once maximum number of structures are generated (cli mode only)
+  bool m_softExit;
+
+  /// Quit immediately! This is only a runtime option in the cli mode,
+  ///   but won't be written to runtime file; it can be added by the user.
   bool m_hardExit;
 
   /// To allow for slurm job submission in a local run.

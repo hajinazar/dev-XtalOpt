@@ -86,7 +86,8 @@ OptBase::OptBase(AbstractDialog* parent)
     m_hardnessFitnessWeight(-1.0),
     m_networkAccessManager(std::make_shared<QNetworkAccessManager>()),
     m_aflowML(make_unique<AflowML>(m_networkAccessManager, this)),
-    m_calculateFeatures(false), m_features_num(0)
+    m_calculateFeatures(false), m_features_num(0),
+    m_softExit(false), m_hardExit(false)
 {
   // Connections
   connect(this, SIGNAL(sessionStarted()), m_queueThread, SLOT(start()),
@@ -154,16 +155,18 @@ bool OptBase::createSSHConnections()
 }
 #endif // ENABLE_SSH
 
-void OptBase::performHardExit()
+void OptBase::performTheExit()
 {
-  // This function performs the hard exit (after deleting some variables, etc.)
+  // This function performs the exit (after deleting some variables, etc.)
 
   // Wait for a minute just to make sure that all remote files are transferred
+  if (m_softExit)
   sleep(60); 
 
-  // One more time; check the hardExit flag!
-  if (!m_hardExit) {
-    warning("hardExit canceled!");
+  // One more time; check the softExit flag
+ //   This does not affect the cli mode; it's for possible future use in gui
+  if (!m_softExit && !m_hardExit) {
+    warning("softExit canceled!");
     return;
   }
 
