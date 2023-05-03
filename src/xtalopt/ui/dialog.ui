@@ -25,7 +25,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="4" column="8">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="push_hide">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -205,14 +205,14 @@
   <tabstop>push_save</tabstop>
   <tabstop>push_resume</tabstop>
   <tabstop>push_begin</tabstop>
-  <tabstop>pushButton</tabstop>
+  <tabstop>push_hide</tabstop>
  </tabstops>
  <resources>
   <include location="../xtalopt.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>push_hide</sender>
    <signal>clicked()</signal>
    <receiver>XtalOptDialog</receiver>
    <slot>accept()</slot>

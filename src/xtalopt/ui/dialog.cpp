@@ -52,6 +52,7 @@ XtalOptDialog::XtalOptDialog(QWidget* parent, Qt::WindowFlags f,
   ui_push_begin = ui->push_begin;
   ui_push_save = ui->push_save;
   ui_push_resume = ui->push_resume;
+  ui_push_hide = ui->push_hide;
   ui_label_opt = ui->label_opt;
   ui_label_run = ui->label_run;
   ui_label_fail = ui->label_fail;

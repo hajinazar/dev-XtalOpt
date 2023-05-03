@@ -606,6 +606,13 @@ protected:
    * @note This must be set up in the derived-constructor. See class
    * description.
    */
+  QPushButton* ui_push_hide;
+
+  /**
+   * Pointer to GUI element. Do not use in derived class code.
+   * @note This must be set up in the derived-constructor. See class
+   * description.
+   */
   QLabel* ui_label_opt;
 
   /**
