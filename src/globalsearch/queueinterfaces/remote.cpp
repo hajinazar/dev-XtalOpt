@@ -174,16 +174,15 @@ bool RemoteQueueInterface::runGenericCommand(const QString& workdir,
       return false;
     }
   } else {
-    runcom = command;
     QProcess proc;
     proc.setWorkingDirectory(workdir);
-    proc.start(runcom);
+    proc.start(command);
     proc.waitForFinished(-1);
     int timeout_ms = 60000;
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
-    m_opt->warning(tr("Executing %1, stdout %2 stderr %3")
-        .arg(workdir+command).arg(stdout_str).arg(stderr_str));
+    m_opt->warning(tr("Executing %1 at %2, stdout %3 stderr %4")
+        .arg(command).arg(workdir).arg(stdout_str).arg(stderr_str));
   }
   m_opt->ssh()->unlockConnection(ssh);
   return true;

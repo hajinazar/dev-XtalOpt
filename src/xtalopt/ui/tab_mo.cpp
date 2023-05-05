@@ -136,7 +136,7 @@ bool TabMo::updateOptimizationInfo()
 
   XtalOpt* xtalopt = qobject_cast<XtalOpt*>(m_opt);
 
-  // Features/hardness; the processFeature... is called here
+  // Features/hardness; the processFeatures... is called here
   //   at least once to properly initialize weights for hardness and number of features.
   xtalopt->m_featuresReDo = ui.cb_redo_features->isChecked();
   bool ret = xtalopt->processFeaturesInfo();

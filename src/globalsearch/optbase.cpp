@@ -235,12 +235,12 @@ static inline double calculateProb(double currentEnthalpy,
       featuresTotal += features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
 
 #ifdef FEATURES_DEBUG
-    QString outstr;
-    outstr.sprintf("NOTE: feature % 3d opt % 3d - ftval % 8.2lf - ftwgt % 8.2lf - \
-        ftmax % 8.2lf - ftmin % 8.2lf - ftspr % 8.2lf - hardwgt % 8.2lf - enth % 8.2lf - enthmin % 8.2lf - enthspr % 8.2lf",
-        i+1, features_opt[i], features_val[i], features_wgt[i], features_max[i], 
-        features_min[i], featuresSpread, hardnessWeight, currentEnthalpy, lowestEnthalpy, enthalpySpread);
-    qDebug() << outstr;
+QString outstr;
+outstr.sprintf("Debug:  \"NOTE: feat %2d opt %1d (F %8.4lf wgt %8.4lf min %8.4lf max %8.4lf spr %8.4lf hwt %8.4lf)\"\n",
+                i+1, features_opt[i], features_val[i], features_wgt[i], features_min[i], 
+                features_max[i], featuresSpread, hardnessWeight);
+QTextStream outs(stdout);
+outs << outstr;
 #endif
   }
 
@@ -343,22 +343,21 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     probs.append(QPair<Structure*, double>(s, prob));
     
 #ifdef FEATURES_DEBUG
-    if (features_num > 0) {
-    double prob0 = calculateProb(s->getEnthalpyPerFU(),
-                                s->vickersHardness(),
-                                lowestEnthalpy,
-                                highestEnthalpy,
-                                lowestHardness,
-                                highestHardness,
-                                hardnessWeight,
-                                0);
-    QString outstr;
-    outstr.sprintf("NOTE: str %8s OLDfit % 8.4lf NEWfit % 8.4lf - Ene % 8.4lf  Enemin  % 8.4lf  Enesprd % 8.4lf - Fea % 8.4lf  ftmin % 8.4lf  ftmax % 8.4lf  ftsprd % 8.4lf  ftwgt % 8.4lf",
-        s->getIDString().toStdString().c_str(), prob0, prob, 
-        s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy - lowestEnthalpy, 
-        s->getStrucFeatValues(0), features_min[0], features_max[0], features_max[0] - features_min[0], features_wgt[0]);
-    qDebug() << outstr;
-    }
+if (features_num > 0) {
+double prob0 = calculateProb(s->getEnthalpyPerFU(),
+                             s->vickersHardness(),
+                             lowestEnthalpy,
+                             highestEnthalpy,
+                             lowestHardness,
+                             highestHardness,
+                             hardnessWeight,
+                             0);
+QString outstr;
+outstr.sprintf("Debug:  \"NOTE: str %8s OLDfit % 8.4lf NEWfit % 8.4lf ( E %8.4lf min %8.4lf max %8.4lf )\"\n\n",
+s->getIDString().toStdString().c_str(), prob0, prob, s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy);
+QTextStream outs(stdout);
+outs << outstr;
+}
 #endif
     //
 #ifdef OPTBASE_PROBS_DEBUG
@@ -592,7 +591,8 @@ void OptBase::finishFeatureCalculations(Structure* s)
   s->setStrucFeatValuesVec(tmp_values);
   structureLocker.unlock();
 
-  qDebug() << tr("Features calculated for %1 : (%2)").arg(s->getIDString()).arg(tmp_status);
+  qDebug() << "Features calculated for " << s->getIDString() 
+           << " ( status = " << tmp_status << " )";
 
   // We are done here.
   emit doneWithFeatures(s);

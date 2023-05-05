@@ -213,7 +213,7 @@ public:
   bool processFeaturesInfo();
 
   // Initialize unspecified weights and perform a sanity check
-  bool processFitnessWeights();
+  bool processFeaturesWeights();
 
   bool loaded;
 

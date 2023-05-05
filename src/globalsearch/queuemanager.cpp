@@ -250,7 +250,7 @@ void QueueManager::checkTheExit()
 
   // One more time; check the softExit flag!
   if (m_opt->m_softExit && (pending == 0 && total >= m_opt->cutoff)) {
-    m_opt->warning(tr("Preparing for hard exit (total, finished, and pending runs: %1 , %2 , %3)")
+    m_opt->warning(tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
         .arg(m_opt->cutoff).arg(total).arg(pending));
 
     m_opt->performTheExit();
@@ -819,7 +819,7 @@ void QueueManager::handleDismissedFeature_(Structure* s)
   }
 
   // Except than the above cases; we just dismiss the structure
-  m_opt->error(tr("Features Dismiss (%1): removing the structure %2 ")
+  m_opt->warning(tr("Features Dismiss (%1): removing the structure %2 ")
       .arg(s->getStrucFeatStatus()).arg(s->getIDString()));
 
   s->setStatus(Structure::FeatureDismiss);
