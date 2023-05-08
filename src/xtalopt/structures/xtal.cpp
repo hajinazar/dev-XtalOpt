@@ -769,26 +769,29 @@ void Xtal::setCurrentFractionalCoords(const QList<QString>& ids,
 
 void Xtal::printLatticeInfo() const
 {
-  cout << "a is " << this->getA() << "\n";
-  cout << "b is " << this->getB() << "\n";
-  cout << "c is " << this->getC() << "\n";
-  cout << "alpha is " << this->getAlpha() << "\n";
-  cout << "beta is " << this->getBeta() << "\n";
-  cout << "gamma is " << this->getGamma() << "\n";
-  cout << "volume is " << this->getVolume() << "\n";
+  std::stringstream outs;
+  outs << "a is " << this->getA() << "\n";
+  outs << "b is " << this->getB() << "\n";
+  outs << "c is " << this->getC() << "\n";
+  outs << "alpha is " << this->getAlpha() << "\n";
+  outs << "beta is " << this->getBeta() << "\n";
+  outs << "gamma is " << this->getGamma() << "\n";
+  outs << "volume is " << this->getVolume() << "\n";
 
-  cout << "cellMatrix is (row vectors):\n";
+  outs << "cellMatrix is (row vectors):\n";
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      cout << unitCell().cellMatrix()(i, j) << "  ";
+      outs << unitCell().cellMatrix()(i, j) << "  ";
     }
-    cout << "\n";
+    outs << "\n";
   }
+  qDebug().noquote() << outs.str().c_str();
 }
 
 void Xtal::printAtomInfo() const
 {
-  cout << "Frac coords info (blank if none):\n";
+  std::stringstream outs;
+  outs << "Frac coords info (blank if none):\n";
   const std::vector<Atom>& atoms = this->atoms();
   QList<Vector3> fracCoords;
 
@@ -796,10 +799,11 @@ void Xtal::printAtomInfo() const
     fracCoords.append(cartToFrac(atoms.at(i).pos()));
 
   for (size_t i = 0; i < atoms.size(); i++) {
-    cout << "  For atomic num " << atoms.at(i).atomicNumber()
+    outs << "  For atomic num " << atoms.at(i).atomicNumber()
          << ", coords are (" << fracCoords.at(i)[0] << ","
          << fracCoords.at(i)[1] << "," << fracCoords.at(i)[2] << ")\n";
   }
+  qDebug().noquote() << outs.str().c_str();
 }
 
 void Xtal::printXtalInfo() const

@@ -211,24 +211,25 @@ bool LocalQueueInterface::startJob(Structure* s)
 bool LocalQueueInterface::logErrorDirectory(Structure* s) const
 {
   QProcess proc, proc2;
+  QString strdir = QString::number(s->getGeneration()) + "x" +
+                              QString::number(s->getIDNumber());
 #ifdef WIN32
   QString command = "mkdir " + this->m_opt->filePath + "\\errorDirs\\";
   proc.start(command);
   // This will wait for, at most, 30 seconds
   proc.waitForFinished();
   // Does robocopy come with all windows computers?
-  QString command2 = "robocopy " + s->fileName() + " " + this->m_opt->filePath +
-                     "\\errorDirs\\" + QString::number(s->getGeneration()) +
-                     "x" + QString::number(s->getIDNumber());
+  QString command2 = "robocopy " + s->fileName() + " " + 
+                     this->m_opt->filePath + "\\errorDirs\\" + strdir;
   proc2.start(command2);
   proc2.waitForFinished();
 #else
-  QString command = "mkdir -p " + this->m_opt->filePath + "/errorDirs/";
+  QString command = "mkdir -p " + this->m_opt->filePath + "/errorDirs/" + strdir + "/";
   proc.start(command);
   // This will wait for, at most, 30 seconds
   proc.waitForFinished();
   QString command2 =
-    "cp -r " + s->fileName() + " " + this->m_opt->filePath + "/errorDirs/";
+    "cp -r " + s->fileName() + " " + this->m_opt->filePath + "/errorDirs/" + strdir + "/";
   proc2.start(command2);
   proc2.waitForFinished();
 #endif
@@ -383,14 +384,14 @@ bool LocalQueueInterface::copyGenericFileToServer(const QString& loc_file,
 bool LocalQueueInterface::checkIfGenericFileExists(const QString& spath,
                                                    const QString& sfile)
 {
-  return QFile::exists(QString("%1/%2").arg(spath).arg(sfile));
+  return QFile::exists(spath + QDir::separator() + sfile);
 }
 
 bool LocalQueueInterface::checkIfFileExists(Structure* s,
                                             const QString& filename,
                                             bool* exists)
 {
-  *exists = QFile::exists(QString("%1/%2").arg(s->fileName()).arg(filename));
+  *exists = QFile::exists(s->fileName() + QDir::separator() + filename);
   return true;
 }
 

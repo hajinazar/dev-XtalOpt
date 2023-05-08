@@ -139,6 +139,10 @@ bool XtalOpt::startSearch()
   if (!startLock.try_lock())
     return false;
 
+  // For a GUI run, this will create a "detailed" log file
+  if (m_usingGUI && m_dialog)
+      saveLogFileOfGUIRun(filePath);
+
   // Settings checks
   // Check lattice parameters, volume, etc
   if (!XtalOpt::checkLimits()) {
@@ -2873,10 +2877,13 @@ Xtal* XtalOpt::generatePrimitiveXtal(Xtal* xtal)
 
   // Copy feature info for the new primitive cell
 #ifdef FEATURES_DEBUG
-  QString outstr;
-  outstr.sprintf("NOTE: copying feature info from structure %8s to %8s at generatePrimitiveXtal",
-      xtal->getIDString().toStdString().c_str(), nxtal->getIDString().toStdString().c_str());
-  qDebug() << outstr;
+  if (m_calculateFeatures) {
+    QString outstr;
+    outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generatePrimitiveXtal",
+      xtal->getIDString().toStdString().c_str(),
+                   nxtal->getIDString().toStdString().c_str());
+    qDebug().noquote() << outstr;
+  }
 #endif
   nxtal->resetStrucFeat();
   nxtal->setStrucFeatStatus(xtal->getStrucFeatStatus());
@@ -2928,10 +2935,13 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
 
   // Copy feature info for the new supercell
 #ifdef FEATURES_DEBUG
-  QString outstr;
-  outstr.sprintf("NOTE: copying feature info from structure %8s to %8s at generateSuperCell",
-      parentXtal->getIDString().toStdString().c_str(), xtal->getIDString().toStdString().c_str());
-  qDebug() << outstr;
+  if (m_calculateFeatures) {
+    QString outstr;
+    outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generateSuperCell",
+      parentXtal->getIDString().toStdString().c_str(),
+                   xtal->getIDString().toStdString().c_str());
+    qDebug().noquote() << outstr;
+  }
 #endif
   xtal->resetStrucFeat();
   xtal->setStrucFeatStatus(parentXtal->getStrucFeatStatus());
@@ -3066,23 +3076,27 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
         --i;
 #ifdef FEATURES_DEBUG
         QString outstr;
-        outstr.sprintf("NOTE: structure %8s excluded from pool with status %d ",
-            structures[i]->getIDString().toStdString().c_str(),structures[i]->getStrucFeatStatus());
-        qDebug() << outstr;
+        outstr.sprintf("NOTE: structure %8s excluded from pool "
+                       "with features status %d ",
+            structures[i]->getIDString().toStdString().c_str(),
+                       structures[i]->getStrucFeatStatus());
+        qDebug().noquote() << outstr;
 #endif
       }
     }
 #ifdef FEATURES_DEBUG
     QString outstr;
-    outstr.sprintf("NOTE: only % 5d structures left for pool after feature analysis", structures.size());
-    qDebug() << outstr;
+    outstr.sprintf("NOTE: a total of % 5d (from % 5d) structures "
+                   "left for pool after feature analysis",
+                   structures.size(), sizeBeforeFeaturesPruning);
+    qDebug().noquote() << outstr;
 #endif
 
     if (structures.size() == 1 && sizeBeforeFeaturesPruning > 1) { 
       warning(tr("A nonzero feature weight is being used for the fitness "
-            "function, but very few (%1) structures have their "
+            "function, but very few (%1 from %2) structures have their "
             "features calculated. This current probability selection will "
-            "not be good.").arg(structures.size()));
+            "not be good.").arg(structures.size()).arg(sizeBeforeFeaturesPruning));
     }
   }
 
@@ -3099,9 +3113,9 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
     }
     if (structures.size() == 1 && sizeBeforeHardnessPruning > 1) {
       warning(tr("A nonzero hardness weight is being used for the fitness "
-            "function, but very few (%1) structures have their "
+            "function, but very few (%1 from %2) structures have their "
             "hardnesses calculated. This current probability selection will "
-            "not be good.").arg(structures.size()));
+            "not be good.").arg(structures.size()).arg(sizeBeforeHardnessPruning));
     }
   }
 
@@ -3335,8 +3349,8 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
         xtal->getB() * cutoff < xtal->getC() ||
         xtal->getC() * cutoff < xtal->getA() ||
         xtal->getC() * cutoff < xtal->getB()) {
-      qDebug() << "Error: one of the lengths is more than 25x shorter "
-               << "than another length. Crystals like these can sometimes "
+      qDebug() << "Error: one of the lengths is more than 25x shorter"
+               << "than another length.\nCrystals like these can sometimes"
                << "cause spglib to crash the program. Discarding the xtal:";
       xtal->printXtalInfo();
       return false;
@@ -3348,8 +3362,8 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
         xtal->getBeta() * cutoff < xtal->getGamma() ||
         xtal->getGamma() * cutoff < xtal->getAlpha() ||
         xtal->getGamma() * cutoff < xtal->getBeta()) {
-      qDebug() << "Error: one of the angles is more than 25x smaller "
-               << "than another angle. Crystals like these can sometimes "
+      qDebug() << "Error: one of the angles is more than 25x smaller"
+               << "than another angle.\nCrystals like these can sometimes"
                << "cause spglib to crash the program. Discarding the xtal:";
       xtal->printXtalInfo();
       return false;

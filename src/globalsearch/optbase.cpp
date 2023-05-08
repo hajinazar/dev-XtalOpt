@@ -236,11 +236,11 @@ static inline double calculateProb(double currentEnthalpy,
 
 #ifdef FEATURES_DEBUG
 QString outstr;
-outstr.sprintf("Debug:  \"NOTE: feat %2d opt %1d (F %8.4lf wgt %8.4lf min %8.4lf max %8.4lf spr %8.4lf hwt %8.4lf)\"\n",
+outstr.sprintf("NOTE: feat %2d opt %1d "
+               "(F %8.4lf wgt %8.4lf min %8.4lf max %8.4lf spr %8.4lf hwt %8.4lf)",
                 i+1, features_opt[i], features_val[i], features_wgt[i], features_min[i], 
                 features_max[i], featuresSpread, hardnessWeight);
-QTextStream outs(stdout);
-outs << outstr;
+qDebug().noquote() << outstr;
 #endif
   }
 
@@ -353,10 +353,11 @@ double prob0 = calculateProb(s->getEnthalpyPerFU(),
                              hardnessWeight,
                              0);
 QString outstr;
-outstr.sprintf("Debug:  \"NOTE: str %8s OLDfit % 8.4lf NEWfit % 8.4lf ( E %8.4lf min %8.4lf max %8.4lf )\"\n\n",
-s->getIDString().toStdString().c_str(), prob0, prob, s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy);
-QTextStream outs(stdout);
-outs << outstr;
+outstr.sprintf("NOTE: str %8s OLDfit % 8.4lf NEWfit % 8.4lf "
+               "( E %8.4lf min %8.4lf max %8.4lf )\n",
+               s->getIDString().toStdString().c_str(), prob0, prob,
+               s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy);
+qDebug().noquote() << outstr;
 }
 #endif
     //
@@ -466,15 +467,21 @@ void OptBase::calculateFeatures(Structure* s)
   //
   // The feature calculations for each structure is handled in two steps:
   //   (1) startFeatureCalculations
-  //       generate output.POSCAR file, copy to remote (if needed), run the commands
+  //     (1-a) generate output.POSCAR file,
+  //     (1-b) copy to remote (if needed),
+  //     (1-c) run the commands, i.e., user-defined script.
   //   (2) finishFeatureCalculations
-  //       (a) wait for feature output files to appear (if needed), copy back them from remote (if needed)
-  //       (b) process the output files, update structure object with the results, and signal the finish
+  //     (2-a) wait for feature output files to appear (if needed),
+  //     (2-b) copy back them from remote (if needed),
+  //     (2-c) process the output files,
+  //     (2-d) update structure object with the results,
+  //     (2-e) signal the finish.
   //
   // Note:
-  //   (1) Functions are arranged such that feature calculation for a structure needs only one thread.
-  //   (2) The remote queue is handled with the use of *Generic* functions. They distinguish between 
-  //       local runs from remote runs; so we don't need to be worried about the SSH or localQueue.
+  //   (1) Feature calculations for a structure needs only one thread.
+  //   (2) The remote queue is handled with the use of *Generic* functions. 
+  //       They distinguish between local runs from remote runs; so we 
+  //       don't need to be worried about the SSH or localQueue.
 
   // We might get here just because aflow-hardness is requested; so first check
   //   if feature calculations are requested too or not! If not, just do nothing.
@@ -490,25 +497,32 @@ void OptBase::startFeatureCalculations(Structure* s)
 {
   // Set up some variables
   QueueInterface* qi = queueInterface(s->getCurrentOptStep());
-  QString locdir = s->fileName();
-  QString remdir = s->getRempath();
-  QString wrkdir = (qi->getIDString().toLower() == "local" ) ? locdir : remdir;
+  // Structure files prepared for the user script
   QString flname = "output.POSCAR";
+  // The local run directory (where files are generated)
+  QString locdir = s->fileName() + QDir::separator();
+  // Where we run the user-provided script
+  //   It's assumed that the remote is a "unix"-based system
+  QString wrkdir = 
+    (qi->getIDString().toLower() == "local") ? locdir : s->getRempath() + "/";
 
   // Write the output.POSCAR file
   std::stringstream ss;
-  QFile file(locdir + "/" + flname);
+  QFile file(locdir + flname);
   if ((file.open(QIODevice::WriteOnly | QIODevice::Text)) &&
       (PoscarFormat::write(*s, ss) && file.write(ss.str().c_str())))
     file.close();
   else {
-    error(tr("Failed writing output.POSCAR file for structure %1").arg(s->getIDString()));
+    error(tr("Failed writing output.POSCAR file for structure %1")
+        .arg(s->getIDString()));
     return;
   }
 
+  qDebug() << "Feature calculations for " << s->getIDString() << " started!";
+
   // Copy it to the remote location. This is needed only for remote runs.
   // Actually, this function doesn't do anything if it is a local run!
-  qi->copyGenericFileToServer(locdir+"/"+flname, wrkdir+"/"+flname);
+  qi->copyGenericFileToServer(locdir + flname, wrkdir + flname);
 
   // Run/Submit the feature commands
   for(int i = 0; i < getFeaturesNum(); i++)
@@ -526,18 +540,24 @@ void OptBase::finishFeatureCalculations(Structure* s)
 {
   // Set up some variables
   QueueInterface* qi = queueInterface(s->getCurrentOptStep());
-  QString locdir = s->fileName();
-  QString remdir = s->getRempath();
-  QString wrkdir = (qi->getIDString().toLower() == "local" ) ? locdir : remdir;
+  // Structure files prepared for the user script
   QString flname = "output.POSCAR";
+  // The local run directory (where files are generated)
+  QString locdir = s->fileName() + QDir::separator();
+  // Where we run the user-provided script
+  //   It's assumed that the remote is a "unix"-based system
+  QString wrkdir = 
+    (qi->getIDString().toLower() == "local") ? locdir : s->getRempath() + "/";
+
   // These are used as temp variables to store the results; so
   //   we will have to lock the structure for writing only briefly.
   QList<double>  tmp_values;
   Structure::FeatStatus tmp_status = Structure::FS_NotCalculated;
 
-  // First, check if all output files exist. This is basically important for features
-  //   that submit their calculation to a queue; otherwise the qprocess run command
-  //   finishes when process finishes and files are already generated.
+  // First, check if all output files exist. This is basically 
+  //   important for features that submit their calculation to 
+  //   a queue; otherwise the qprocess run command finishes when 
+  //   process finishes and files are already generated.
   bool exists = false;
   while(!exists)
   {
@@ -545,20 +565,22 @@ void OptBase::finishFeatureCalculations(Structure* s)
     for (int i = 0; i < getFeaturesNum(); i++)
       if (!qi->checkIfGenericFileExists(wrkdir, getFeaturesOut(i)))
         exists = false;
-    // This function runs on a separate thread; sleep function doesn't freeze gui.
+    // This function runs on a separate thread; so sleep won't freeze gui.
     if (!exists)
       QThread::currentThread()->usleep(queueRefreshInterval() * 1000 * 1000);
   }
 
-  // Copy feature output files back to structure's local working directory, for a remote run.
+  // Copy feature output files back to structure's local
+  //   working directory, for a remote run.
   // Actually, this function doesn't do anything if it is a local run!
   for (int i = 0; i < getFeaturesNum(); i++)
-    qi->copyGenericFileFromServer(wrkdir+"/"+getFeaturesOut(i), locdir+"/"+getFeaturesOut(i));
+    qi->copyGenericFileFromServer(wrkdir + getFeaturesOut(i),
+        locdir + getFeaturesOut(i));
 
   // Process the feature output files.
   for (int i = 0; i < getFeaturesNum(); i++)
   {
-    QFile file(locdir + "/" + getFeaturesOut(i));
+    QFile file(locdir + getFeaturesOut(i));
     double flagv {0.0};
     bool   flags {false};
     if (file.open(QIODevice::ReadOnly)) {
@@ -569,19 +591,23 @@ void OptBase::finishFeatureCalculations(Structure* s)
         flagv = flist.at(0).toDouble(&flags);
       file.close();
     } else {
-      error(tr("No output file for feature %1 was found for structure %2").arg(i+1).arg(s->getIDString()));
+      error(tr("No output file for feature %1 was found for structure %2")
+          .arg(i+1).arg(s->getIDString()));
       return;
     }
 
     tmp_values.push_back(flagv);
 
     if (!flags) 
-      tmp_status = Structure::FS_Fail; // calculation went wrong (e.g. output file format not correct)
+      // Calculations went wrong (e.g. output file format not correct)
+      tmp_status = Structure::FS_Fail;
     else if (getFeaturesOpt(i) == OptBase::FT_Fil && flagv == 0) 
-      tmp_status = Structure::FS_Dismiss; // structure marked for discarding by fil feature
+      // Structure marked for discarding by fil feature
+      tmp_status = Structure::FS_Dismiss;
   }
 
-  // If the state is not either fail or dismiss, we can change it from NotCalculated to Retain.
+  // If the state is not either fail or dismiss,
+  //   we can change it from NotCalculated to Retain.
   if (tmp_status != Structure::FS_Fail && tmp_status != Structure::FS_Dismiss)
     tmp_status = Structure::FS_Retain;
 
