@@ -139,9 +139,8 @@ bool XtalOpt::startSearch()
   if (!startLock.try_lock())
     return false;
 
-  // For a GUI run, this will create a "detailed" log file
-  if (m_usingGUI && m_dialog)
-      saveLogFileOfGUIRun(filePath);
+  // Setup the message handler for the run log file
+  saveLogFileOfRun(filePath);
 
   // Settings checks
   // Check lattice parameters, volume, etc
@@ -3962,6 +3961,10 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
   // path to resume file
   QDir dataDir = stateInfo.absoluteDir();
   QString dataPath = dataDir.absolutePath() + "/";
+
+  // Setup the message handler for the run log file
+  saveLogFileOfRun(dataPath);
+
   // list of xtal dirs
   QStringList xtalDirs =
     dataDir.entryList(QStringList(), QDir::AllDirs, QDir::Size);

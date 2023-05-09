@@ -39,34 +39,40 @@
 #include <globalsearch/bt.h>
 
 //*******************************************************************
-// This part, as a whole, is to saves all messages of the GUI run   *
-//   to a log file, by setting up a message handler. Here:          *
+// This part, as a whole, is to save a copy of all messages of the  *
+//   run to a log file, by setting up a message handler.            *
+// These are here so other parts of the code (than xtalopt module)  *
+//   can use them.                                                  *
 //                                                                  *
+// The main variables/functions are:                                *
 //   i)  messageHandlerIsSet : (logical) make sure this is set once *
 //  ii)  gui_log_filename    : name of the log file                 *
 // iii)  customMessageOutput : the message handler function         *
-//  iv)  saveLogFileOfGUIRun : main function to be called           *
+//  iv)  saveLogFileOfRun    : main function to be called           *
 //                                                                  *
-// The saveLogFileOfGUIRun, whenever called, redirects all          *
+// The saveLogFileOfRun, whenever called, redirects all             *
 //   output messages to the file. This function, can and must       *
 //   be called only once! Either on:                                *
-//   (1) Starting GUI run (in xtalopt.cpp)                          *
-//   (2) Resuming GUI run (in abstractdialog.cpp)                   *
+//   (1) Starting a run (in xtalopt.cpp file, startSearch())        *
+//   (2) Resuming a run (in xtalopt.cpp file, load())               *
 //*******************************************************************
 static bool messageHandlerIsSet = false;
-static QString gui_log_filename = "xtaloptGUI.log";
+static QString run_log_filename = "xtaloptRun.log";
 static void customMessageOutput(QtMsgType type,
                   const QMessageLogContext &, const QString & msg)
 {
   if (type == QtFatalMsg)
   abort();
 
-  QFile outFile(gui_log_filename);
+  // Write the message to file
+  QFile outFile(run_log_filename);
   outFile.open(QIODevice::WriteOnly | QIODevice::Append);
   QTextStream ts(&outFile);
   ts << msg << endl;
+  // Write the message to stdout
+  qDebug().noquote() << msg;
 }
-static void saveLogFileOfGUIRun(QString work_dir)
+static void saveLogFileOfRun(QString work_dir)
 {
   // Basically, this function is called after the filePath
   //   variable is set. Just in case, if this is not true
@@ -76,7 +82,7 @@ static void saveLogFileOfGUIRun(QString work_dir)
   if (work_dir.isEmpty() || messageHandlerIsSet)
     return;
   // Set the log file's full path.
-  gui_log_filename = work_dir + QDir::separator() + gui_log_filename;
+  run_log_filename = work_dir + QDir::separator() + run_log_filename;
   // Setup the message handler.
   qInstallMessageHandler(customMessageOutput);
   messageHandlerIsSet = true;

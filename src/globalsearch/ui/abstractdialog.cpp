@@ -158,9 +158,6 @@ void AbstractDialog::resumeSession()
 
 void AbstractDialog::resumeSession_(const QString& filename)
 {
-  // For a GUI run, this will append/create a "detailed" log file
-  saveLogFileOfGUIRun(m_opt->filePath);
-
   startProgressUpdate(tr("Resuming session..."), 0, 0);
   m_opt->tracker()->lockForWrite();
   m_opt->tracker()->deleteAllStructures();
