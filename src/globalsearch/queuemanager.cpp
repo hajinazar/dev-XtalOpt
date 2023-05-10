@@ -130,7 +130,8 @@ void QueueManager::moveToQMThread()
 void QueueManager::setupConnections()
 {
   // opt connections
-  connect(this, SIGNAL(needNewStructure()), m_opt, SLOT(generateNewStructure()));
+  connect(this, SIGNAL(needNewStructure()), m_opt, SLOT(generateNewStructure()),
+          Qt::QueuedConnection);
   connect(m_opt, SIGNAL(doneWithFeatures(Structure*)), this, SLOT(processFeatureCalculation(Structure*)));
   connect(m_opt, SIGNAL(doneWithHardness(Structure*)), this, SLOT(processFeatureCalculation(Structure*)));
 

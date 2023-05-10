@@ -177,7 +177,7 @@ void TabPlot::updatePlot()
       ui.combo_xAxis->addItem(tr("Feature%1").arg(i+1));
       ui.combo_yAxis->addItem(tr("Feature%1").arg(i+1));
       ui.combo_labelType->addItem(tr("Feature%1").arg(i+1));
-    }
+  }
 
   plotTrends();
 
