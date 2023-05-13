@@ -121,6 +121,11 @@ void TabPlot::readSettings(const QString& filename)
   ui.combo_labelType->setCurrentIndex(
     settings->value("labelType", Symbol_L).toInt());
   settings->endGroup();
+
+  // Set the default values of x, y, and label menus
+  ui.combo_labelType->setCurrentIndex(10);
+  ui.combo_yAxis->setCurrentIndex(3);
+  ui.combo_xAxis->setCurrentIndex(1);
 }
 
 void TabPlot::updateGUI()

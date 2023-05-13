@@ -59,7 +59,8 @@
 #include <chrono>
 #include <thread>
 
-//#define OPTBASE_DEBUG
+// Uncomment for yet more debug info about probabilities
+//#define OPTBASE_PROBS_DEBUG
 
 namespace GlobalSearch {
 
@@ -222,38 +223,53 @@ static inline double calculateProb(double currentEnthalpy,
   double hardnessSpread = highestHardness - lowestHardness;
   double featuresWeight = 0.0; // total weight of features/aflow-hardness
   double featuresTotal  = 0.0; // total contribution from features/aflow-hardness
+  double contribution;
 
   // If no features calculation; features_num is 0 at this point
   for(int i = 0; i < features_num; i++)
   {
     double featuresSpread = features_max[i] - features_min[i];
-    featuresWeight += features_wgt[i];
-    // Nothing needs to be done for "filteration" features; their weight is 0.0
     if (features_opt[i] == OptBase::FT_Min)
-      featuresTotal += features_wgt[i] * (features_val[i] - features_min[i]) / featuresSpread; 
+      contribution = features_wgt[i] * (features_val[i] - features_min[i]) / featuresSpread; 
     if (features_opt[i] == OptBase::FT_Max)
-      featuresTotal += features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
-
+      contribution = features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
+    featuresWeight += features_wgt[i];
+    featuresTotal  += contribution;
 #ifdef FEATURES_DEBUG
-QString outstr;
-outstr.sprintf("NOTE: feat %2d opt %1d "
-               "(F %8.4lf wgt %8.4lf min %8.4lf max %8.4lf spr %8.4lf hwt %8.4lf)",
-                i+1, features_opt[i], features_val[i], features_wgt[i], features_min[i], 
-                features_max[i], featuresSpread, hardnessWeight);
-qDebug().noquote() << outstr;
+QString outs = QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 wgt %6 - contr %7")
+  .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5).arg(features_min[i],10,'f',5)
+  .arg(features_max[i],10,'f',5).arg(features_wgt[i],5,'f',3).arg(contribution,7,'f',5);
+qDebug().noquote() << outs;
 #endif
   }
 
   // If no aflow-hardness calculation, it's weight is -1.0 at this point.
   if (hardnessWeight >= 0.0) {
+    contribution = hardnessWeight * (highestHardness - currentHardness) / hardnessSpread;
     featuresWeight += hardnessWeight;
-    featuresTotal  += hardnessWeight * (highestHardness - currentHardness) / hardnessSpread;
+    featuresTotal  += contribution;
+#ifdef FEATURES_DEBUG
+QString outs = QString("NOTE: hard    opt %1 val %2 min %3 max %4 wgt %5 - contr %6")
+  .arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
+  .arg(highestHardness,10,'f',5).arg(hardnessWeight,5,'f',3).arg(contribution,7,'f',5);
+qDebug().noquote() << outs;
+#endif
   }
 
+  // Contribution from the energy
+  contribution = (1.0 - featuresWeight) * (currentEnthalpy - lowestEnthalpy) / enthalpySpread;
+  featuresTotal += contribution;
+#ifdef FEATURES_DEBUG
+if (features_num > 0) { // to print this only once!
+QString outs = QString("NOTE: enth    opt %1 val %2 min %3 max %4 wgt %5 - contr %6")
+  .arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
+  .arg(highestEnthalpy,10,'f',5).arg(1.0-featuresWeight,5,'f',3).arg(contribution,7,'f',5);
+qDebug().noquote() << outs;
+}
+#endif
+
   // Finally, calculate the fitness
-  return 1.0 
-         - featuresTotal
-         - (1.0 - featuresWeight) * (currentEnthalpy - lowestEnthalpy) / enthalpySpread;
+  return 1.0 - featuresTotal;
 }
 
 QList<QPair<Structure*, double>>
@@ -314,15 +330,6 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
       }
   }
 
-#ifdef OPTBASE_PROBS_DEBUG
-  std::cout << "lowestEnthalpy is: "  << lowestEnthalpy  << "\n";
-  std::cout << "highestEnthalpy is: " << highestEnthalpy << "\n";
-  std::cout << "lowestHardness is: "  << lowestHardness  << "\n";
-  std::cout << "highestHardness is: " << highestHardness << "\n";
-  std::cout << "Unnormalized, unsorted, and untrimmed probs list is:\n";
-  std::cout << "Structure : enthalpy : hardness : probs\n";
-#endif
-
   // Now calculate the probability of each structure
   for (const auto& s: structures) {
     QReadLocker lock(&s->lock());
@@ -352,20 +359,10 @@ double prob0 = calculateProb(s->getEnthalpyPerFU(),
                              highestHardness,
                              hardnessWeight,
                              0);
-QString outstr;
-outstr.sprintf("NOTE: str %8s OLDfit % 8.4lf NEWfit % 8.4lf "
-               "( E %8.4lf min %8.4lf max %8.4lf )\n",
-               s->getIDString().toStdString().c_str(), prob0, prob,
-               s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy);
-qDebug().noquote() << outstr;
+QString outs = QString("NOTE: struc %1   oldFitness %2   newFitness %3")
+  .arg(s->getIDString(),7).arg(prob0,8,'f',6).arg(prob,8,'f',6);
+qDebug().noquote() << outs;
 }
-#endif
-    //
-#ifdef OPTBASE_PROBS_DEBUG
-    std::cout << s->getGeneration() << "x"
-              << s->getIDNumber() << " : "
-              << s->getEnthalpyPerFU() << " : "
-              << s->vickersHardness() << " : " << prob << "\n";
 #endif
   }
 
@@ -407,15 +404,14 @@ qDebug().noquote() << outstr;
 
 
 #ifdef OPTBASE_PROBS_DEBUG
-  std::cout << "Unnormalized (but sorted and trimmed) probs list is:\n";
-  std::cout << "Structure : enthalpy : hardness : probs\n";
+  QString outs1 = QString("\nNOTE: Unnormalized (but sorted and trimmed) probs list is:\n"
+                         "    structure :  enthalpy  : probs\n");
   for (const auto& elem: probs) {
     QReadLocker lock(&elem.first->lock());
-    std::cout << elem.first->getGeneration() << "x"
-              << elem.first->getIDNumber() << " : "
-              << elem.first->getEnthalpyPerFU() << " : "
-              << elem.first->vickersHardness() << " : " << elem.second << "\n";
+    outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7) 
+      .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
+  qDebug().noquote() << outs1;
 #endif
 
   // Sum the resulting probs
@@ -428,15 +424,14 @@ qDebug().noquote() << outstr;
     elem.second /= sum;
 
 #ifdef OPTBASE_PROBS_DEBUG
-  std::cout << "Normalized, sorted, and trimmed probs list is:\n";
-  std::cout << "Structure : enthalpy : hardness : probs\n";
+          outs1 = QString("NOTE: Normalized, sorted, and trimmed probs list is:\n"
+                         "    structure :  enthalpy  : probs\n");
   for (const auto& elem: probs) {
     QReadLocker lock(&elem.first->lock());
-    std::cout << elem.first->getGeneration() << "x"
-              << elem.first->getIDNumber() << " : "
-              << elem.first->getEnthalpyPerFU() << " : "
-              << elem.first->vickersHardness() << " : " << elem.second << "\n";
+    outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7) 
+      .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
+  qDebug().noquote() << outs1;
 #endif
 
   // Now replace each entry with a cumulative total
@@ -447,15 +442,14 @@ qDebug().noquote() << outstr;
   }
 
 #ifdef OPTBASE_PROBS_DEBUG
-  std::cout << "Cumulative (final) probs list is:\n";
-  std::cout << "Structure : enthalpy : hardness : probs\n";
+          outs1 = QString("NOTE: Cumulative (final) probs list is:\n"              
+                         "    structure :  enthalpy  : probs\n");
   for (const auto& elem: probs) {
     QReadLocker lock(&elem.first->lock());
-    std::cout << elem.first->getGeneration() << "x"
-              << elem.first->getIDNumber() << " : "
-              << elem.first->getEnthalpyPerFU() << " : "
-              << elem.first->vickersHardness() << " : " << elem.second << "\n";
+    outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7) 
+      .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
+  qDebug().noquote() << outs1;
 #endif
 
   return probs;

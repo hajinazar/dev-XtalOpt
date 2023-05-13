@@ -139,8 +139,12 @@ bool XtalOpt::startSearch()
   if (!startLock.try_lock())
     return false;
 
+#ifdef FEATURES_DEBUG
   // Setup the message handler for the run log file
-  saveLogFileOfRun(filePath);
+  // This is disabled completely, for now, as it might
+  //   cause serious problems with generating huge files!
+  //saveLogFileOfRun(filePath);
+#endif
 
   // Settings checks
   // Check lattice parameters, volume, etc
@@ -2874,8 +2878,9 @@ Xtal* XtalOpt::generatePrimitiveXtal(Xtal* xtal)
   nxtal->setPrimitiveChecked(true);
   nxtal->setSkippedOptimization(true);
 
-  // Copy feature info for the new primitive cell
+/*
 #ifdef FEATURES_DEBUG
+// Copy feature info for the new primitive cell
   if (m_calculateFeatures) {
     QString outstr;
     outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generatePrimitiveXtal",
@@ -2884,6 +2889,7 @@ Xtal* XtalOpt::generatePrimitiveXtal(Xtal* xtal)
     qDebug().noquote() << outstr;
   }
 #endif
+*/
   nxtal->resetStrucFeat();
   nxtal->setStrucFeatStatus(xtal->getStrucFeatStatus());
   nxtal->setStrucFeatValuesVec(xtal->getStrucFeatValuesVec());
@@ -2932,8 +2938,9 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
   xtal->setParents(parents);
   xtal->setGeneration(gen + 1);
 
-  // Copy feature info for the new supercell
+/*
 #ifdef FEATURES_DEBUG
+// Copy feature info for the new supercell
   if (m_calculateFeatures) {
     QString outstr;
     outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generateSuperCell",
@@ -2942,6 +2949,7 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
     qDebug().noquote() << outstr;
   }
 #endif
+*/
   xtal->resetStrucFeat();
   xtal->setStrucFeatStatus(parentXtal->getStrucFeatStatus());
   xtal->setStrucFeatValuesVec(parentXtal->getStrucFeatValuesVec());
@@ -3029,9 +3037,6 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
   return xtal;
 }
 
-// Define this macro to produce some debug info from this function
-//#define PROBS_DEBUG
-
 Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
                                              uint FU)
 {
@@ -3074,28 +3079,23 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
         structures.removeAt(i);
         --i;
 #ifdef FEATURES_DEBUG
-        QString outstr;
-        outstr.sprintf("NOTE: structure %8s excluded from pool "
-                       "with features status %d ",
-            structures[i]->getIDString().toStdString().c_str(),
-                       structures[i]->getStrucFeatStatus());
-        qDebug().noquote() << outstr;
+qDebug().noquote() << QString("NOTE: structure %1 excluded from pool "
+                              "with features status %2 ")
+  .arg(structures[i]->getIDString(),7).arg(structures[i]->getStrucFeatStatus(),2);
 #endif
       }
     }
 #ifdef FEATURES_DEBUG
-    QString outstr;
-    outstr.sprintf("NOTE: a total of % 5d (from % 5d) structures "
-                   "left for pool after feature analysis",
-                   structures.size(), sizeBeforeFeaturesPruning);
-    qDebug().noquote() << outstr;
+qDebug().noquote() << QString("NOTE: a total of %1 (from %2) structures "
+                              "left for pool after feature analysis\n")
+  .arg(structures.size(),5).arg(sizeBeforeFeaturesPruning,5);
 #endif
 
     if (structures.size() == 1 && sizeBeforeFeaturesPruning > 1) { 
       warning(tr("A nonzero feature weight is being used for the fitness "
             "function, but very few (%1 from %2) structures have their "
             "features calculated. This current probability selection will "
-            "not be good.").arg(structures.size()).arg(sizeBeforeFeaturesPruning));
+            "not be good.\n").arg(structures.size()).arg(sizeBeforeFeaturesPruning));
     }
   }
 
@@ -3114,25 +3114,24 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
       warning(tr("A nonzero hardness weight is being used for the fitness "
             "function, but very few (%1 from %2) structures have their "
             "hardnesses calculated. This current probability selection will "
-            "not be good.").arg(structures.size()).arg(sizeBeforeHardnessPruning));
+            "not be good.\n").arg(structures.size()).arg(sizeBeforeHardnessPruning));
     }
   }
 
   QList<QPair<GlobalSearch::Structure*, double>> probs = 
     getProbabilityList(structures, popSize, m_hardnessFitnessWeight, featnums, featwgts, featopts);
 
-#ifdef PROBS_DEBUG
-  std::cout << "Sorted structures list with probs is as follows:\n";
+#ifdef FEATURES_DEBUG
+QString outs = QString("\nNOTE: Sorted structures list with probs is as follows:\n"
+                       "      structure : enthalpy (eV/FU) :    probs   : cumulative probs\n");
   double previousProbs = 0.0;
   for (const auto& elem: probs) {
-    std::cout << elem.first->getGeneration() << "x"
-              << elem.first->getIDNumber() << ": "
-              << elem.first->vickersHardness()
-              << " GPa : " << elem.first->getEnthalpyPerFU()
-              << " eV/FU : probs: " << elem.second - previousProbs
-              << " : cumulative probs: " << elem.second << "\n";
+    outs += QString("        %1 :     %2 : %3 : %4\n")
+      .arg(elem.first->getIDString(),7).arg(elem.first->getEnthalpyPerFU(),12,'f',6)
+      .arg(elem.second - previousProbs,10,'f',6).arg(elem.second,10,'f',6);
     previousProbs = elem.second;
   }
+qDebug().noquote() << outs;
 #endif
 
   // Initialize loop vars
@@ -3147,11 +3146,11 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
     }
   }
 
-#ifdef PROBS_DEBUG
-  std::cout << "r is " << r << "\n";
-  std::cout << "Selected crystal is " << xtal->getGeneration() << "x"
-            << xtal->getIDNumber() << "\n";
+#ifdef FEATURES_DEBUG
+  qDebug().noquote() << QString("      Selected crystal is %1   ( r is %2 )\n")
+    .arg(xtal->getIDString(),7).arg(r,8,'f',6);
 #endif
+
   return xtal;
 }
 
@@ -3962,8 +3961,12 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
   QDir dataDir = stateInfo.absoluteDir();
   QString dataPath = dataDir.absolutePath() + "/";
 
+#ifdef FEATURES_DEBUG
   // Setup the message handler for the run log file
-  saveLogFileOfRun(dataPath);
+  // This is disabled completely, for now, as it might
+  //   cause serious problems with generating huge files!
+  //saveLogFileOfRun(dataPath);
+#endif
 
   // list of xtal dirs
   QStringList xtalDirs =
@@ -5392,13 +5395,13 @@ void XtalOpt::printOptionSettings(QTextStream& stream) const
   }
 
   // Write multi-objective (and hardexit) stuff
-  stream << "softExit: " << toString(m_softExit) << "\n";
+  stream << "\n softExit: " << toString(m_softExit) << "\n";
+  stream << " localQueue: " << toString(m_localQueue) << "\n";
   stream << "\nFeatures settings:\n";
-  stream << "features_num: " << QString::number(getFeaturesNum()) << "\n";
-  stream << "localQueue: " << toString(m_localQueue) << "\n";
-  stream << "featuresReDo: " << toString(m_featuresReDo) << "\n";
+  stream << "  features_num: " << QString::number(getFeaturesNum()) << "\n";
+  stream << "  featuresReDo: " << toString(m_featuresReDo) << "\n";
   for (int i = 0; i < getFeaturesNum(); i++) 
-    stream << "feature" << i+1 << ": " << QString::number(getFeaturesOpt(i)) << "  " 
+    stream << "  feature" << i+1 << ": " << QString::number(getFeaturesOpt(i)) << "  " 
       << getFeaturesExe(i) << "  " << getFeaturesOut(i) << "  " << getFeaturesWgt(i) << "\n";
 }
 

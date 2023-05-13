@@ -350,6 +350,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>combo_type</tabstop>
+  <tabstop>line_path</tabstop>
+  <tabstop>line_output</tabstop>
+  <tabstop>sb_weight</tabstop>
+  <tabstop>push_addFeatures</tabstop>
+  <tabstop>cb_redo_features</tabstop>
+  <tabstop>table_features</tabstop>
+  <tabstop>push_removeFeatures</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

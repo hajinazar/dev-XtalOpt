@@ -38,6 +38,7 @@
 
 #include <globalsearch/bt.h>
 
+#ifdef FEATURES_DEBUG
 //*******************************************************************
 // This part, as a whole, is to save a copy of all messages of the  *
 //   run to a log file, by setting up a message handler.            *
@@ -89,6 +90,7 @@ static void saveLogFileOfRun(QString work_dir)
 }
 //*******************************************************************
 //*******************************************************************
+#endif
 
 class AflowML;
 class QMutex;
