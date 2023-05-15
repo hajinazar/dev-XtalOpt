@@ -139,11 +139,9 @@ bool XtalOpt::startSearch()
   if (!startLock.try_lock())
     return false;
 
-#ifdef FEATURES_DEBUG
+#ifdef XTALOPT_DEBUG
   // Setup the message handler for the run log file
-  // This is disabled completely, for now, as it might
-  //   cause serious problems with generating huge files!
-  //saveLogFileOfRun(filePath);
+  saveLogFileOfRun(filePath);
 #endif
 
   // Settings checks
@@ -3961,11 +3959,9 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
   QDir dataDir = stateInfo.absoluteDir();
   QString dataPath = dataDir.absolutePath() + "/";
 
-#ifdef FEATURES_DEBUG
+#ifdef XTALOPT_DEBUG
   // Setup the message handler for the run log file
-  // This is disabled completely, for now, as it might
-  //   cause serious problems with generating huge files!
-  //saveLogFileOfRun(dataPath);
+  saveLogFileOfRun(dataPath);
 #endif
 
   // list of xtal dirs

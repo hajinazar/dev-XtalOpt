@@ -41,10 +41,16 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
 
 include(MacroEnsureVersion)
 
+option( XTALOPT_DEBUG
+  "Enable writing xtaloptDebug.log file to the working directory"
+  OFF )
+if(XTALOPT_DEBUG)
+  add_definitions(-DXTALOPT_DEBUG)
+endif(XTALOPT_DEBUG)
+
 option( FEATURES_DEBUG
   "Enable some useful output for monitoring feature analysis"
   OFF )
-
 if(FEATURES_DEBUG)
   add_definitions(-DFEATURES_DEBUG)
 endif(FEATURES_DEBUG)

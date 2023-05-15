@@ -38,12 +38,15 @@
 
 #include <globalsearch/bt.h>
 
-#ifdef FEATURES_DEBUG
+#ifdef XTALOPT_DEBUG
 //*******************************************************************
 // This part, as a whole, is to save a copy of all messages of the  *
 //   run to a log file, by setting up a message handler.            *
 // These are here so other parts of the code (than xtalopt module)  *
 //   can use them.                                                  *
+//                                                                  *
+// This file will be written if XTALOPT_DEBUG flag is defined       *
+//   at the cmake input.                                            *
 //                                                                  *
 // The main variables/functions are:                                *
 //   i)  messageHandlerIsSet : (logical) make sure this is set once *
@@ -58,7 +61,7 @@
 //   (2) Resuming a run (in xtalopt.cpp file, load())               *
 //*******************************************************************
 static bool messageHandlerIsSet = false;
-static QString run_log_filename = "xtaloptRun.log";
+static QString run_log_filename = "xtaloptDebug.log";
 static void customMessageOutput(QtMsgType type,
                   const QMessageLogContext &, const QString & msg)
 {
