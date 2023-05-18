@@ -221,55 +221,69 @@ static inline double calculateProb(double currentEnthalpy,
 {
   double enthalpySpread = highestEnthalpy - lowestEnthalpy;
   double hardnessSpread = highestHardness - lowestHardness;
-  double featuresWeight = 0.0; // total weight of features/aflow-hardness
-  double featuresTotal  = 0.0; // total contribution from features/aflow-hardness
-  double contribution;
+  double fitnessWeight  = 0.0; // total weight
+  double fitnessTotal   = 0.0; // total fitness (to be returned)
+  double partialContrib; // Auxiliary variable for debug output
+  double partialFitness; // Auxiliary variable for debug output
 
-  // If no features calculation; features_num is 0 at this point
+  // If no features calculation; features_num is 0 at this point.
+  // Also, if there are any filtration features, they have a
+  //   "keep" status for a structure that has made it here;
+  //   no further action is needed for that feature here.
   for(int i = 0; i < features_num; i++)
-  {
-    double featuresSpread = features_max[i] - features_min[i];
-    if (features_opt[i] == OptBase::FT_Min)
-      contribution = features_wgt[i] * (features_val[i] - features_min[i]) / featuresSpread; 
-    if (features_opt[i] == OptBase::FT_Max)
-      contribution = features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
-    featuresWeight += features_wgt[i];
-    featuresTotal  += contribution;
+    if (features_opt[i] != OptBase::FT_Fil) {
+      double featuresSpread = features_max[i] - features_min[i];
+      if (features_opt[i] == OptBase::FT_Min)
+        fitnessTotal += features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
+      if (features_opt[i] == OptBase::FT_Max)
+        fitnessTotal += features_wgt[i] * (features_val[i] - features_min[i]) / featuresSpread;
+      fitnessWeight += features_wgt[i];
+//
 #ifdef FEATURES_DEBUG
-QString outs = QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 wgt %6 - contr %7")
-  .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5).arg(features_min[i],10,'f',5)
-  .arg(features_max[i],10,'f',5).arg(features_wgt[i],5,'f',3).arg(contribution,7,'f',5);
+partialContrib = (features_opt[i] == OptBase::FT_Min) ?
+ (features_max[i]-features_val[i])/featuresSpread : (features_val[i]-features_min[i])/featuresSpread;
+partialFitness = partialContrib * features_wgt[i];
+QString outs = QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+ .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5).arg(features_min[i],10,'f',5)
+ .arg(features_max[i],10,'f',5).arg(partialContrib,7,'f',5).arg(features_wgt[i],5,'f',3).arg(partialFitness,7,'f',5);
 qDebug().noquote() << outs;
 #endif
-  }
+//
+    }
 
   // If no aflow-hardness calculation, it's weight is -1.0 at this point.
   if (hardnessWeight >= 0.0) {
-    contribution = hardnessWeight * (highestHardness - currentHardness) / hardnessSpread;
-    featuresWeight += hardnessWeight;
-    featuresTotal  += contribution;
+    fitnessTotal += hardnessWeight * (currentHardness - lowestHardness) / hardnessSpread;
+    fitnessWeight += hardnessWeight;
+//
 #ifdef FEATURES_DEBUG
-QString outs = QString("NOTE: hard    opt %1 val %2 min %3 max %4 wgt %5 - contr %6")
-  .arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
-  .arg(highestHardness,10,'f',5).arg(hardnessWeight,5,'f',3).arg(contribution,7,'f',5);
+partialContrib = (currentHardness-lowestHardness)/hardnessSpread;
+partialFitness = partialContrib * hardnessWeight;
+QString outs = QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+  .arg(-1,2).arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
+  .arg(highestHardness,10,'f',5).arg(partialContrib,7,'f',5).arg(hardnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
 qDebug().noquote() << outs;
 #endif
+//
   }
 
-  // Contribution from the energy
-  contribution = (1.0 - featuresWeight) * (currentEnthalpy - lowestEnthalpy) / enthalpySpread;
-  featuresTotal += contribution;
+  // Contribution from the enthalpy
+  fitnessTotal += (1.0 - fitnessWeight) * (highestEnthalpy - currentEnthalpy) / enthalpySpread;
+//
 #ifdef FEATURES_DEBUG
 if (features_num > 0) { // to print this only once!
-QString outs = QString("NOTE: enth    opt %1 val %2 min %3 max %4 wgt %5 - contr %6")
-  .arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
-  .arg(highestEnthalpy,10,'f',5).arg(1.0-featuresWeight,5,'f',3).arg(contribution,7,'f',5);
+partialContrib = (highestEnthalpy-currentEnthalpy)/enthalpySpread;
+partialFitness = partialContrib * (1.0 - fitnessWeight);
+QString outs = QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+  .arg(0,2).arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
+  .arg(highestEnthalpy,10,'f',5).arg(partialContrib,7,'f',5).arg(1.0-fitnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
 qDebug().noquote() << outs;
 }
 #endif
+//
 
-  // Finally, calculate the fitness
-  return 1.0 - featuresTotal;
+  // Finally, return the calculated total fitness
+  return fitnessTotal;
 }
 
 QList<QPair<Structure*, double>>
