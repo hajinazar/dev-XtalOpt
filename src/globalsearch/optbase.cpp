@@ -162,7 +162,7 @@ void OptBase::performTheExit()
 
   // Wait for a minute just to make sure that all remote files are transferred
   if (m_softExit)
-  sleep(60); 
+  QThread::msleep(60000); 
 
   // One more time; check the softExit flag
  //   This does not affect the cli mode; it's for possible future use in gui

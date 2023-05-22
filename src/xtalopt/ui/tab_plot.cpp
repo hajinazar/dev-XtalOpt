@@ -466,24 +466,27 @@ void TabPlot::plotTrends()
               break;
           }
           break;
-        // Features in multi-objective run.
-        // Their index in the list of options starts from Featurei_T,
-        //   so the proper index for feature value array is "ind - Featurei_T"
-        case Featurei_T ... Featuref_T:
-          // Skip xtals that don't have features calculated
-          if (xtal->getStrucFeatStatus() == Structure::FS_NotCalculated) {
-            usePoint = false;
-            continue;
+        default:
+          // Features in multi-objective run. Since there is no fixed number of
+          //   features; and MSVC does not support "case range", we put them
+          //   under "default".
+          // Their index in the list of options starts from Featurei_T,
+          //   so the proper index for feature value array is "ind - Featurei_T"
+          if (ind >= Featurei_T) {
+            // Skip xtals that don't have features calculated
+            if (xtal->getStrucFeatStatus() == Structure::FS_NotCalculated) {
+              usePoint = false;
+              continue;
+            }
+            switch (j) {
+              case 0:
+                x = xtal->getStrucFeatValues(ind - Featurei_T);
+                break;
+              default:
+                y = xtal->getStrucFeatValues(ind - Featurei_T);
+                break;
+            }
           }
-          switch (j) {
-            case 0:
-              x = xtal->getStrucFeatValues(ind - Featurei_T);
-              break;
-            default:
-              y = xtal->getStrucFeatValues(ind - Featurei_T);
-              break;
-          }
-          break;
       }
     }
 
@@ -515,7 +518,6 @@ void TabPlot::plotTrends()
           s = QString::number(xtal->getSpaceGroupNumber());
           break;
         case Symbol_L:
-        default:
           s = xtal->getSpaceGroupSymbol();
           break;
         case Enthalpy_L:
@@ -549,12 +551,17 @@ void TabPlot::plotTrends()
         case Formula_Units_L:
           s = QString::number(xtal->getFormulaUnits());
           break;
-        // Features in multi-objective run.
-        // Their index in the list of options starts from Featurei_L,
-        //   so the proper index for feature value array is "labelTyep - Featurei_L"
-        case Featurei_L ... Featuref_L:
-          s = QString::number(xtal->getStrucFeatValues(labelType - Featurei_L));
-          break;
+        default:
+          // Features in multi-objective run. Since there is no fixed number of
+          //   features; and MSVC does not support "case range", we put them
+          //   under "default".
+          // Their index in the list of options starts from Featurei_L,
+          //   so the proper index for feature value array is "labelTyep - Featurei_L"
+          if (labelType >= Featurei_L) {
+            s = QString::number(xtal->getStrucFeatValues(labelType - Featurei_L));
+          } else {
+            s = xtal->getSpaceGroupSymbol();
+          }
         }
       QwtText text(s);
       text.setColor(Qt::black);
@@ -624,12 +631,15 @@ void TabPlot::plotTrends()
       case Formula_Units_T:
         label = tr("Formula Units");
         break;
-      // Features in multi-objective run. Right now, with hardness,
-      // Their index in the list of options starts from Featurei_L,
-      //   but their "shown" index starts from 1; so we have "ind - Featurei_T + 1"
-      case Featurei_T ... Featuref_T:
-        label = tr("Feature%1").arg(ind - Featurei_T + 1);
-        break;
+      default:
+        // Features in multi-objective run. Since there is no fixed number of
+        //   features; and MSVC does not support "case range", we put them
+        //   under "default".
+        // Their index in the list of options starts from Featurei_T,
+        //   but their "shown" index starts from 1; so we have "ind - Featurei_T + 1"
+        if (ind >= Featurei_T) {
+          label = tr("Feature%1").arg(ind - Featurei_T + 1);
+        }
       }
     if (j == 0)
       ui.plot->setXTitle(label);

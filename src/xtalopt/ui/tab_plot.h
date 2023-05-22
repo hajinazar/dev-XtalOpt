@@ -58,11 +58,11 @@ public:
     Volume_T,
     Volume_per_FU_T,
     Formula_Units_T,
-    // The feature entries: up to 50 entries will appear in the menu only; if multi-objective run.
-    // Note: (1) Always put Feature* entries right after the last "fixed" entry (previous ones)!
-    //       (2) Don't ever add any entries between below Feature* entries!
-    Featurei_T,
-    Featuref_T = Featurei_T + 50
+    // The feature entries: these will appear in the menu only if it's a multi-objective run.
+    // Note: since the number of features is not fixed:
+    //       (1) Any non-feature entry should be added before this line!
+    //       (2) Don't ever add any entries after this line!
+    Featurei_T
     //
   };
 
@@ -86,11 +86,11 @@ public:
     Structure_L,
     StructureID_L,
     Formula_Units_L,
-    // The feature entries: up to 50 entries will appear in the menu; only if multi-objective run.
-    // Note: (1) Always put Feature* entries right after the last "fixed" entry (previous ones)!
-    //       (2) Don't ever add any entries between below Feature* entries!
-    Featurei_L,
-    Featuref_L = Featurei_L + 50
+    // The feature entries: these will appear in the menu only if it's a multi-objective run.
+    // Note: since the number of features is not fixed:
+    //       (1) Any non-feature entry should be added before this line!
+    //       (2) Don't ever add any entries after this line!
+    Featurei_L
     //
   };
 

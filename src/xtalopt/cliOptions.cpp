@@ -608,6 +608,14 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
           return false;
         }
 
+        // Check if psf file exists
+        QFileInfo check_file(filename);
+        if (!check_file.exists() || !check_file.isFile()) {
+          qDebug() << "Error: the PSF file for atom type" << symbol
+                   << "was not found at " << filename;
+          return false;
+        }
+
         hash.insert(symbol, QVariant(filename));
       }
 
@@ -656,6 +664,14 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
           QString tmp = "potcarFile " + symbol +
                         " = /path/to/vasp_potcars/symbol/POTCAR";
           qDebug() << tmp;
+          return false;
+        }
+
+        // Check if potcar file exists
+        QFileInfo check_file(filename);
+        if (!check_file.exists() || !check_file.isFile()) {
+          qDebug() << "Error: the POTCAR file for atom type" << symbol
+                   << "was not found at " << filename;
           return false;
         }
 
