@@ -16,11 +16,20 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="2" column="0">
     <widget class="QCheckBox" name="cb_redo_features">
+     <property name="mouseTracking">
+      <bool>true</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If selected, the code will perform the &amp;quot;jobFailAction&amp;quot; task for any structure that is marked for dismissing by a filtration feature.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>Handle structures discarded in filtration</string>
+     </property>
+     <property name="tristate">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -30,8 +39,36 @@
       <string>Added Features</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="2" column="0">
+       <widget class="QPushButton" name="push_removeFeatures">
+        <property name="minimumSize">
+         <size>
+          <width>124</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>124</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove the selected feature from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Remove feature</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1" rowspan="3">
        <widget class="QTableWidget" name="table_features">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="editTriggers">
          <set>QAbstractItemView::NoEditTriggers</set>
         </property>
@@ -78,28 +115,6 @@
         </column>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="push_removeFeatures">
-        <property name="minimumSize">
-         <size>
-          <width>124</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>124</width>
-          <height>32</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove the selected feature from the list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Remove feature</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -121,196 +136,7 @@
       <string>Add a New Feature</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="4">
-       <widget class="QLabel" name="label_3">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Weight</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="label_2">
-        <property name="maximumSize">
-         <size>
-          <width>180</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>User-defined script</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="label">
-        <property name="maximumSize">
-         <size>
-          <width>130</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Optimization type</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="combo_type">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>170</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Optimization type for the feature. Possible options are:&lt;/p&gt;&lt;p&gt;1- Minimization&lt;/p&gt;&lt;p&gt;2- Maximization&lt;/p&gt;&lt;p&gt;3- Filtration&lt;/p&gt;&lt;p&gt;4- Hardness:AFLOW-ML &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <property name="currentText">
-         <string>Minimization</string>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>Minimization</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Maximization</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Filtration</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Hardness:AFLOW-ML</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QDoubleSpinBox" name="sb_weight">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>200</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Optimization weight for the feature.&lt;/p&gt;&lt;p&gt;(1) This should be a float number, larger than or equal to 0.0, and less than or equal to 1.0.&lt;/p&gt;&lt;p&gt;(2) For &amp;quot;Filtration&amp;quot; task, this will be set to 0.0 by the code.&lt;/p&gt;&lt;p&gt;(3) Total weight for all features should be less than or equal to 1.0.&lt;/p&gt;&lt;p&gt;(4) If this is set to zero for any non-Filtration feature; that feature is being calculated but will not be included in the optimization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="maximum">
-         <double>1.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.050000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="line_path">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The user-defined &amp;quot;executable&amp;quot; script which performs the calculations for feature.&lt;/p&gt;&lt;p&gt;(1) This entry should include &amp;quot;abolute&amp;quot; path to avoid issues in locating the script.&lt;/p&gt;&lt;p&gt;(2) This field is mandatory for min/max/fil optimization types, but will be ignored for Hardness:AFLOW-ML calculations.&lt;/p&gt;&lt;p&gt;(3) For a remote job the script should be on the remote cluster, while for a local run it should be in a local path.&lt;/p&gt;&lt;p&gt;(4) This field should not contain any white space character in between.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="label_4">
-        <property name="maximumSize">
-         <size>
-          <width>130</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>11</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Output file name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="line_output">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Output file name that user-defined script generates. Basically, this is a text file that contains a digit (integer or float) as the &amp;quot;first entry&amp;quot; of its &amp;quot;first line&amp;quot;; which is being read by XtalOpt.&lt;/p&gt;&lt;p&gt;(1) This entry is ignored for Hardness:AFLOW-ML calculations.&lt;/p&gt;&lt;p&gt;(2) This entry should not contain any white space character in between.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
+      <item row="1" column="0">
        <widget class="QPushButton" name="push_addFeatures">
         <property name="minimumSize">
          <size>
@@ -324,6 +150,9 @@
           <height>32</height>
          </size>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a feature:&lt;/p&gt;&lt;p&gt;(1) A zero weight for any feature results in calculation of that feature; but excluding that from optimization.&lt;/p&gt;&lt;p&gt;(2) Sum of the total weight for introduced features can't exceed 1.0.&lt;/p&gt;&lt;p&gt;(3) Path to script and output filename entries can't contain any white space character.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
@@ -332,18 +161,279 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+      <item row="0" column="1" rowspan="2">
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string/>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="1" column="5">
+          <widget class="QLineEdit" name="line_path">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1000</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The user-defined &amp;quot;executable&amp;quot; script which performs the calculations for feature.&lt;/p&gt;&lt;p&gt;(1) This entry should include &amp;quot;abolute&amp;quot; path to avoid issues in locating the script.&lt;/p&gt;&lt;p&gt;(2) This field is mandatory for min/max/fil optimization types, but will be ignored for Hardness:AFLOW-ML calculations.&lt;/p&gt;&lt;p&gt;(3) For a remote job the script should be on the remote cluster, while for a local run it should be in a local path.&lt;/p&gt;&lt;p&gt;(4) This field should not contain any white space character in between.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="6">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="3" column="5">
+          <widget class="QLineEdit" name="line_output">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1000</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Output file name that user-defined script generates. Basically, this is a text file that contains a digit (integer or float) as the &amp;quot;first entry&amp;quot; of its &amp;quot;first line&amp;quot;; which is being read by XtalOpt.&lt;/p&gt;&lt;p&gt;(1) This entry is ignored for Hardness:AFLOW-ML calculations.&lt;/p&gt;&lt;p&gt;(2) This entry should not contain any white space character in between.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QComboBox" name="combo_type">
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="mouseTracking">
+            <bool>true</bool>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::StrongFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Optimization type for the feature. Possible options are:&lt;/p&gt;&lt;p&gt;1- Minimization&lt;/p&gt;&lt;p&gt;2- Maximization&lt;/p&gt;&lt;p&gt;3- Filtration&lt;/p&gt;&lt;p&gt;4- Hardness:AFLOW-ML &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="currentText">
+            <string>Minimization</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Minimization</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Maximization</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Filtration</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Hardness:AFLOW-ML</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="label_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>130</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>130</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Optimization type</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QDoubleSpinBox" name="sb_weight">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>180</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="mouseTracking">
+            <bool>true</bool>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::StrongFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Optimization weight for the feature.&lt;/p&gt;&lt;p&gt;(1) This should be a float number, larger than or equal to 0.0, and less than or equal to 1.0.&lt;/p&gt;&lt;p&gt;(2) For &amp;quot;Filtration&amp;quot; task, this will be set to 0.0 by the code.&lt;/p&gt;&lt;p&gt;(3) Total weight for all features should be less than or equal to 1.0.&lt;/p&gt;&lt;p&gt;(4) If this is set to zero for any non-Filtration feature; that feature is being calculated but will not be included in the optimization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::UpDownArrows</enum>
+           </property>
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.050000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QLabel" name="label_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>User-defined script</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="4">
+          <widget class="QLabel" name="label_4">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Output file name</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -352,13 +442,10 @@
  </widget>
  <tabstops>
   <tabstop>combo_type</tabstop>
+  <tabstop>sb_weight</tabstop>
   <tabstop>line_path</tabstop>
   <tabstop>line_output</tabstop>
-  <tabstop>sb_weight</tabstop>
-  <tabstop>push_addFeatures</tabstop>
   <tabstop>cb_redo_features</tabstop>
-  <tabstop>table_features</tabstop>
-  <tabstop>push_removeFeatures</tabstop>
  </tabstops>
  <resources/>
  <connections/>

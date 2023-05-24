@@ -48,6 +48,7 @@ TabMo::TabMo(GlobalSearch::AbstractDialog* parent, XtalOpt* p)
   connect(ui.combo_type, SIGNAL(activated(int)), this, SLOT(setActiveButtonAdd()));
   connect(ui.line_output, SIGNAL(returnPressed()), this, SLOT(setActiveButtonAdd()));
   connect(ui.line_path, SIGNAL(returnPressed()), this, SLOT(setActiveButtonAdd()));
+  connect(ui.sb_weight, SIGNAL(editingFinished()), this, SLOT(setActiveButtonAdd()));
   connect(ui.table_features, SIGNAL(cellClicked(int, int)), this, SLOT(setActiveButtonRemove()));
 
   // Update fields with opt type selection
@@ -187,6 +188,7 @@ void TabMo::addFeatures()
   ui.line_path->clear();
   ui.sb_weight->setValue(0.0);
   ui.combo_type->setCurrentIndex(0);
+  ui.push_addFeatures->setDefault(false);
 }
 
 void TabMo::removeFeatures()
@@ -215,6 +217,7 @@ void TabMo::removeFeatures()
       xtalopt->featureListAdd(tmpfeatureslst.at(i));
     updateOptimizationInfo();
   }
+  ui.push_removeFeatures->setDefault(false);
 }
 
 void TabMo::updateFeaturesTable()
