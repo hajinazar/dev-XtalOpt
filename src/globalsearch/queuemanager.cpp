@@ -626,7 +626,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
   else {
 
     // Is there any feature or aflow-hardness to calculate?
-    if (m_opt->m_calculateFeatures > 0 || m_opt->m_calculateHardness) 
+    if (m_opt->m_calculateFeatures || m_opt->m_calculateHardness) 
     {
       // Perform feature/aflow-hardness calculation prior to marking structure as optimized.
       s->resetStrucFeat();
