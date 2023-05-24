@@ -595,13 +595,24 @@ void OptBase::finishFeatureCalculations(Structure* s)
       QTextStream in(&file);
       QString fline = in.readLine();
       QStringList flist = fline.split(" ", QString::SkipEmptyParts);
-      if (flist.size() >= 1) 
+      if (flist.size() >= 1) { 
+        // The below line, is to read the first entry of the first line.
+        // It can change the default "false" flags to true if a value
+        //   is read successfully.
         flagv = flist.at(0).toDouble(&flags);
+      } else {
+        // If the output file is empty; the default "false" for flags
+        //   will be preserved, and will mark the feature as failed.
+        error(tr("The output file for feature %1 for structure %2 is empty!")
+            .arg(i+1).arg(s->getIDString()));
+      }
       file.close();
     } else {
-      error(tr("No output file for feature %1 was found for structure %2")
+      // Here, the "false" value of flags will result in marking the
+      //   feature as failed; so we can attempt reading the results of
+      //   other features just for the book-keeping purpose.
+      error(tr("The output file for feature %1 for structure %2 was not found!")
           .arg(i+1).arg(s->getIDString()));
-      return;
     }
 
     tmp_values.push_back(flagv);
