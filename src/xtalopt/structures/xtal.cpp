@@ -2189,7 +2189,7 @@ QHash<QString, QVariant> Xtal::getFingerprint()
   return fp;
 }
 
-QString Xtal::getResultsEntry(bool includeHardness, int features_num, QList<double> features_val) const
+QString Xtal::getResultsEntry(bool includeHardness, int optstep, int features_num, QList<double> features_val) const
 {
   QString status;
   switch (getStatus()) {
@@ -2224,10 +2224,12 @@ QString Xtal::getResultsEntry(bool includeHardness, int features_num, QList<doub
       break;
     case StepOptimized:
     case WaitingForOptimization:
+    case Submitted:
+      status = "In progress " + QString::number(optstep);
+      break;
     case InProcess:
     case Empty:
     case Updating:
-    case Submitted:
     default:
       status = "In progress";
       break;

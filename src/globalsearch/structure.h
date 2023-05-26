@@ -477,7 +477,7 @@ public:
    * @sa getResultsHeader
    * @sa OptBase::save
    */
-  virtual QString getResultsEntry(bool includeHardness, int features_num= 0, QList<double> features_val= {}) const;
+  virtual QString getResultsEntry(bool includeHardness, int optstep, int features_num= 0, QList<double> features_val= {}) const;
 
   /** Find the smallest separation between all atoms in the
    * Structure.

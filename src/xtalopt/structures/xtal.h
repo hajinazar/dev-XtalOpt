@@ -114,7 +114,7 @@ public:
     const QHash<unsigned int, XtalCompositionStruct>& limits,
     int* atom1 = nullptr, int* atom2 = nullptr, double* IAD = nullptr);
   QHash<QString, QVariant> getFingerprint();
-  virtual QString getResultsEntry(bool includeHardness, int features_num = 0, QList<double> features_val = {}) const override;
+  virtual QString getResultsEntry(bool includeHardness, int optstep, int features_num = 0, QList<double> features_val = {}) const override;
   virtual QString getResultsHeader(bool includeHardness, int features_num = 0) const override
   {
     QString out = QString("%1 %2 %3 %4 %5")

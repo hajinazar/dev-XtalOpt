@@ -930,7 +930,8 @@ bool OptBase::save(QString stateFilename, bool notify)
       if (!structure)
         continue; // In case there was a problem copying.
       QReadLocker structureLocker(&structure->lock());
-      out << structure->getResultsEntry(m_calculateHardness, getFeaturesNum(), structure->getStrucFeatValuesVec()) << endl;
+      out << structure->getResultsEntry(m_calculateHardness, structure->getCurrentOptStep(),
+                                        getFeaturesNum(), structure->getStrucFeatValuesVec()) << endl;
       structureLocker.unlock();
       if (notify && m_dialog) {
         m_dialog->stopProgressUpdate();

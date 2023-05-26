@@ -1203,7 +1203,8 @@ void QueueManager::startJob()
     qDebug() << "Structure"
              << QString::number(s->getGeneration()) + "x" +
                   QString::number(s->getIDNumber())
-             << "has been submitted!";
+             << "has been submitted"
+             << "step" << s->getCurrentOptStep();
   }
 
   emit structureSubmitted(s);

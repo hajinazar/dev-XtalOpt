@@ -870,7 +870,7 @@ bool Structure::addAtomRandomly(uint atomicNumber, double minIAD, double maxIAD,
   return true;
 }
 
-QString Structure::getResultsEntry(bool includeHardness, int features_num, QList<double> features_val) const
+QString Structure::getResultsEntry(bool includeHardness, int optstep, int features_num, QList<double> features_val) const
 {
   QString status;
   switch (getStatus()) {
@@ -905,10 +905,12 @@ QString Structure::getResultsEntry(bool includeHardness, int features_num, QList
       break;
     case StepOptimized:
     case WaitingForOptimization:
+    case Submitted:
+      status = "In progress " + QString::number(optstep);
+      break;
     case InProcess:
     case Empty:
     case Updating:
-    case Submitted:
     default:
       status = "In progress";
       break;

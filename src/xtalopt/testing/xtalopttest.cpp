@@ -251,10 +251,12 @@ void XtalOptTest::writeDataFile(int run)
         break;
       case Xtal::StepOptimized:
       case Xtal::WaitingForOptimization:
+      case Xtal::Submitted:
+        out << "In progress " << xtal->getCurrentOptStep();
+        break;
       case Xtal::InProcess:
       case Xtal::Empty:
       case Xtal::Updating:
-      case Xtal::Submitted:
       default:
         out << "In progress";
         break;
