@@ -54,6 +54,7 @@ TabMo::TabMo(GlobalSearch::AbstractDialog* parent, XtalOpt* p)
   // Update fields with opt type selection
   connect(ui.combo_type, SIGNAL(currentIndexChanged(const QString&)), this,
           SLOT(updateFieldsWithOptSelection(const QString&)));
+
   // Features
   connect(ui.push_addFeatures, SIGNAL(clicked()), this, SLOT(addFeatures()));
   connect(ui.push_removeFeatures, SIGNAL(clicked()), this, SLOT(removeFeatures()));
@@ -99,6 +100,8 @@ void TabMo::updateFieldsWithOptSelection(QString value_type)
   {
     ui.line_path->setDisabled(false);
     ui.line_output->setDisabled(false);
+    ui.line_path->setText("");
+    ui.line_output->setText("");
   }
 }
 
