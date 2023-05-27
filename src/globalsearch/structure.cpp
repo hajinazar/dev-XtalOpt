@@ -906,11 +906,11 @@ QString Structure::getResultsEntry(bool includeHardness, int optstep, int featur
     case StepOptimized:
     case WaitingForOptimization:
     case Submitted:
-      status = "In progress " + QString::number(optstep);
-      break;
     case InProcess:
     case Empty:
     case Updating:
+      status = "In progress " + QString::number(optstep);
+      break;
     default:
       status = "In progress";
       break;
