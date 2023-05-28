@@ -204,22 +204,5 @@
   <tabstop>push_hide</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>push_hide</sender>
-   <signal>clicked()</signal>
-   <receiver>GlobalSearchDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>840</x>
-     <y>494</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

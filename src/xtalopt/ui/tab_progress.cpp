@@ -1088,7 +1088,7 @@ void TabProgress::printFile()
       case Xtal::InProcess:
       case Xtal::Empty:
       case Xtal::Updating:
-        out << "In progress " << xtal->getCurrentOptStep();
+        out << "In progress " << xtal->getCurrentOptStep() + 1;
         break;
       default:
         out << "In progress";

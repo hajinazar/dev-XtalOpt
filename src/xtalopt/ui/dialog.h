@@ -18,6 +18,7 @@
 #include <globalsearch/ui/abstractdialog.h>
 
 #include <QObject>
+#include <QCloseEvent>
 
 namespace Ui {
 class XtalOptDialog;
@@ -57,6 +58,7 @@ public slots:
 
 private slots:
   void startSearch() override;
+  void closeEvent(QCloseEvent *bar) override;
 
 signals:
 

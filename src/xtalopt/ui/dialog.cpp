@@ -110,6 +110,17 @@ void XtalOptDialog::setMolecule(GlobalSearch::Molecule* molecule)
   m_molecule = molecule;
 }
 
+void XtalOptDialog::closeEvent(QCloseEvent *bar)
+{
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(this, "Quit", "Quit XtalOpt now?",
+                                QMessageBox::Yes|QMessageBox::No);
+  if (reply == QMessageBox::Yes)
+    bar->accept();
+  else
+    bar->ignore();
+}
+
 void XtalOptDialog::beginPlotOnlyMode()
 {
   m_tab_progress->blockSignals(true);

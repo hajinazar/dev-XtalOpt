@@ -909,7 +909,7 @@ QString Structure::getResultsEntry(bool includeHardness, int optstep, int featur
     case InProcess:
     case Empty:
     case Updating:
-      status = "In progress " + QString::number(optstep);
+      status = "In progress " + QString::number(optstep + 1);
       break;
     default:
       status = "In progress";
