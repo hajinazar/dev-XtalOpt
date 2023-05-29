@@ -212,6 +212,7 @@ static inline double calculateProb(double currentEnthalpy,
                                    double lowestHardness,
                                    double highestHardness,
                                    double hardnessWeight,
+                                   QString strucID,
                                    int    features_num = 0,
                                    QList<double> features_wgt={},
                                    QList<OptBase::FeatureType> features_opt={},
@@ -225,6 +226,7 @@ static inline double calculateProb(double currentEnthalpy,
   double fitnessTotal   = 0.0; // total fitness (to be returned)
   double partialContrib; // Auxiliary variable for debug output
   double partialFitness; // Auxiliary variable for debug output
+  QString outs="";       // For debug output
 
   // If no features calculation; features_num is 0 at this point.
   // Also, if there are any filtration features, they have a
@@ -243,10 +245,9 @@ static inline double calculateProb(double currentEnthalpy,
 partialContrib = (features_opt[i] == OptBase::FT_Min) ?
  (features_max[i]-features_val[i])/featuresSpread : (features_val[i]-features_min[i])/featuresSpread;
 partialFitness = partialContrib * features_wgt[i];
-QString outs = QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
  .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5).arg(features_min[i],10,'f',5)
  .arg(features_max[i],10,'f',5).arg(partialContrib,7,'f',5).arg(features_wgt[i],5,'f',3).arg(partialFitness,7,'f',5);
-qDebug().noquote() << outs;
 #endif
 //
     }
@@ -259,10 +260,9 @@ qDebug().noquote() << outs;
 #ifdef FEATURES_DEBUG
 partialContrib = (currentHardness-lowestHardness)/hardnessSpread;
 partialFitness = partialContrib * hardnessWeight;
-QString outs = QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
   .arg(-1,2).arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
   .arg(highestHardness,10,'f',5).arg(partialContrib,7,'f',5).arg(hardnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
-qDebug().noquote() << outs;
 #endif
 //
   }
@@ -271,14 +271,14 @@ qDebug().noquote() << outs;
   fitnessTotal += (1.0 - fitnessWeight) * (highestEnthalpy - currentEnthalpy) / enthalpySpread;
 //
 #ifdef FEATURES_DEBUG
-if (features_num > 0) { // to print this only once!
 partialContrib = (highestEnthalpy-currentEnthalpy)/enthalpySpread;
 partialFitness = partialContrib * (1.0 - fitnessWeight);
-QString outs = QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8")
+outs += QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
   .arg(0,2).arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
   .arg(highestEnthalpy,10,'f',5).arg(partialContrib,7,'f',5).arg(1.0-fitnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
+outs += QString("NOTE: struc %1   oldFitness %2   newFitness %3")
+  .arg(strucID,8).arg(partialContrib,8,'f',6).arg(fitnessTotal,8,'f',6);
 qDebug().noquote() << outs;
-}
 #endif
 //
 
@@ -355,6 +355,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
                                 lowestHardness,
                                 highestHardness,
                                 hardnessWeight,
+                                s->getIDString(),
                                 features_num,
                                 features_wgt,
                                 features_opt,
@@ -362,22 +363,6 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
                                 features_min,
                                 features_max);
     probs.append(QPair<Structure*, double>(s, prob));
-    
-#ifdef FEATURES_DEBUG
-if (features_num > 0) {
-double prob0 = calculateProb(s->getEnthalpyPerFU(),
-                             s->vickersHardness(),
-                             lowestEnthalpy,
-                             highestEnthalpy,
-                             lowestHardness,
-                             highestHardness,
-                             hardnessWeight,
-                             0);
-QString outs = QString("NOTE: struc %1   oldFitness %2   newFitness %3")
-  .arg(s->getIDString(),7).arg(prob0,8,'f',6).arg(prob,8,'f',6);
-qDebug().noquote() << outs;
-}
-#endif
   }
 
   // If they are all nan, that means all the probs are equal. Just
