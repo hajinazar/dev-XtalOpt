@@ -242,10 +242,11 @@ bool LoadLevelerQueueInterface::startJob(Structure* s)
     proc.setWorkingDirectory(s->getRempath());
     proc.start(command);
     proc.waitForFinished(-1);
-    int timeout_ms = 60000;
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
-    m_opt->warning(tr("Executing %1, stdout %2 stderr %3").arg(command).arg(stdout_str).arg(stderr_str));
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
     m_opt->ssh()->unlockConnection(ssh);
   }
 
@@ -311,6 +312,9 @@ bool LoadLevelerQueueInterface::stopJob(Structure* s)
     proc.start(command);
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
 
   s->setJobID(0);
@@ -580,6 +584,9 @@ QStringList LoadLevelerQueueInterface::getQueueList() const
     proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
   m_opt->ssh()->unlockConnection(ssh);
 

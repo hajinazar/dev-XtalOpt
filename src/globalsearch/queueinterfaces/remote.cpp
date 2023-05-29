@@ -25,6 +25,7 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QString>
+#include <QThread>
 
 namespace GlobalSearch {
 
@@ -126,10 +127,16 @@ bool RemoteQueueInterface::writeFiles(
         return false;
       }
     } else {
+      QString stdout_str, stderr_str;
       QProcess proc;
       QString command = "scp " + s->fileName() + "/" + (*it) + " " + s->getRempath() + "/" + (*it);
       proc.start(command);
       proc.waitForFinished();
+      stdout_str = QString(proc.readAllStandardOutput());
+      stderr_str = QString(proc.readAllStandardError());
+      if (!stderr_str.isEmpty())
+        m_opt->warning(tr("=== Executing %1 === Output %2 "
+              "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
     }
   m_opt->ssh()->unlockConnection(ssh);
   return true;
@@ -178,11 +185,11 @@ bool RemoteQueueInterface::runGenericCommand(const QString& workdir,
     proc.setWorkingDirectory(workdir);
     proc.start(command);
     proc.waitForFinished(-1);
-    int timeout_ms = 60000;
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
-    m_opt->warning(tr("Executing %1 at %2, stdout %3 stderr %4")
-        .arg(command).arg(workdir).arg(stdout_str).arg(stderr_str));
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
   m_opt->ssh()->unlockConnection(ssh);
   return true;
@@ -204,9 +211,16 @@ bool RemoteQueueInterface::copyGenericFileFromServer(const QString& rem_file,
       return false;
     }
   } else {
+    QString stdout_str, stderr_str;
+    QString command = "scp " + rem_file + " " + loc_file;
     QProcess proc;
-    proc.start("scp " + rem_file + " " + loc_file);
+    proc.start(command);
     proc.waitForFinished();
+    stdout_str = QString(proc.readAllStandardOutput());
+    stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
   m_opt->ssh()->unlockConnection(ssh);
   return true;
@@ -228,9 +242,16 @@ bool RemoteQueueInterface::copyGenericFileToServer(const QString& loc_file,
       return false;
     }
   } else {
+    QString stdout_str, stderr_str;
+    QString command = "scp " + loc_file + " " + rem_file;
     QProcess proc;
-    proc.start("scp " + loc_file + " " + rem_file);
+    proc.start(command);
     proc.waitForFinished();
+    stdout_str = QString(proc.readAllStandardOutput());
+    stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
   m_opt->ssh()->unlockConnection(ssh);
   return true;
@@ -265,14 +286,16 @@ bool RemoteQueueInterface::checkIfGenericFileExists(const QString& spath,
     m_opt->ssh()->unlockConnection(ssh);
   } else {
     m_opt->ssh()->unlockConnection(ssh);
+    QString stdout_str, stderr_str;
     QProcess proc;
-    QString stdout_str;
-    QString stderr_str;
     QString command = "find " + searchPath;
     proc.start(command);
     proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
     haystack = stdout_str.split("\n", QString::SkipEmptyParts);
   }
 
@@ -325,6 +348,9 @@ bool RemoteQueueInterface::checkIfFileExists(Structure* s,
     proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
     haystack = stdout_str.split("\n", QString::SkipEmptyParts);
   }
 
@@ -367,6 +393,9 @@ bool RemoteQueueInterface::fetchFile(Structure* s, const QString& rel_filename,
     proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
 
   m_opt->ssh()->unlockConnection(ssh);
@@ -420,6 +449,9 @@ bool RemoteQueueInterface::grepFile(Structure* s, const QString& matchText,
     proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
 
   if (matches) {
@@ -444,6 +476,11 @@ bool RemoteQueueInterface::createRemoteDirectory(Structure* structure,
   } else {
     proc.start(command);
     proc.waitForFinished();
+    stdout_str = QString(proc.readAllStandardOutput());
+    stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
     if (!stderr_str.isEmpty()) {
       return false;
     }
@@ -467,7 +504,11 @@ bool RemoteQueueInterface::cleanRemoteDirectory(Structure* structure,
     QString stdout_str, stderr_str;
     proc.start(command);
     proc.waitForFinished();
-    m_opt->warning(tr("Executing %1: gives %2 and %3").arg(command).arg(stdout_str).arg(stderr_str)); 
+    stdout_str = QString(proc.readAllStandardOutput());
+    stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
 
   return true;
@@ -505,14 +546,20 @@ bool RemoteQueueInterface::copyRemoteFilesToLocalCache(Structure* structure,
       return false;
     }
   } else {
+    QString stdout_str, stderr_str;
     QProcess proc;
     QString command = "scp -r " + structure->getRempath() + " " + structure->fileName() + ".."; 
+    // This delay is needed to make sure all output files are fully written;
+    // otherwise sometimes error occurs in reading the files.
+    QThread::msleep(3000);
+    //
     proc.start(command);
-    QString stdout_str;
-    QString stderr_str;
+    proc.waitForFinished();
     stdout_str = QString(proc.readAllStandardOutput());
     stderr_str = QString(proc.readAllStandardError());
-    proc.waitForFinished();
+    if (!stderr_str.isEmpty())
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
   }
   return true;
 }
