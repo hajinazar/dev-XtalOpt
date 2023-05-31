@@ -244,6 +244,16 @@ public slots:
 
 protected:
   /**
+   * These functions are corresponding to those defined afterwards;
+   * and defined only for the case of local-remote runs so that
+   * we can avoid making ssh connections.
+   */
+  bool createLocalRemDirectory(Structure* structure) const;
+  bool cleanLocalRemDirectory(Structure* structure) const;
+  bool copyLocalRemFilesToLocalCache(Structure* structure) const;
+  bool logLocalRemErrorDirectory(Structure* structure) const;
+
+  /**
    * Create a working directory for \a structure on the remote
    * cluster.
    *

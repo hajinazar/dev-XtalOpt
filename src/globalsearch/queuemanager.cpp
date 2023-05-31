@@ -132,8 +132,10 @@ void QueueManager::setupConnections()
   // opt connections
   connect(this, SIGNAL(needNewStructure()), m_opt, SLOT(generateNewStructure()),
           Qt::QueuedConnection);
-  connect(m_opt, SIGNAL(doneWithFeatures(Structure*)), this, SLOT(processFeatureCalculation(Structure*)));
-  connect(m_opt, SIGNAL(doneWithHardness(Structure*)), this, SLOT(processFeatureCalculation(Structure*)));
+  connect(m_opt, SIGNAL(doneWithFeatures(Structure*)), this,
+      SLOT(processFeatureCalculation(Structure*)));
+  connect(m_opt, SIGNAL(doneWithHardness(Structure*)), this,
+      SLOT(processFeatureCalculation(Structure*)));
 
   // re-emit connections
   connect(this, SIGNAL(structureStarted(GlobalSearch::Structure*)), this,
@@ -144,7 +146,7 @@ void QueueManager::setupConnections()
           SIGNAL(structureUpdated(GlobalSearch::Structure*)));
   connect(this, SIGNAL(structureFinished(GlobalSearch::Structure*)), this,
           SIGNAL(structureUpdated(GlobalSearch::Structure*)));
-  // This *might* slow down the gui a little bit; but helps to update cli results.txt properly.
+  // This helps to update cli results.txt properly.
   connect(this, SIGNAL(readyForFeatureCalculations(GlobalSearch::Structure*)), this,
           SIGNAL(structureUpdated(GlobalSearch::Structure*)));
 
@@ -218,8 +220,9 @@ void QueueManager::checkLoop()
 
 void QueueManager::checkTheExit()
 {
-  // This function, calls the performTheExit function depending on the type of exit.
-  // For a hard exit, it is done immediately; for a soft exit checks for no running/pending job
+  // This function, calls the performTheExit function depending 
+  //   on the type of exit. For a hard exit, it is done immediately;
+  //   while for a soft exit checks for no running/pending job.
 
   // If hard exit
   if (m_opt->m_hardExit) {
@@ -240,9 +243,10 @@ void QueueManager::checkTheExit()
     QReadLocker structureLocker(&str2->lock());
     Structure::State st = str2->getStatus();
     structureLocker.unlock();
-    if (st != Structure::Optimized && st != Structure::Killed && st != Structure::FeatureFail 
-        && st != Structure::FeatureDismiss && st != Structure::Removed 
-        && st != Structure::Duplicate && st != Structure::Supercell)
+    if (st != Structure::Optimized   && st != Structure::Killed         &&
+        st != Structure::FeatureFail && st != Structure::FeatureDismiss &&
+        st != Structure::Removed     && st != Structure::Duplicate      && 
+        st != Structure::Supercell)
       ++pending;
     else
       ++total;
@@ -251,7 +255,8 @@ void QueueManager::checkTheExit()
 
   // One more time; check the softExit flag!
   if (m_opt->m_softExit && (pending == 0 && total >= m_opt->cutoff)) {
-    m_opt->warning(tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
+    m_opt->warning(
+        tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
         .arg(m_opt->cutoff).arg(total).arg(pending));
 
     m_opt->performTheExit();
@@ -280,7 +285,8 @@ void QueueManager::checkPopulation()
 
     QWriteLocker runningTrackerLocker(m_runningTracker.rwLock());
     // Count submitted structures
-    if (state == Structure::Submitted || state == Structure::InProcess || state == Structure::FeatureCalculation) {
+    if (state == Structure::Submitted || state == Structure::InProcess ||
+        state == Structure::FeatureCalculation) {
       m_runningTracker.append(structure);
       ++submitted;
     }
@@ -607,7 +613,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
       qDebug() << "Structure"
                << QString::number(s->getGeneration()) + "x" +
                     QString::number(s->getIDNumber())
-               << "completed step" << s->getCurrentOptStep();
+               << "completed step" << s->getCurrentOptStep() + 1;
     }
 
     s->setCurrentOptStep(s->getCurrentOptStep() + 1);
@@ -628,7 +634,8 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
     // Is there any feature or aflow-hardness to calculate?
     if (m_opt->m_calculateFeatures || m_opt->m_calculateHardness) 
     {
-      // Perform feature/aflow-hardness calculation prior to marking structure as optimized.
+      // Perform feature/aflow-hardness calculation prior to 
+      //   marking structure as optimized.
       s->resetStrucFeat();
       s->setStatus(Structure::FeatureCalculation);
       locker.unlock();
@@ -657,8 +664,8 @@ void QueueManager::processFeatureCalculation(Structure* s)
   // This is the main entry into processing finished feature calculations.
   // This function:
   //   (1) starts by either doneWithFeatures and doneWithHardness signals,
-  //   (2) checks if both features and aflow-hardness calculations are finished,
-  //       and if so, hands the structure over to the appropriate
+  //   (2) checks if both features and aflow-hardness calculations are
+  //       finished, and if so, hands the structure over to the appropriate
   //       function; depending on the feature calculation status.
   // Note: 
   //   (1) If one of the above "doneWith..." signals is emitted while the 
@@ -677,7 +684,8 @@ void QueueManager::processFeatureCalculation(Structure* s)
 
   // If any of the features or aflow-hardness calculations is not finished, return
   if ((m_opt->m_calculateHardness && s->vickersHardness() < 0.0) ||
-      (m_opt->m_calculateFeatures && s->getStrucFeatStatus() == Structure::FS_NotCalculated))
+      (m_opt->m_calculateFeatures &&
+       s->getStrucFeatStatus() == Structure::FS_NotCalculated))
     return;
 
   // If it's only aflow-hardness calculation
@@ -688,8 +696,8 @@ void QueueManager::processFeatureCalculation(Structure* s)
   }
 
   // Getting here means that we have feature calculation for sure.
-  // If we have aflow-hardness, it's finished ok for sure (otherwise wouldn't be here!)
-  //     So, the overall result for status depends only on feature calculation results.
+  // If we have aflow-hardness, it's finished ok for sure; otherwise wouldn't
+  //  be here! So, the overall status depends only on feature calculation results.
   if (s->getStrucFeatStatus() == Structure::FS_Retain)
     s->setStatus(Structure::FeatureDone);
   else if (s->getStrucFeatStatus() == Structure::FS_Dismiss)
@@ -793,12 +801,14 @@ void QueueManager::handleDismissedFeature_(Structure* s)
   {
 #ifdef FEATURES_DEBUG
     QString outstr;
-    outstr.sprintf("NOTE: redo str %8s with feature outcome % 2d ( action = % 3d ) !",
+    outstr.sprintf(
+        "NOTE: redo str %8s with feature outcome % 2d ( action = % 3d ) !",
         s->getIDString().toStdString().c_str(),
         s->getStrucFeatStatus(), OptBase::FailActions(m_opt->failAction));
     qDebug() << outstr;
 #endif
-    // Update structure feature info; for the record, and to not repeat this step (we do this once)
+    // Update structure feature info; for the record, and to
+    //   not repeat this step (we do this once)
     s->setStrucFeatFailCt(s->getStrucFeatFailCt()+1);
     // save info to history; as it might be recalculated!
     s->updateAndAddFeaturesToHistory(s);
@@ -1204,7 +1214,7 @@ void QueueManager::startJob()
              << QString::number(s->getGeneration()) + "x" +
                   QString::number(s->getIDNumber())
              << "has been submitted"
-             << "step" << s->getCurrentOptStep();
+             << "step" << s->getCurrentOptStep() + 1;
   }
 
   emit structureSubmitted(s);

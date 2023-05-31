@@ -223,13 +223,9 @@ bool LoadLevelerQueueInterface::startJob(Structure* s)
 
   QWriteLocker wlocker(&s->lock());
 
-  QString command = (m_opt->m_localQueue) ?
-    m_submitCommand + " job.ll" :
-    "cd \"" + s->getRempath() + "\" && " + m_submitCommand + " job.ll";
-
-  QString stdout_str;
-  QString stderr_str;
+  QString command, stdout_str, stderr_str;
   if (!m_opt->m_localQueue) {
+    command = "cd \"" + s->getRempath() + "\" && " + m_submitCommand + " job.ll";
     int ec;
     if (!ssh->execute(command, stdout_str, stderr_str, ec) || ec != 0) {
       m_opt->warning(tr("Error executing %1: %2").arg(command).arg(stderr_str));
@@ -238,6 +234,7 @@ bool LoadLevelerQueueInterface::startJob(Structure* s)
     }
     m_opt->ssh()->unlockConnection(ssh);
   } else {
+    command = m_submitCommand + " job.ll";
     QProcess proc;
     proc.setWorkingDirectory(s->getRempath());
     proc.start(command);
