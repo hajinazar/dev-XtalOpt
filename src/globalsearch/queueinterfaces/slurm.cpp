@@ -211,6 +211,7 @@ bool SlurmQueueInterface::startJob(Structure* s)
 {
   QWriteLocker wlocker(&s->lock());
   QString command, stdout_str, stderr_str;
+
   if (m_opt->m_localQueue) {
     command = m_submitCommand + " job.slurm";
     QProcess proc;
@@ -292,6 +293,7 @@ bool SlurmQueueInterface::stopJob(Structure* s)
       }
       return true;
     }
+
     QProcess proc;
     proc.start(command);
     stdout_str = QString(proc.readAllStandardOutput());
@@ -318,6 +320,7 @@ bool SlurmQueueInterface::stopJob(Structure* s)
       m_opt->ssh()->unlockConnection(ssh);
       return true;
     }
+
     if (!ssh->execute(command, stdout_str, stderr_str, ec) || ec != 0) {
       // Most likely job is already gone from queue.
       ret = false;
@@ -567,6 +570,7 @@ QStringList SlurmQueueInterface::getQueueList() const
     if (!stderr_str.isEmpty()) {
       m_opt->warning(tr("=== Executing %1 === Output %2 "
             "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
+      queueTimeStamp = QDateTime::currentDateTime();
       QStringList ret(m_queueData);
       return ret;
     }
