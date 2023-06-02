@@ -25,7 +25,6 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QString>
-#include <QThread>
 
 namespace GlobalSearch {
 
@@ -431,47 +430,63 @@ bool RemoteQueueInterface::grepFile(Structure* s, const QString& matchText,
   // Since network latency / transfer rates are much slower than
   // reading the file, call grep on the remote server and only
   // transfer back the matches.
+  Qt::CaseSensitivity ces = Qt::CaseSensitive;
   QString flags = "";
   if (!caseSensitive) {
     flags = "-i";
+    ces = Qt::CaseInsensitive;
   }
   QString stdout_str;
   QString stderr_str;
   int ec;
 
   if (m_opt->m_localQueue) {
-    QProcess proc;
-    QString command;
-    command = QString("grep %1 '%2' %3/%4").arg(flags).arg(matchText).arg(s->getRempath()).arg(filename);
-    proc.start(command);
-    proc.waitForFinished();
-    stdout_str = QString(proc.readAllStandardOutput());
-    stderr_str = QString(proc.readAllStandardError());
-  } else {
-    SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
-    if (ssh == nullptr) {
-      m_opt->warning(tr("Cannot connect to ssh server"));
-      return false;
-    }
-    if (!ssh->execute(QString("grep %1 '%2' %3/%4")
-          .arg(flags)
-          .arg(matchText)
-          .arg(s->getRempath())
-          .arg(filename),
-          stdout_str, stderr_str, ec)) {
-      m_opt->ssh()->unlockConnection(ssh);
-      return false;
-    }
     if (exitcode) {
-      *exitcode = ec;
+      *exitcode = 1;
     }
-    m_opt->ssh()->unlockConnection(ssh);
-  } 
+    // Read the file
+    QFile infile(s->getRempath() + "/" + filename);
+    if (!infile.open(QFile::ReadOnly | QFile::Text)) {
+      return false;
+    }
+    QTextStream in (&infile);
+    QString line;
+    do {
+      line = in.readLine();
+      if (line.contains(matchText, ces)) {
+        if (matches) {
+          *matches << line;
+        }
+        if (exitcode) {
+          *exitcode = 0;
+        }
+      }
+    } while (!line.isNull());
+    return true;
+  }
 
+  // If its not a local-remote run; we start from here!
+  SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
+  if (ssh == nullptr) {
+    m_opt->warning(tr("Cannot connect to ssh server"));
+    return false;
+  }
+  if (!ssh->execute(QString("grep %1 '%2' %3/%4")
+        .arg(flags)
+        .arg(matchText)
+        .arg(s->getRempath())
+        .arg(filename),
+        stdout_str, stderr_str, ec)) {
+    m_opt->ssh()->unlockConnection(ssh);
+    return false;
+  }
+  if (exitcode) {
+    *exitcode = ec;
+  }
+  m_opt->ssh()->unlockConnection(ssh);
   if (matches) {
     *matches = stdout_str.split('\n', QString::SkipEmptyParts);
   }
-
   return true;
 }
 
@@ -570,9 +585,6 @@ bool RemoteQueueInterface::cleanLocalRemDirectory(Structure* structure) const
 
 bool RemoteQueueInterface::copyLocalRemFilesToLocalCache(Structure* structure) const
 {
-  // This delay is needed to make sure all output files are properly written.
-  QThread::sleep(3);
-  //
   QString stdout_str, stderr_str;
   QProcess proc;
   QString command = "scp -r " + structure->getRempath() + " " + structure->fileName() + ".."; 
@@ -601,9 +613,14 @@ bool RemoteQueueInterface::logLocalRemErrorDirectory(Structure* structure) const
   path += (QString::number(structure->getGeneration()) + "x" +
            QString::number(structure->getIDNumber()));
 
+  QDir dir;
+  if (!dir.mkpath(path)) {
+    m_opt->warning("Error: could not create error directory " + path);
+  }
+
   QString stdout_str, stderr_str;
   QProcess proc;
-  QString command = "cp -r " + structure->getRempath() + " " + path;
+  QString command = "scp -r " + structure->getRempath() + " " + path;
 
   proc.start(command);
   proc.waitForFinished();
