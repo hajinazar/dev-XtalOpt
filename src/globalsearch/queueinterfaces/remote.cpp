@@ -576,8 +576,17 @@ bool RemoteQueueInterface::cleanLocalRemDirectory(Structure* structure) const
   QDir dir(structure->getRempath());
   dir.setNameFilters(QStringList() << "*");
   dir.setFilter(QDir::Files);
+  bool ok = true;
   foreach(QString dirFile, dir.entryList()) {
-    dir.remove(dirFile);
+    if (!dir.remove(dirFile)) {
+      ok = false;
+    }
+  }
+
+  if (!ok) {
+    m_opt->warning(
+        tr("Error clearing remote directory %1").arg(structure->getRempath()));
+    return false;
   }
 
   return true;
