@@ -241,12 +241,11 @@ bool Optimizer::update(Structure* structure)
   }
 
   // Try to read all files in outputFileNames
-  ok = false;
+  ok = true;
   for (int i = 0; i < m_outputFilenames.size(); i++) {
-    if (read(structure,
+    if (!read(structure,
              structure->fileName() + "/" + m_outputFilenames.at(i))) {
-      ok = true;
-      break;
+      ok = false;
     }
   }
   if (!ok) {
@@ -265,12 +264,11 @@ bool Optimizer::load(Structure* structure)
   QWriteLocker locker(&structure->lock());
 
   // Try to read all files in outputFileNames
-  bool ok = false;
+  bool ok = true;
   for (int i = 0; i < m_outputFilenames.size(); i++) {
-    if (read(structure,
+    if (!read(structure,
              structure->fileName() + "/" + m_outputFilenames.at(i))) {
-      ok = true;
-      break;
+      ok = false;
     }
   }
   if (!ok) {
