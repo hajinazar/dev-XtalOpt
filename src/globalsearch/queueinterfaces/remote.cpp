@@ -102,7 +102,7 @@ bool RemoteQueueInterface::writeFiles(
 
   // Copy to remote
   if (m_opt->m_localQueue) {
-    if (!createLocalRemDirectory(s) || !cleanLocalRemDirectory(s))
+    if (!lq_createRemoteDirectory(s) || !lq_cleanRemoteDirectory(s))
       return false;
     for (QStringList::const_iterator it = filenames.constBegin(),
         it_end = filenames.constEnd(); it != it_end; ++it) {
@@ -148,11 +148,8 @@ bool RemoteQueueInterface::writeFiles(
 
 bool RemoteQueueInterface::prepareForStructureUpdate(Structure* s) const
 {
-
-  // This delay is needed to make sure all output files are fully written;
-  //   for local-remote runs sometimes quickly copying files causes problems!
   if (m_opt->m_localQueue) {
-    return copyLocalRemFilesToLocalCache(s);
+    return lq_copyRemoteFilesToLocalCache(s);
   } else {
     SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
     if (ssh == nullptr) {
@@ -465,7 +462,7 @@ bool RemoteQueueInterface::grepFile(Structure* s, const QString& matchText,
     return true;
   }
 
-  // If its not a local-remote run; we start from here!
+  // If its not a local-remote run; it start from here!
   SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
   if (ssh == nullptr) {
     m_opt->warning(tr("Cannot connect to ssh server"));
@@ -561,16 +558,15 @@ bool RemoteQueueInterface::copyRemoteFilesToLocalCache(Structure* structure,
   return true;
 }
 
-bool RemoteQueueInterface::createLocalRemDirectory(Structure* structure) const
+bool RemoteQueueInterface::lq_createRemoteDirectory(Structure* structure) const
 {
   QDir dir;
   return dir.mkpath(structure->getRempath());
 }
 
-bool RemoteQueueInterface::cleanLocalRemDirectory(Structure* structure) const
+bool RemoteQueueInterface::lq_cleanRemoteDirectory(Structure* structure) const
 {
-  // This is written only for the case of local-remote runs: localQueue
-  //   to be called from the main routine: cleanRemoteDirectory
+  // This is written only for the case of local-remote runs
   // Since this is, basically, a local path, we can just remove
   //   the directory content with native Qt functions.
   QDir dir(structure->getRempath());
@@ -592,7 +588,7 @@ bool RemoteQueueInterface::cleanLocalRemDirectory(Structure* structure) const
   return true;
 }
 
-bool RemoteQueueInterface::copyLocalRemFilesToLocalCache(Structure* structure) const
+bool RemoteQueueInterface::lq_copyRemoteFilesToLocalCache(Structure* structure) const
 {
   QString stdout_str, stderr_str;
   QProcess proc;
@@ -609,7 +605,7 @@ bool RemoteQueueInterface::copyLocalRemFilesToLocalCache(Structure* structure) c
   return true;
 }
 
-bool RemoteQueueInterface::logLocalRemErrorDirectory(Structure* structure) const
+bool RemoteQueueInterface::lq_logErrorDirectory(Structure* structure) const
 {
   QString path = this->m_opt->filePath;
 

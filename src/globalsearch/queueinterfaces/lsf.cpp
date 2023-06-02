@@ -289,11 +289,11 @@ bool LsfQueueInterface::stopJob(Structure* s)
   if (m_opt->m_localQueue) {
     // Log error dir if needed
     if (log_errors)
-      this->logLocalRemErrorDirectory(s);
+      this->lq_logErrorDirectory(s);
     // jobid has not been set, cannot delete!
     if (s->getJobID() == 0) {
       if (cln_remote) {
-        this->cleanLocalRemDirectory(s);
+        this->lq_cleanRemoteDirectory(s);
       }
       return true;
     }
@@ -521,7 +521,20 @@ QStringList LsfQueueInterface::getQueueList() const
   // Valid exit codes for grep: (0) matches found, execution successful
   //                            (1) no matches found, execution successful
   //                            (2) execution unsuccessful
-  if (!m_opt->m_localQueue) {
+  if (m_opt->m_localQueue) {
+    QProcess proc;
+    proc.start(command);
+    proc.waitForFinished();
+    stdout_str = QString(proc.readAllStandardOutput());
+    stderr_str = QString(proc.readAllStandardError());
+    if (!stderr_str.isEmpty()) {
+      m_opt->warning(tr("=== Executing %1 === Output %2 "
+            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
+      queueTimeStamp = QDateTime::currentDateTime();
+      QStringList ret(m_queueData);
+      return ret;
+    }
+  } else {
     // Get SSH connection
     SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
     if (ssh == nullptr) {
@@ -545,19 +558,6 @@ QStringList LsfQueueInterface::getQueueList() const
       return ret;
     }
     m_opt->ssh()->unlockConnection(ssh);
-  } else {
-    QProcess proc;
-    proc.start(command);
-    proc.waitForFinished();
-    stdout_str = QString(proc.readAllStandardOutput());
-    stderr_str = QString(proc.readAllStandardError());
-    if (!stderr_str.isEmpty()) {
-      m_opt->warning(tr("=== Executing %1 === Output %2 "
-            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
-      queueTimeStamp = QDateTime::currentDateTime();
-      QStringList ret(m_queueData);
-      return ret;
-    }
   }
 
   queueData = stdout_str.split("\n", QString::SkipEmptyParts);

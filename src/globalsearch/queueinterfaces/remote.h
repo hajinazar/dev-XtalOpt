@@ -248,10 +248,10 @@ protected:
    * and defined only for the case of local-remote runs so that
    * we can avoid making ssh connections.
    */
-  bool createLocalRemDirectory(Structure* structure) const;
-  bool cleanLocalRemDirectory(Structure* structure) const;
-  bool copyLocalRemFilesToLocalCache(Structure* structure) const;
-  bool logLocalRemErrorDirectory(Structure* structure) const;
+  bool lq_createRemoteDirectory(Structure* structure) const;
+  bool lq_cleanRemoteDirectory(Structure* structure) const;
+  bool lq_copyRemoteFilesToLocalCache(Structure* structure) const;
+  bool lq_logErrorDirectory(Structure* structure) const;
 
   /**
    * Create a working directory for \a structure on the remote
