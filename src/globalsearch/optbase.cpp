@@ -220,67 +220,83 @@ static inline double calculateProb(double currentEnthalpy,
                                    QList<double> features_min={},
                                    QList<double> features_max={})
 {
+  // General note: if the spread for any feature/property is zero (is less than 1.0e-8);
+  //   we take its contribution to be zero so it does not suppress the effect of the other
+  //   features. Otherwise, this single feature will make the whole prob to be "nan" while
+  //   there might be other contributing features with meaningful values.
+  // So, we calculate "partialFitns" for each feature as its raw fitness, and depending
+  //   on the spread correct it to get the "correctFitns". Then multiply it into corresponding
+  //   weight to obtain the actual contribution of that feature to the total fitness.
+
   double enthalpySpread = highestEnthalpy - lowestEnthalpy;
   double hardnessSpread = highestHardness - lowestHardness;
-  double fitnessWeight  = 0.0; // total weight
-  double fitnessTotal   = 0.0; // total fitness (to be returned)
-  double partialContrib; // Auxiliary variable for debug output
-  double partialFitness; // Auxiliary variable for debug output
-  QString outs="";       // For debug output
+  double featuresSpread;
+  double weightsTotal   = 0.0;    // total weight of all features/properties
+  double fitnessTotal   = 0.0;    // total fitness (to be returned)
+  double partialFitns;            // (raw) contribution of a single feature to total fitness
+  double correctFitns;            // corrected contrib. of a single feature (if zero spread?)
+  const double zero     = 1.0e-8; // threshold for zero spread
+  QString outs="";                // auxiliary variable for debug output
 
+  // ===== multi-objective features
   // If no features calculation; features_num is 0 at this point.
-  // Also, if there are any filtration features, they have a
-  //   "keep" status for a structure that has made it here;
-  //   no further action is needed for that feature here.
-  for(int i = 0; i < features_num; i++)
-    if (features_opt[i] != OptBase::FT_Fil) {
-      double featuresSpread = features_max[i] - features_min[i];
+  // Any Filtration feature should have a value of 1 here and zero spread.
+  for(int i = 0; i < features_num; i++) {
+      featuresSpread = features_max[i] - features_min[i];
       if (features_opt[i] == OptBase::FT_Min)
-        fitnessTotal += features_wgt[i] * (features_max[i] - features_val[i]) / featuresSpread;
-      if (features_opt[i] == OptBase::FT_Max)
-        fitnessTotal += features_wgt[i] * (features_val[i] - features_min[i]) / featuresSpread;
-      fitnessWeight += features_wgt[i];
-//
-#ifdef FEATURES_DEBUG
-partialContrib = (features_opt[i] == OptBase::FT_Min) ?
- (features_max[i]-features_val[i])/featuresSpread : (features_val[i]-features_min[i])/featuresSpread;
-partialFitness = partialContrib * features_wgt[i];
-outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
- .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5).arg(features_min[i],10,'f',5)
- .arg(features_max[i],10,'f',5).arg(partialContrib,7,'f',5).arg(features_wgt[i],5,'f',3).arg(partialFitness,7,'f',5);
-#endif
-//
-    }
+        partialFitns = (features_max[i] - features_val[i]) / featuresSpread;
+      else if (features_opt[i] == OptBase::FT_Max)
+        partialFitns = (features_val[i] - features_min[i]) / featuresSpread;
+      else // Fil features
+        partialFitns = 0.0;
+      // Correction: if spread is zero then contribution is zero
+      correctFitns = (featuresSpread < zero) ? 0.0 : partialFitns;
+      //
+      weightsTotal += features_wgt[i];
+      fitnessTotal += features_wgt[i] * correctFitns;
 
-  // If no aflow-hardness calculation, it's weight is -1.0 at this point.
-  if (hardnessWeight >= 0.0) {
-    fitnessTotal += hardnessWeight * (currentHardness - lowestHardness) / hardnessSpread;
-    fitnessWeight += hardnessWeight;
-//
 #ifdef FEATURES_DEBUG
-partialContrib = (currentHardness-lowestHardness)/hardnessSpread;
-partialFitness = partialContrib * hardnessWeight;
-outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
-  .arg(-1,2).arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
-  .arg(highestHardness,10,'f',5).arg(partialContrib,7,'f',5).arg(hardnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
+outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
+ .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5)
+ .arg(features_min[i],10,'f',5).arg(features_max[i],10,'f',5).arg(partialFitns,7,'f',5)
+ .arg(features_wgt[i],5,'f',3).arg(features_wgt[i] * correctFitns,7,'f',5);
 #endif
-//
   }
 
-  // Contribution from the enthalpy
-  fitnessTotal += (1.0 - fitnessWeight) * (highestEnthalpy - currentEnthalpy) / enthalpySpread;
-//
+  // ===== aflow-hardness
+  // If no aflow-hardness calculation, it's weight is -1.0 at this point.
+  if (hardnessWeight >= 0.0) {
+    partialFitns = (currentHardness - lowestHardness) / hardnessSpread;
+    // Correction: if spread is zero then contribution is zero
+    correctFitns = (hardnessSpread < zero) ? 0.0 : partialFitns;
+    //
+    weightsTotal += hardnessWeight;
+    fitnessTotal += hardnessWeight * correctFitns;
+
 #ifdef FEATURES_DEBUG
-partialContrib = (highestEnthalpy-currentEnthalpy)/enthalpySpread;
-partialFitness = partialContrib * (1.0 - fitnessWeight);
+outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
+  .arg(-1,2).arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
+  .arg(highestHardness,10,'f',5).arg(partialFitns,7,'f',5).arg(hardnessWeight,5,'f',3)
+  .arg(hardnessWeight * correctFitns,7,'f',5);
+#endif
+  }
+
+  // ===== enthalpy
+  partialFitns = (highestEnthalpy - currentEnthalpy) / enthalpySpread;
+  // Correction: if spread is zero then contribution is zero
+  correctFitns = (enthalpySpread < zero) ? 0.0 : partialFitns;
+  //
+  fitnessTotal += (1.0 - weightsTotal) * correctFitns;
+
+#ifdef FEATURES_DEBUG
 outs += QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
   .arg(0,2).arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
-  .arg(highestEnthalpy,10,'f',5).arg(partialContrib,7,'f',5).arg(1.0-fitnessWeight,5,'f',3).arg(partialFitness,7,'f',5);
+  .arg(highestEnthalpy,10,'f',5).arg(partialFitns,7,'f',5).arg(1.0-weightsTotal,5,'f',3)
+  .arg((1.0 - weightsTotal) * correctFitns,7,'f',5);
 outs += QString("NOTE: struc %1   oldFitness %2   newFitness %3")
-  .arg(strucID,8).arg(partialContrib,8,'f',6).arg(fitnessTotal,8,'f',6);
+  .arg(strucID,8).arg(correctFitns,8,'f',6).arg(fitnessTotal,8,'f',6);
 qDebug().noquote() << outs;
 #endif
-//
 
   // Finally, return the calculated total fitness
   return fitnessTotal;
@@ -294,7 +310,8 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
                      QList<double> features_wgt,
                      QList<OptBase::FeatureType> features_opt)
 {
-  // This function is modified for multi-objective case; it has default values for some parameters in optbase.h
+  // This function is modified for multi-objective case;
+  //   it has default values for some input parameters in optbase.h
   QList<QPair<Structure*, double>> probs;
   if (structures.isEmpty() || popSize == 0)
     return probs;
@@ -334,14 +351,12 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     if (hardness > highestHardness)
       highestHardness = hardness;
 
-    // Find the lowest and highest of each
-    for (int i = 0; i< features_num; i++) 
-      if (features_opt[i] != OptBase::FT_Fil) {
+    for (int i = 0; i< features_num; i++) {
         if(s->getStrucFeatValues(i) < features_min[i])
           features_min[i] = s->getStrucFeatValues(i);
         if(s->getStrucFeatValues(i) > features_max[i])
           features_max[i] = s->getStrucFeatValues(i);
-      }
+    }
   }
 
   // Now calculate the probability of each structure
@@ -365,6 +380,11 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     probs.append(QPair<Structure*, double>(s, prob));
   }
 
+  // =======================================================================
+  // The probs are set to zero if the spread is zero (i.e., less than 1e-8).
+  // So, all probs can't be "nan" anymore! The following part is not necessary
+  // but is kept for now, just in case.
+  //                           -----------------
   // If they are all nan, that means all the probs are equal. Just
   // return an equal list
   bool allNan = true;
@@ -388,6 +408,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     }
     return probs;
   }
+  // =======================================================================
 
   // Sort by probability
   std::sort(probs.begin(), probs.end(),
@@ -499,19 +520,26 @@ void OptBase::startFeatureCalculations(Structure* s)
   QString wrkdir = 
     (qi->getIDString().toLower() == "local") ? locdir : s->getRempath() + "/";
 
+  qDebug() << "Feature calculations for " << s->getIDString() << " started!";
+
+  // We set the default feature calc. status to false. In case the run is
+  //   interrupted, this will remain as the overall status for the structure.
+  QWriteLocker structureLocker(&s->lock());
+  s->setStrucFeatStatus(Structure::FS_Fail);
+  structureLocker.unlock();
+
   // Write the output.POSCAR file
   std::stringstream ss;
   QFile file(locdir + flname);
   if ((file.open(QIODevice::WriteOnly | QIODevice::Text)) &&
       (PoscarFormat::write(*s, ss) && file.write(ss.str().c_str())))
     file.close();
-  else {
+  else { // This is a major failure! We shouldn't proceed!
     error(tr("Failed writing output.POSCAR file for structure %1")
         .arg(s->getIDString()));
+    emit doneWithFeatures(s);
     return;
   }
-
-  qDebug() << "Feature calculations for " << s->getIDString() << " started!";
 
   // Copy it to the remote location. This is needed only for remote runs.
   // Actually, this function doesn't do anything if it is a local run!
@@ -580,7 +608,7 @@ void OptBase::finishFeatureCalculations(Structure* s)
       QTextStream in(&file);
       QString fline = in.readLine();
       QStringList flist = fline.split(" ", QString::SkipEmptyParts);
-      if (flist.size() >= 1) { 
+      if (flist.size() >= 1) {
         // The below line, is to read the first entry of the first line.
         // It can change the default "false" flags to true if a value
         //   is read successfully.
