@@ -2218,7 +2218,7 @@ QString Xtal::getResultsEntry(bool includeHardness, int optstep, int features_nu
     case FeatureFail:
       status = "FeatureFail";
       break;
-    case FeatureDone:
+    case FeatureRetain:
     case FeatureCalculation:
       status = "FeatureCalculation";
       break;

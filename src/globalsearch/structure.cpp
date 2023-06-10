@@ -899,7 +899,7 @@ QString Structure::getResultsEntry(bool includeHardness, int optstep, int featur
     case FeatureFail:
       status = "FeatureFail";
       break;
-    case FeatureDone:
+    case FeatureRetain:
     case FeatureCalculation:
       status = "FeatureCalculation";
       break;

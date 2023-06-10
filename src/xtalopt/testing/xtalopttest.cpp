@@ -183,7 +183,7 @@ int XtalOptTest::getCurrentStructure()
         state == Xtal::Restart || state == Xtal::Duplicate ||
         state == Xtal::Supercell || state == Xtal::Removed ||
         state == Xtal::FeatureFail || state == Xtal::FeatureDismiss ||
-        state == Xtal::FeatureCalculation || state == Xtal::FeatureDone)
+        state == Xtal::FeatureRetain || state == Xtal::FeatureCalculation)
       n++;
   }
   m_opt->tracker()->unlock();
@@ -245,7 +245,7 @@ void XtalOptTest::writeDataFile(int run)
       case Xtal::FeatureFail:
         out << "FeatureFail";
         break;
-      case Xtal::FeatureDone:
+      case Xtal::FeatureRetain:
       case Xtal::FeatureCalculation:
         out << "FeatureCalculation";
         break;

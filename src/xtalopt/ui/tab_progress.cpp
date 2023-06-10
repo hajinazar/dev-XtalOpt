@@ -395,7 +395,7 @@ void TabProgress::updateInfo_()
       e.status = "FeatureFail";
       e.brush.setColor(Qt::darkGray);
       break;
-    case Xtal::FeatureDone:
+    case Xtal::FeatureRetain:
     case Xtal::FeatureCalculation:
       e.status = "Calculating features...";
       e.brush.setColor(Qt::yellow);
@@ -1078,7 +1078,7 @@ void TabProgress::printFile()
       case Xtal::FeatureFail:
         out << "FeatureFail";
         break;
-      case Xtal::FeatureDone:
+      case Xtal::FeatureRetain:
       case Xtal::FeatureCalculation:
         out << "FeatureCalculation";
         break;

@@ -160,7 +160,7 @@ public:
     /** Feature calculations for the structure have failed */
     FeatureFail,
     /** All feature/hardness calculations for structure are successfully finished */
-    FeatureDone,
+    FeatureRetain,
     /** Structure is in the process of feature calculations */
     FeatureCalculation
   };

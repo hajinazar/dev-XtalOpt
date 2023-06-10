@@ -286,7 +286,7 @@ protected slots:
    * further processing with appropriate handler.
    * @param s Structure whose features/aflow-hardness is calculated
    */
-  void processFeatureCalculation(Structure* s);
+  void updateStructureFeatureStatus(Structure* s);
 
   /**
    * This is called automatically when the QueueManager is
@@ -504,21 +504,21 @@ protected:
    *
    * @param s Structure whose features/aflow-hardness is calculated
    */
-  void handleDoneFeature(Structure* s);
+  void handleRetainFeature(Structure* s);
 
   /**
    * Perform actions on a structure dismissed by a filtering feature
    *
    * @param s Structure whose features/aflow-hardness is calculated
    */
-  void handleDismissedFeature(Structure* s);
+  void handleDismissFeature(Structure* s);
 
   /**
    * Perform actions on a structure failed in feature calculation
    *
    * @param s Structure whose features/aflow-hardness is calculated
    */
-  void handleFailedFeature(Structure* s);
+  void handleFailFeature(Structure* s);
 
   // These run in the background and are called by the above
   // functions via QtConcurrent::run.
@@ -532,9 +532,9 @@ protected:
   void handleDuplicateStructure_(Structure* s);
   void handleSupercellStructure_(Structure* s);
   void handleRestartStructure_(Structure* s);
-  void handleDoneFeature_(Structure* s);
-  void handleFailedFeature_(Structure* s);
-  void handleDismissedFeature_(Structure* s);
+  void handleRetainFeature_(Structure* s);
+  void handleFailFeature_(Structure* s);
+  void handleDismissFeature_(Structure* s);
   /// @endcond
 
   // Other background handlers
@@ -563,7 +563,7 @@ protected:
   Tracker m_newSupercellTracker;
   Tracker m_restartTracker;
   Tracker m_newSubmissionTracker;
-  Tracker m_featureDoneTracker;
+  Tracker m_featureRetainTracker;
   Tracker m_featureFailTracker;
   Tracker m_featureDismissTracker;
   /// @endcond

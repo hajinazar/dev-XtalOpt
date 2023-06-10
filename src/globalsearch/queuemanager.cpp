@@ -88,7 +88,7 @@ QueueManager::~QueueManager()
   trackers.append(&m_newSupercellTracker);
   trackers.append(&m_restartTracker);
   trackers.append(&m_newSubmissionTracker);
-  trackers.append(&m_featureDoneTracker);
+  trackers.append(&m_featureRetainTracker);
   trackers.append(&m_featureFailTracker);
   trackers.append(&m_featureDismissTracker);
 
@@ -133,9 +133,9 @@ void QueueManager::setupConnections()
   connect(this, SIGNAL(needNewStructure()), m_opt, SLOT(generateNewStructure()),
           Qt::QueuedConnection);
   connect(m_opt, SIGNAL(doneWithFeatures(Structure*)), this,
-      SLOT(processFeatureCalculation(Structure*)));
+      SLOT(updateStructureFeatureStatus(Structure*)));
   connect(m_opt, SIGNAL(doneWithHardness(Structure*)), this,
-      SLOT(processFeatureCalculation(Structure*)));
+      SLOT(updateStructureFeatureStatus(Structure*)));
 
   // re-emit connections
   connect(this, SIGNAL(structureStarted(GlobalSearch::Structure*)), this,
@@ -181,7 +181,7 @@ void QueueManager::reset()
   trackers.append(&m_newSupercellTracker);
   trackers.append(&m_restartTracker);
   trackers.append(&m_newSubmissionTracker);
-  trackers.append(&m_featureDoneTracker);
+  trackers.append(&m_featureRetainTracker);
   trackers.append(&m_featureFailTracker);
   trackers.append(&m_featureDismissTracker);
 
@@ -406,7 +406,7 @@ void QueueManager::checkRunning()
         m_newSupercellTracker.contains(structure) ||
         m_restartTracker.contains(structure) ||
         m_newSubmissionTracker.contains(structure) ||
-        m_featureDoneTracker.contains(structure) ||
+        m_featureRetainTracker.contains(structure) ||
         m_featureFailTracker.contains(structure) ||
         m_featureDismissTracker.contains(structure)) {
       continue;
@@ -463,13 +463,13 @@ void QueueManager::checkRunning()
         handleEmptyStructure(structure);
         break;
       case Structure::FeatureFail:
-        handleFailedFeature(structure);
+        handleFailFeature(structure);
         break;
       case Structure::FeatureDismiss:
-        handleDismissedFeature(structure);
+        handleDismissFeature(structure);
         break;
-      case Structure::FeatureDone:
-        handleDoneFeature(structure);
+      case Structure::FeatureRetain:
+        handleRetainFeature(structure);
         break;
       case Structure::FeatureCalculation:
         // Nothing to be done! Wait for signal!
@@ -655,7 +655,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
 }
 /// @endcond
 
-void QueueManager::processFeatureCalculation(Structure* s)
+void QueueManager::updateStructureFeatureStatus(Structure* s)
 {
   // This is the main entry into processing finished feature calculations.
   // This function:
@@ -686,7 +686,7 @@ void QueueManager::processFeatureCalculation(Structure* s)
 
   // If it's only aflow-hardness calculation
   if (m_opt->m_calculateHardness && !m_opt->m_calculateFeatures) {
-    s->setStatus(Structure::FeatureDone);
+    s->setStatus(Structure::FeatureRetain);
     s->setStrucFeatStatus(Structure::FS_Retain);
     return;
   }
@@ -695,7 +695,7 @@ void QueueManager::processFeatureCalculation(Structure* s)
   // If we have aflow-hardness, it's finished ok for sure; otherwise wouldn't
   //  be here! So, the overall status depends only on feature calculation results.
   if (s->getStrucFeatStatus() == Structure::FS_Retain)
-    s->setStatus(Structure::FeatureDone);
+    s->setStatus(Structure::FeatureRetain);
   else if (s->getStrucFeatStatus() == Structure::FS_Dismiss)
     s->setStatus(Structure::FeatureDismiss);
   else // feature calculation is failed
@@ -704,26 +704,26 @@ void QueueManager::processFeatureCalculation(Structure* s)
   return;
 }
 
-void QueueManager::handleDoneFeature(Structure *s)
+void QueueManager::handleRetainFeature(Structure *s)
 {
-  QWriteLocker locker(m_featureDoneTracker.rwLock());
-  if (!m_featureDoneTracker.append(s)) {
+  QWriteLocker locker(m_featureRetainTracker.rwLock());
+  if (!m_featureRetainTracker.append(s)) {
     return;
   }
-  QtConcurrent::run(this, &QueueManager::handleDoneFeature_, s);
+  QtConcurrent::run(this, &QueueManager::handleRetainFeature_, s);
 }
 
 // Doxygen skip:
 /// @cond
-void QueueManager::handleDoneFeature_(Structure* s)
+void QueueManager::handleRetainFeature_(Structure* s)
 {
-  Q_ASSERT(trackerContainsStructure(s, &m_featureDoneTracker));
-  removeFromTrackerWhenScopeEnds popper(s, &m_featureDoneTracker);
+  Q_ASSERT(trackerContainsStructure(s, &m_featureRetainTracker));
+  removeFromTrackerWhenScopeEnds popper(s, &m_featureRetainTracker);
 
   QWriteLocker locker(&s->lock());
 
   // Validate assumptions
-  if (s->getStatus() != Structure::FeatureDone)
+  if (s->getStatus() != Structure::FeatureRetain)
     return;
 
   if (!m_opt->usingGUI()) {
@@ -740,18 +740,18 @@ void QueueManager::handleDoneFeature_(Structure* s)
 }
 /// @endcond
 
-void QueueManager::handleFailedFeature(Structure *s)
+void QueueManager::handleFailFeature(Structure *s)
 {
   QWriteLocker locker(m_featureFailTracker.rwLock());
   if (!m_featureFailTracker.append(s)) {
     return;
   }
-  QtConcurrent::run(this, &QueueManager::handleFailedFeature_, s);
+  QtConcurrent::run(this, &QueueManager::handleFailFeature_, s);
 }
 
 // Doxygen skip:
 /// @cond
-void QueueManager::handleFailedFeature_(Structure* s)
+void QueueManager::handleFailFeature_(Structure* s)
 {
   Q_ASSERT(trackerContainsStructure(s, &m_featureFailTracker));
   removeFromTrackerWhenScopeEnds popper(s, &m_featureFailTracker);
@@ -775,18 +775,18 @@ void QueueManager::handleFailedFeature_(Structure* s)
 }
 /// @endcond
 
-void QueueManager::handleDismissedFeature(Structure *s)
+void QueueManager::handleDismissFeature(Structure *s)
 {
   QWriteLocker locker(m_featureDismissTracker.rwLock());
   if (!m_featureDismissTracker.append(s)) {
     return;
   }
-  QtConcurrent::run(this, &QueueManager::handleDismissedFeature_, s);
+  QtConcurrent::run(this, &QueueManager::handleDismissFeature_, s);
 }
 
 // Doxygen skip:
 /// @cond
-void QueueManager::handleDismissedFeature_(Structure* s)
+void QueueManager::handleDismissFeature_(Structure* s)
 {
   Q_ASSERT(trackerContainsStructure(s, &m_featureDismissTracker));
   removeFromTrackerWhenScopeEnds popper(s, &m_featureDismissTracker);
