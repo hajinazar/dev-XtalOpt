@@ -3069,7 +3069,7 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
     // First, create list of wgt and out of features for later use in get_probability... function
     for (int i = 0; i < featnums; i++) {
       featwgts.push_back(getFeaturesWgt(i));
-      featopts.push_back(getFeaturesOpt(i));  
+      featopts.push_back(getFeaturesOpt(i));
     }
 
     for (size_t i = 0; i < structures.size(); i++) {
@@ -3089,7 +3089,7 @@ qDebug().noquote() << QString("NOTE: a total of %1 (from %2) structures "
   .arg(structures.size(),5).arg(sizeBeforeFeaturesPruning,5);
 #endif
 
-    if (structures.size() == 1 && sizeBeforeFeaturesPruning > 1) { 
+    if (structures.size() == 1 && sizeBeforeFeaturesPruning > 1) {
       warning(tr("A nonzero feature weight is being used for the fitness "
             "function, but very few (%1 from %2) structures have their "
             "features calculated. This current probability selection will "
@@ -3116,7 +3116,7 @@ qDebug().noquote() << QString("NOTE: a total of %1 (from %2) structures "
     }
   }
 
-  QList<QPair<GlobalSearch::Structure*, double>> probs = 
+  QList<QPair<GlobalSearch::Structure*, double>> probs =
     getProbabilityList(structures, popSize, m_hardnessFitnessWeight, featnums, featwgts, featopts);
 
 #ifdef FEATURES_DEBUG
@@ -4475,28 +4475,28 @@ void XtalOpt::resetDuplicates_()
 bool XtalOpt::processFeaturesWeights()
 {
   // Essentially, features/aflow-hardness can have weights 0.0<=w<=1.0.
-  //     The 0.0 is to allow the feature being calculated while not enter 
+  //     The 0.0 is to allow the feature being calculated while not enter
   //     the optimization. Here, we want to treat unspecified weights, and
   //     make sure the total optimization weight is fine (0.0<=total_w<=1.0).
   //
-  // Arriving here from the processFeaturesInfo(), every feature 
-  //     (including aflow-hardness) that has a weight of -1.0, means that 
+  // Arriving here from the processFeaturesInfo(), every feature
+  //     (including aflow-hardness) that has a weight of -1.0, means that
   //     its weight is unspecified by the user, and we take care of it here!
   //
   // To not have a chance of affecting the optimization,
   //     weight for filtering features will be set to 0.0
   //
-  // For aflow-hardness; the weight will be set to "-1.0" if 
+  // For aflow-hardness; the weight will be set to "-1.0" if
   //     no aflow-hardness calculation
   //
   // Otherwise, initialization of unspecified weights depends on aflow-hardness,
-  //     and on the number of features with weight of -1.0. Basically, we divide 
+  //     and on the number of features with weight of -1.0. Basically, we divide
   //     the (1.0-total_non_zero_weight) between optimizable features, i.e.,
   //     enthalpy and features (and possibly aflow-hardness) without weight.
   //
   // We always have enthalpy as a feature with a weight which is not predetermined.
-  //     So, the number of optimizable features with unspecified weight, 
-  //     cparam, starts from 1. If we have aflow-hardness calculations and 
+  //     So, the number of optimizable features with unspecified weight,
+  //     cparam, starts from 1. If we have aflow-hardness calculations and
   //     its weight is still -1 (i.e., not specified), cparam = 2.
   //     Next, we examine non-filter features for those without given weight.
 
@@ -4547,8 +4547,8 @@ bool XtalOpt::processFeaturesWeights()
     if (tmpwgt[i] < 0.0)
       tmpwgt[i] = (1.0 - totalweight) / (double)(cparam);
 
-  // Here, everything should be sorted out! Weights must be either 0.0 or 
-  //     some value less than 1.0, while the total optimization weight is <=1.0. 
+  // Here, everything should be sorted out! Weights must be either 0.0 or
+  //     some value less than 1.0, while the total optimization weight is <=1.0.
   //     Now, perform a sanity check to make sure that this is the case.
   totalweight = 0.0;
   if (m_calculateHardness) {
@@ -4587,7 +4587,7 @@ bool XtalOpt::processFeaturesWeights()
   setFeaturesNum(tmpnum);
   for (int i = 0; i < tmpnum; i++)
   {
-    QString opttype = (tmpopt[i] == FeatureType::FT_Min) ? "minimization" : 
+    QString opttype = (tmpopt[i] == FeatureType::FT_Min) ? "minimization" :
       ((tmpopt[i] == FeatureType::FT_Max) ? "maximization" : "filtration");
     setFeaturesOpt(tmpopt[i]);
     setFeaturesExe(tmpexe[i]);
@@ -4616,11 +4616,11 @@ bool XtalOpt::processFeaturesInfo()
   m_calculateHardness     = false;  // no aflow-hardness calculations
   m_hardnessFitnessWeight = -1.0;   // no weight is given
 
-  // This needs to be done: this function might be 
+  // This needs to be done: this function might be
   //   called more than once in gui mode
   resetFeatures();
 
-  int tmp_num = 0; // Counter for non-aflow-hardness features 
+  int tmp_num = 0; // Counter for non-aflow-hardness features
   for (int i = 0; i < featureListSize(); i++)
   {
     QString     line  = featureListGet(i);
@@ -4632,17 +4632,17 @@ bool XtalOpt::processFeaturesInfo()
     // Initializing tmp variables;
     // first parameter is always optimization type: min/max/fil/har
     QString tmps = sline.at(0).toLower().mid(0,3);
-    FeatureType tmp_opt = (tmps == "min") ? FeatureType::FT_Min : 
+    FeatureType tmp_opt = (tmps == "min") ? FeatureType::FT_Min :
       ((tmps == "max") ? FeatureType::FT_Max : ((tmps == "fil" ) ?
         FeatureType::FT_Fil : FeatureType::FT_Har ));
     QString tmp_out = "feature" + QString::number(tmp_num+1) + ".out";
-    QString tmp_exe = "none"; 
+    QString tmp_exe = "none";
     double  tmp_wgt = -1.0;
     //
     bool   isNumber;
     double vline;
     // aflow-hardness might have only 1 entry, the rest should have at least 2!
-    if (tmp_opt != FeatureType::FT_Har && nparam < 2) 
+    if (tmp_opt != FeatureType::FT_Har && nparam < 2)
     { qDebug() << "Error: features are not properly initiated: " << line; return false; }
     // Start by handling aflow-hardness entry (if any!)
     if (tmp_opt == FeatureType::FT_Har)
@@ -4659,8 +4659,8 @@ bool XtalOpt::processFeaturesInfo()
     // Now, the rest of optimization types (min/max/fil)
     else
     {
-      tmp_exe = sline.at(1); // The second field is always the script path. Now, read 
-                             //   the optional fields of output file and weight if they are 
+      tmp_exe = sline.at(1); // The second field is always the script path. Now, read
+                             //   the optional fields of output file and weight if they are
                              //   given; otherwise, they will remain with their default values.
       switch(nparam) {
         case 3: // 3rd item might be weight or output filename
@@ -4683,7 +4683,7 @@ bool XtalOpt::processFeaturesInfo()
           break;
         default:
           break;
-      }     
+      }
 
       // We have collected all the info! Add to the list of features
       setFeaturesOpt(tmp_opt);
@@ -5396,8 +5396,8 @@ void XtalOpt::printOptionSettings(QTextStream& stream) const
   stream << "\nFeatures settings:\n";
   stream << "  features_num: " << QString::number(getFeaturesNum()) << "\n";
   stream << "  featuresReDo: " << toString(m_featuresReDo) << "\n";
-  for (int i = 0; i < getFeaturesNum(); i++) 
-    stream << "  feature" << i+1 << ": " << QString::number(getFeaturesOpt(i)) << "  " 
+  for (int i = 0; i < getFeaturesNum(); i++)
+    stream << "  feature" << i+1 << ": " << QString::number(getFeaturesOpt(i)) << "  "
       << getFeaturesExe(i) << "  " << getFeaturesOut(i) << "  " << getFeaturesWgt(i) << "\n";
 }
 

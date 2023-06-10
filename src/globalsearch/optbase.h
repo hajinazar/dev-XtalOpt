@@ -296,7 +296,7 @@ public:
    * @param features_wgt (Optional) The weight of features introduced by
    *                     the user for multi-objective optimization.
    * @param features_opt (Optional) The type of optimization (min/max) for
-   *                     the features introduced by the user for 
+   *                     the features introduced by the user for
    *                     multi-objective optimization.
    *
    * @return A list of pairs with a structure pointer and a double (the
@@ -653,8 +653,10 @@ public:
 
   /**
    * Performs a soft/hard exit after writing state files, closing ssh, etc.
+   * @param delay Amount of time (seconds) to wait before quitting; in case
+   *   we need to make sure all files are written/copied properly, e.g., a soft_exit
    */
-  void performTheExit();
+  void performTheExit(int dealy = 0);
 
   /// Quit once maximum number of structures are generated (cli mode only)
   bool m_softExit;

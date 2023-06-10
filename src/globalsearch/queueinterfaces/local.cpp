@@ -210,29 +210,30 @@ bool LocalQueueInterface::startJob(Structure* s)
 
 bool LocalQueueInterface::logErrorDirectory(Structure* s) const
 {
+  QString id_s, gen_s, strdir_s;
+  id_s.sprintf("%05d", s->getIDNumber());
+  gen_s.sprintf("%05d", s->getGeneration());
+  strdir_s = gen_s + "x" + id_s;
+
+  QString command, command2;
   QProcess proc, proc2;
-  QString strdir = QString::number(s->getGeneration()) + "x" +
-                              QString::number(s->getIDNumber());
+
 #ifdef WIN32
-  QString command = "mkdir " + this->m_opt->filePath + "\\errorDirs\\";
-  proc.start(command);
-  // This will wait for, at most, 30 seconds
-  proc.waitForFinished();
+  command = "mkdir " + this->m_opt->filePath + "\\errorDirs\\";
   // Does robocopy come with all windows computers?
-  QString command2 = "robocopy " + s->fileName() + " " + 
-                     this->m_opt->filePath + "\\errorDirs\\" + strdir;
-  proc2.start(command2);
-  proc2.waitForFinished();
+  command2 = "robocopy " + s->fileName() + " " +
+                     this->m_opt->filePath + "\\errorDirs\\" + strdir_s;
 #else
-  QString command = "mkdir -p " + this->m_opt->filePath + "/errorDirs/" + strdir + "/";
+  command = "mkdir -p " + this->m_opt->filePath + "/errorDirs/" + strdir_s + "/";
+  command2 =
+    "cp -r " + s->fileName() + " " + this->m_opt->filePath + "/errorDirs/" + strdir_s + "/";
+#endif
+
   proc.start(command);
-  // This will wait for, at most, 30 seconds
   proc.waitForFinished();
-  QString command2 =
-    "cp -r " + s->fileName() + " " + this->m_opt->filePath + "/errorDirs/" + strdir + "/";
   proc2.start(command2);
   proc2.waitForFinished();
-#endif
+
   return true;
 }
 
@@ -355,36 +356,54 @@ bool LocalQueueInterface::prepareForStructureUpdate(Structure* s) const
   return true;
 }
 
-bool LocalQueueInterface::runGenericCommand(const QString& workdir,
-                                            const QString& command)
+bool LocalQueueInterface::runACommand(const QString& workdir, const QString& command,
+                                            QString* sout, QString* serr, int* ercd) const
 {
-  QProcess OProcess;
-  OProcess.setWorkingDirectory(workdir);
-  OProcess.start(command);
-  OProcess.waitForFinished();
+  // General note: catching the errors for local runs which rely on QProcess
+  //   is tricky! E.g., the error channel might be polluted by messages from srun
+  //   command which end up successful. So, we won't force a return value of False
+  //   based on stderr or exit code, and only print a message if stderr is not empty
+  //   or non-zero error code to help identifying possible irregularities.
+
+  QString stdout_str;
+  QString stderr_str;
+  int     exitcode;
+
+  QProcess proc;
+  if (!workdir.isEmpty()) {
+    proc.setWorkingDirectory(workdir);
+  }
+  proc.start(command);
+  proc.waitForFinished(-1);
+
+  stdout_str = QString(proc.readAllStandardOutput());
+  stderr_str = QString(proc.readAllStandardError());
+  exitcode   = proc.exitCode();
+
+  if (!stderr_str.isEmpty() || (exitcode != 0)) {
+    m_opt->warning(tr("Local command %1 at %2 exited with code %3 and error: %4")
+        .arg(command).arg(workdir).arg(exitcode).arg(stderr_str));
+  }
+
+  *sout = stdout_str;
+  *serr = stderr_str;
+  *ercd = exitcode;
+
   return true;
 }
 
-bool LocalQueueInterface::copyGenericFileFromServer(const QString& rem_file,
-                                                    const QString& loc_file)
+bool LocalQueueInterface::copyAFileRemoteToLocal(const QString& rem_file,
+                                                 const QString& loc_file)
 {
-  // Do nothing; the task is done by corresponding function 
-  // in remote_queue_interface; if needed!
+  // Nothing to do!
   return true;
 }
 
-bool LocalQueueInterface::copyGenericFileToServer(const QString& loc_file,
-                                                  const QString& rem_file)
+bool LocalQueueInterface::copyAFileLocalToRemote(const QString& loc_file,
+                                                 const QString& rem_file)
 {
-  // Do nothing; the task is done by corresponding function 
-  // in remote_queue_interface; if needed!
+  // Nothing to do!
   return true;
-}
-
-bool LocalQueueInterface::checkIfGenericFileExists(const QString& spath,
-                                                   const QString& sfile)
-{
-  return QFile::exists(spath + QDir::separator() + sfile);
 }
 
 bool LocalQueueInterface::checkIfFileExists(Structure* s,
@@ -400,11 +419,15 @@ bool LocalQueueInterface::fetchFile(Structure* s, const QString& rel_filename,
 {
   QString filename = s->fileName() + "/" + rel_filename;
   QFile output(filename);
+
   if (!output.open(QFile::ReadOnly | QFile::Text)) {
     return false;
   }
+
   *contents = QString(output.readAll());
+
   output.close();
+
   return true;
 }
 
@@ -416,35 +439,30 @@ bool LocalQueueInterface::grepFile(Structure* s, const QString& matchText,
   if (exitcode) {
     *exitcode = 1;
   }
-  QStringList list;
-  QString contents;
-  if (!fetchFile(s, filename, &contents)) {
-    if (exitcode) {
-      *exitcode = 2;
-    }
+  Qt::CaseSensitivity ces = Qt::CaseSensitive;
+  if (!caseSensitive) {
+    ces = Qt::CaseInsensitive;
+  }
+
+  // Read the file
+  QFile infile(s->fileName() + "/" + filename);
+  if (!infile.open(QFile::ReadOnly | QFile::Text)) {
     return false;
   }
 
-  list = contents.split("\n", QString::SkipEmptyParts);
-
-  Qt::CaseSensitivity cs;
-  if (caseSensitive) {
-    cs = Qt::CaseSensitive;
-  } else {
-    cs = Qt::CaseInsensitive;
-  }
-
-  for (QStringList::const_iterator it = list.begin(), it_end = list.end();
-       it != it_end; ++it) {
-    if ((*it).contains(matchText, cs)) {
+  QTextStream in (&infile);
+  QString line;
+  do {
+    line = in.readLine();
+    if (line.contains(matchText, ces)) {
       if (exitcode) {
         *exitcode = 0;
       }
       if (matches) {
-        *matches << *it;
+        *matches << line;
       }
     }
-  }
+  } while (!line.isNull());
 
   return true;
 }

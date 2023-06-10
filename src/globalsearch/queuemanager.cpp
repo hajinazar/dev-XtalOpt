@@ -211,8 +211,8 @@ void QueueManager::checkLoop()
     checkPopulation();
     checkRunning();
     // Check if soft/hard exit flag is on
-    if (m_opt->m_softExit || m_opt->m_hardExit) 
-      checkTheExit(); 
+    if (m_opt->m_softExit || m_opt->m_hardExit)
+      checkTheExit();
   }
 
   QTimer::singleShot(1000, this, SLOT(checkLoop()));
@@ -220,7 +220,7 @@ void QueueManager::checkLoop()
 
 void QueueManager::checkTheExit()
 {
-  // This function, calls the performTheExit function depending 
+  // This function, calls the performTheExit function depending
   //   on the type of exit. For a hard exit, it is done immediately;
   //   while for a soft exit checks for no running/pending job.
 
@@ -230,14 +230,14 @@ void QueueManager::checkTheExit()
     m_opt->performTheExit();
     return;
   }
-   
+
   // If not a hard exit; then we're here for a soft exit
   int total = 0;
   int pending = 0;
 
   QReadLocker trackerReadLocker(m_tracker->rwLock());
   QList<Structure*> struct2 = *m_tracker->list();
-  for (int i = 0; i < struct2.size(); ++i) 
+  for (int i = 0; i < struct2.size(); ++i)
   {
     Structure* str2 = struct2.at(i);
     QReadLocker structureLocker(&str2->lock());
@@ -245,7 +245,7 @@ void QueueManager::checkTheExit()
     structureLocker.unlock();
     if (st != Structure::Optimized   && st != Structure::Killed         &&
         st != Structure::FeatureFail && st != Structure::FeatureDismiss &&
-        st != Structure::Removed     && st != Structure::Duplicate      && 
+        st != Structure::Removed     && st != Structure::Duplicate      &&
         st != Structure::Supercell)
       ++pending;
     else
@@ -258,8 +258,9 @@ void QueueManager::checkTheExit()
     m_opt->warning(
         tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
         .arg(m_opt->cutoff).arg(total).arg(pending));
-
-    m_opt->performTheExit();
+    // Call the perform_the_exit with a delay in quitting to make
+    //   sure all output files are transferred/written.
+    m_opt->performTheExit(30);
   }
 }
 
@@ -293,7 +294,7 @@ void QueueManager::checkPopulation()
     // Count running jobs and update trackers
     if (state != Structure::Optimized && state != Structure::Duplicate &&
         state != Structure::Supercell && state != Structure::Killed &&
-        state != Structure::Removed && state != Structure::FeatureFail && 
+        state != Structure::Removed && state != Structure::FeatureFail &&
         state != Structure::FeatureDismiss) {
       m_runningTracker.append(structure);
       ++running;
@@ -613,7 +614,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
       qDebug() << "Structure"
                << QString::number(s->getGeneration()) + "x" +
                     QString::number(s->getIDNumber())
-               << "completed step" << s->getCurrentOptStep() + 1;
+               << "completed step" << s->getCurrentOptStep();
     }
 
     s->setCurrentOptStep(s->getCurrentOptStep() + 1);
@@ -630,31 +631,26 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
   }
   // Otherwise, it's done
   else {
-
-    // Is there any feature or aflow-hardness to calculate?
-    if (m_opt->m_calculateFeatures || m_opt->m_calculateHardness) 
-    {
-      // Perform feature/aflow-hardness calculation prior to 
-      //   marking structure as optimized.
+    if (m_opt->m_calculateFeatures || m_opt->m_calculateHardness) {
+      // Initiate feature/aflow-hardness calculations; if needed
       s->resetStrucFeat();
       s->setStatus(Structure::FeatureCalculation);
       locker.unlock();
       emit readyForFeatureCalculations(s);
       return;
+    } else {
+      // No feature/aflow-hardness calculations; proceed to optimized!
+      if (!m_opt->usingGUI()) {
+        qDebug() << "Structure"
+          << QString::number(s->getGeneration()) + "x" +
+          QString::number(s->getIDNumber())
+          << "is optimized!";
+      }
+      s->setStatus(Structure::Optimized);
+      locker.unlock();
+      handleOptimizedStructure(s);
+      return;
     }
-
-    // No feature/aflow-hardness calculations; proceed to optimized!
-    if (!m_opt->usingGUI()) {
-      qDebug() << "Structure"
-        << QString::number(s->getGeneration()) + "x" +
-        QString::number(s->getIDNumber())
-        << "is optimized!";
-    }
-    s->setStatus(Structure::Optimized);
-    locker.unlock();
-    handleOptimizedStructure(s);
-    return;
-
   }
 }
 /// @endcond
@@ -667,10 +663,10 @@ void QueueManager::processFeatureCalculation(Structure* s)
   //   (2) checks if both features and aflow-hardness calculations are
   //       finished, and if so, hands the structure over to the appropriate
   //       function; depending on the feature calculation status.
-  // Note: 
-  //   (1) If one of the above "doneWith..." signals is emitted while the 
-  //       other calculation is not finished, we just return from here 
-  //       doing nothing. By the time the second one is emitted, we get 
+  // Note:
+  //   (1) If one of the above "doneWith..." signals is emitted while the
+  //       other calculation is not finished, we just return from here
+  //       doing nothing. By the time the second one is emitted, we get
   //       here again, and this time both calculations are finished.
   //   (2) Handling of aflow-hardness internally is problematic! If it
   //       "fails", there is no way of knowing that. The result will be
@@ -1198,7 +1194,7 @@ void QueueManager::startJob()
     m_opt->warning(tr("QueueManager::startJob_: Job did not start "
                       "successfully for structure %1-%2.")
                      .arg(s->getIDString())
-                     .arg(s->getCurrentOptStep() + 1));
+                     .arg(s->getCurrentOptStep()));
     s->setStatus(Structure::Error);
     s->lock().unlock();
     return;
@@ -1214,7 +1210,7 @@ void QueueManager::startJob()
              << QString::number(s->getGeneration()) + "x" +
                   QString::number(s->getIDNumber())
              << "has been submitted"
-             << "step" << s->getCurrentOptStep() + 1;
+             << "step" << s->getCurrentOptStep();
   }
 
   emit structureSubmitted(s);

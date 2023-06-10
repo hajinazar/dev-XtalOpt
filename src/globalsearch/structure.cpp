@@ -519,7 +519,7 @@ void Structure::readStructureSettings(const QString& filename,
       setStrucHistFeatValues(tmpvalue);
       settings->endArray();
       setStrucHistFeatStatus(FeatStatus(settings->value("state").toInt()));
-      setStrucHistFeatFailCt(settings->value("failcount").toInt()); 
+      setStrucHistFeatFailCt(settings->value("failcount").toInt());
     }
     settings->endArray();
 
@@ -909,7 +909,7 @@ QString Structure::getResultsEntry(bool includeHardness, int optstep, int featur
     case InProcess:
     case Empty:
     case Updating:
-      status = "In progress " + QString::number(optstep + 1);
+      status = "In progress " + QString::number(optstep);
       break;
     default:
       status = "In progress";

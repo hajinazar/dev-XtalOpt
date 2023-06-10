@@ -2228,7 +2228,7 @@ QString Xtal::getResultsEntry(bool includeHardness, int optstep, int features_nu
     case InProcess:
     case Empty:
     case Updating:
-      status = "In progress " + QString::number(optstep + 1);
+      status = "In progress " + QString::number(optstep);
       break;
     default:
       status = "In progress";

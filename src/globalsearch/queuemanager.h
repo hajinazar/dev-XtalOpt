@@ -281,8 +281,8 @@ public slots:
 protected slots:
 
   /**
-   * Check for the status of finished feature/aflow-hardness 
-   * calculations, and label the structure accordingly for 
+   * Check for the status of finished feature/aflow-hardness
+   * calculations, and label the structure accordingly for
    * further processing with appropriate handler.
    * @param s Structure whose features/aflow-hardness is calculated
    */
@@ -499,7 +499,7 @@ protected:
   void handleRestartStructure(Structure* s);
 
   /**
-   * Perform actions on a structure that has successfully 
+   * Perform actions on a structure that has successfully
    * finished feature/aflow-hardness calculations
    *
    * @param s Structure whose features/aflow-hardness is calculated

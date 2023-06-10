@@ -255,7 +255,7 @@ void XtalOptTest::writeDataFile(int run)
       case Xtal::InProcess:
       case Xtal::Empty:
       case Xtal::Updating:
-        out << "In progress " << xtal->getCurrentOptStep() + 1;
+        out << "In progress " << xtal->getCurrentOptStep();
         break;
       default:
         out << "In progress";

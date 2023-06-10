@@ -291,7 +291,7 @@ bool Optimizer::read(Structure* structure, const QString& filename)
   file.close();
 
   if (!Formats::read(structure, filename, m_idString)) {
-    qDebug().noquote() << "Failed to read the output file " + 
+    qDebug().noquote() << "Failed to read the output file " +
       filename + " for " + structure->getIDString();
     return false;
   }

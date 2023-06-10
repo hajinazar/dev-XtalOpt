@@ -185,44 +185,49 @@ public slots:
   virtual bool prepareForStructureUpdate(Structure* s) const = 0;
 
   /**
-   * Run a generic command (e.g., bash command or script)
-   * on either a remote server or in a local path.
+   *  Runs a command (e.g., bash command or script) on
+   *  either local/remote/local-remote queues.
+   *
+   *  @note For a remote run, this function creates/discards
+   *  the ssh connection for its own.
+   *
    * @param workdir The working directory in which command is running
-   * @param command The command
+   * @param command The command to be run
+   * @param sout The standard output of command
+   * @param serr The standard error of command
+   * @param ercd The error code of command
+   *
+   * @return For remote run: True if the command ran successfully and exit code is 0,
+   *  False otherwise. For local/local-remote runs, always returns True.
    */
-  virtual bool runGenericCommand(const QString& workdir,
-                                 const QString& command) = 0;
+  virtual bool runACommand(const QString& workdir, const QString& command,
+                           QString* sout, QString* serr, int* ercd) const = 0;
 
   /**
-   * Copy a generic file (path_to/file) from the source (remote server) to destination (local).
+   * Copy a file from a remote source to a local destination.
+   *
    * @note On local queue, this does nothing!
-   * @note This was needed just to incorporate localQueue and to avoid
-   * modifying ssh* functions.
+   * @note It is a wrapper for both remote and local-remote runs.
+   * @note For a remote run, this creates/discards the ssh connection.
+   *
    * @param rem_file Full path to the remote source file
    * @param loc_file Full path to the local destination file
    */
-  virtual bool copyGenericFileFromServer(const QString& rem_file,
-                                         const QString& loc_file) = 0;
+  virtual bool copyAFileRemoteToLocal(const QString& rem_file,
+                                      const QString& loc_file) = 0;
 
   /**
-   * Copy a generic file (path_to/file) from the source (local) to destination (remote server).
+   * Copy a file from a local source to a remote destination.
+   *
    * @note On local queue, this does nothing!
-   * @note This was needed just to incorporate localQueue and to avoid
-   * modifying ssh* functions.
+   * @note It is a wrapper for both remote and local-remote runs.
+   * @note For a remote run, this creates/discards the ssh connection.
+   *
    * @param loc_file Full path to the local source file
    * @param rem_file Full path to the remote destination file
    */
-  virtual bool copyGenericFileToServer(const QString& loc_file,
-                                       const QString& rem_file) = 0;
-
-  /**
-   * Check if the generic file exists in the search pat in remote/local queues
-   * @param spath Path in which it searches
-   * @param sfile File for which it searches
-   * @return False if file not found or any issue (e.g. ssh issue for remote queue)
-   */
-  virtual bool checkIfGenericFileExists(const QString& spath,
-                                        const QString& sfile) = 0;
+  virtual bool copyAFileLocalToRemote(const QString& loc_file,
+                                      const QString& rem_file) = 0;
 
   /**
    * Check if the file \a filename exists in the working directory

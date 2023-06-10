@@ -181,7 +181,7 @@ public:
   void          setStrucFeatValuesVec(QList<double> v) {m_strucFeatValues = v;};
   QList<double> getStrucFeatValuesVec()                {return m_strucFeatValues;};
   //
-  void resetStrucHistFeat() {m_hist_strucFeatValues.clear(); 
+  void resetStrucHistFeat() {m_hist_strucFeatValues.clear();
     m_hist_strucFeatStatus.clear(); m_hist_strucFeatFailCt.clear();};
   //
   int           getStrucHistFeatNumber()      {return m_hist_strucFeatValues.size();};

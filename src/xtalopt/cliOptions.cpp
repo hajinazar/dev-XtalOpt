@@ -225,9 +225,9 @@ void XtalOptCLIOptions::processLine(const QString& tmpLine,
              << "'";
     return;
   }
-  
+
   if (csKey == "features" ) // To keep a list of feature lines for further processing
-    xtalopt.featureListAdd(value); 
+    xtalopt.featureListAdd(value);
   else
     options[csKey] = value;
 }
@@ -457,7 +457,7 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.m_localQueue = toBool(options.value("localQueue", "false"));
 
   // Process the optimization features (and weights) for energy/aflow-hardness/features
-  // If no features/aflow-hardness; the aflow-hardness weight will be set to -1.0 and 
+  // If no features/aflow-hardness; the aflow-hardness weight will be set to -1.0 and
   //   the number of features will be set to 0.
   // For this process, features list will be used that contains all feature/aflow-hardness
   //   related input (if any).

@@ -60,7 +60,7 @@ protected:
   QString parseStatus(const QStringList& statusList, unsigned int jobId) const;
   unsigned int parseJobId(const QString& submissionOutput, bool* ok) const;
   // Fetches the queue from the server
-  QStringList getQueueList() const;
+  QStringList getQueueList(bool forced = false) const;
   // Cached queue data
   QStringList m_queueData;
   // Limits queue checks to once per second

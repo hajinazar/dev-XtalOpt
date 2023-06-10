@@ -23,8 +23,6 @@
 #include <globalsearch/macros.h>
 #include <globalsearch/optimizer.h>
 #include <globalsearch/random.h>
-#include <globalsearch/sshconnection.h>
-#include <globalsearch/sshmanager.h>
 #include <globalsearch/structure.h>
 
 #include <QDir>
@@ -210,36 +208,12 @@ void SlurmQueueInterface::writeSettings(const QString& filename)
 bool SlurmQueueInterface::startJob(Structure* s)
 {
   QWriteLocker wlocker(&s->lock());
-  QString command, stdout_str, stderr_str;
+  QString command = m_submitCommand + " job.slurm";
+  QString stdout_str, stderr_str;
+  int ec;
 
-  if (m_opt->m_localQueue) {
-    command = m_submitCommand + " job.slurm";
-    QProcess proc;
-    proc.setWorkingDirectory(s->getRempath());
-    proc.start(command);
-    proc.waitForFinished(-1);
-    stdout_str = QString(proc.readAllStandardOutput());
-    stderr_str = QString(proc.readAllStandardError());
-    if (!stderr_str.isEmpty()) {
-      m_opt->warning(tr("=== Executing %1 === Output %2 "
-            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
-      return false;
-    }
-  } else {
-    SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
-    if (ssh == nullptr) {
-      m_opt->warning(tr("Cannot connect to ssh server"));
-      return false;
-    }
-    int ec;
-    command = "cd \"" + s->getRempath() + "\" && " + m_submitCommand + " job.slurm";
-    if (!ssh->execute(command, stdout_str, stderr_str, ec) || ec != 0) {
-      m_opt->warning(tr("Error executing %1: %2").arg(command).arg(stderr_str));
-      m_opt->ssh()->unlockConnection(ssh);
-      return false;
-    }
-    m_opt->ssh()->unlockConnection(ssh);
-  } 
+  if (!this->runACommand(s->getRempath(), command, &stdout_str, &stderr_str, &ec))
+    return false;
 
   // Assuming stdout_str value is "Submitted batch job <jobid>";
   QStringList list = stdout_str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
@@ -257,6 +231,11 @@ bool SlurmQueueInterface::startJob(Structure* s)
 
   s->setJobID(jobID);
   s->startOptTimer();
+  // This is done to make sure at least one queue list refresh is done after
+  //   the job is submitted and before the first status check. Otherwise, sometimes
+  //   using the old queue list might cause the code believe that the job is
+  //   missing and with an existing output file, the run will be marked as failed.
+  getQueueList(true);
   return true;
 }
 
@@ -265,14 +244,19 @@ bool SlurmQueueInterface::stopJob(Structure* s)
   // lock structure
   QWriteLocker locker(&s->lock());
 
-  // Set behavior of the code
-  bool log_errors = false;
-  bool cln_remote = false;
+  // Log error dir if needed
   if (this->m_opt->m_logErrorDirs && (s->getStatus() == Structure::Error ||
-                                      s->getStatus() == Structure::Restart))
-    log_errors = true;
-  if (m_opt->cleanRemoteOnStop())
-    cln_remote = true;
+                                      s->getStatus() == Structure::Restart)) {
+    this->logErrorDirectory(s);
+  }
+
+  // jobid has not been set, cannot delete!
+  if (s->getJobID() == 0) {
+    if (m_opt->cleanRemoteOnStop()) {
+      this->cleanRemoteDirectory(s);
+    }
+    return true;
+  }
 
   // Execute
   const QString command =
@@ -282,50 +266,9 @@ bool SlurmQueueInterface::stopJob(Structure* s)
   int ec;
   bool ret = true;
 
-  if (m_opt->m_localQueue) {
-    // Log error dir if needed
-    if (log_errors)
-      this->lq_logErrorDirectory(s);
-    // jobid has not been set, cannot delete!
-    if (s->getJobID() == 0) {
-      if (cln_remote) {
-        this->lq_cleanRemoteDirectory(s);
-      }
-      return true;
-    }
-
-    QProcess proc;
-    proc.start(command);
-    stdout_str = QString(proc.readAllStandardOutput());
-    stderr_str = QString(proc.readAllStandardError());
-    if (!stderr_str.isEmpty()) {
-      m_opt->warning(tr("=== Executing %1 === Output %2 "
-            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
-      return false;
-    }
-  } else {
-    SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
-    if (ssh == nullptr) {
-      m_opt->warning(tr("Cannot connect to ssh server"));
-      return false;
-    }
-    // Log error dir if needed
-    if (log_errors)
-      this->logErrorDirectory(s, ssh);
-    // jobid has not been set, cannot delete!
-    if (s->getJobID() == 0) {
-      if (cln_remote) {
-        this->cleanRemoteDirectory(s, ssh);
-      }
-      m_opt->ssh()->unlockConnection(ssh);
-      return true;
-    }
-
-    if (!ssh->execute(command, stdout_str, stderr_str, ec) || ec != 0) {
-      // Most likely job is already gone from queue.
-      ret = false;
-    }
-    m_opt->ssh()->unlockConnection(ssh);
+  if (!this->runACommand("", command, &stdout_str, &stderr_str, &ec)) {
+    // Most likely job is already gone from queue.
+    ret = false;
   }
 
   s->setJobID(0);
@@ -480,15 +423,16 @@ QueueInterface::QueueStatus SlurmQueueInterface::getStatus(Structure* s) const
   }
 }
 
-QStringList SlurmQueueInterface::getQueueList() const
+// The forced input parameter has a default False value
+QStringList SlurmQueueInterface::getQueueList(bool forced) const
 {
   // recast queue mutex as mutable for safe access:
   QReadWriteLock& queueMutex = const_cast<QReadWriteLock&>(m_queueMutex);
 
   queueMutex.lockForRead();
 
-  // Limit queries to once per second
-  if (m_queueTimeStamp.isValid() &&
+  // Limit queries to once per queueRefreshInterval
+  if (!forced && m_queueTimeStamp.isValid() &&
 // QDateTime::msecsTo is not implemented until Qt 4.7
 #if QT_VERSION >= 0x040700
       m_queueTimeStamp.msecsTo(QDateTime::currentDateTime()) <=
@@ -535,45 +479,21 @@ QStringList SlurmQueueInterface::getQueueList() const
   QString stdout_str;
   QString stderr_str;
   int ec;
+  bool ok;
   // stdout_str should never be empty for a successful execution
   // There will always be column info at the beginning if nothing else.
-  if (m_opt->m_localQueue) {
-    QProcess proc;
-    proc.start(command);
-    proc.waitForFinished();
-    stdout_str = QString(proc.readAllStandardOutput());
-    stderr_str = QString(proc.readAllStandardError());
-    if (!stderr_str.isEmpty()) {
-      m_opt->warning(tr("=== Executing %1 === Output %2 "
-            "=== Error %3").arg(command).arg(stdout_str).arg(stderr_str));
-      queueTimeStamp = QDateTime::currentDateTime();
-      QStringList ret(m_queueData);
-      return ret;
-    }
-  } else {
-    // Get SSH connection
-    SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
-    if (ssh == nullptr) {
-      m_opt->warning(tr("Cannot connect to ssh server"));
-      queueTimeStamp = QDateTime::currentDateTime();
-      queueData.clear();
-      queueData << "CommError";
-      QStringList ret(m_queueData);
-      return ret;
-    }
-    if (!ssh->execute(command, stdout_str, stderr_str, ec) || (ec != 0) ||
-        (stdout_str.isEmpty())) {
-      m_opt->ssh()->unlockConnection(ssh);
-      m_opt->warning(tr("Error executing %1: (%2) %3\n\t"
-            "Using cached queue data.")
-          .arg(command)
-          .arg(QString::number(ec))
-          .arg(stderr_str));
-      queueTimeStamp = QDateTime::currentDateTime();
-      QStringList ret(m_queueData);
-      return ret;
-    }
-    m_opt->ssh()->unlockConnection(ssh);
+  //
+  ok = this->runACommand("", command, &stdout_str, &stderr_str, &ec);
+
+  if (!ok || (ec != 0) || stdout_str.isEmpty()) {
+    m_opt->warning(tr("Error executing %1: (%2) %3\n\t"
+          "Using cached queue data.")
+        .arg(command)
+        .arg(QString::number(ec))
+        .arg(stderr_str));
+    queueTimeStamp = QDateTime::currentDateTime();
+    QStringList ret(m_queueData);
+    return ret;
   }
 
   queueData = stdout_str.split("\n", QString::SkipEmptyParts);
@@ -581,6 +501,7 @@ QStringList SlurmQueueInterface::getQueueList() const
   QStringList ret(m_queueData);
   queueTimeStamp = QDateTime::currentDateTime();
   return ret;
+
 }
 }
 
