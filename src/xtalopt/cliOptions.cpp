@@ -405,9 +405,23 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
 
     QStringList list = toList(options.value("forcedSpgsWithRandSpg", ""));
     for (const auto& item : list) {
-      unsigned int num = item.toUInt();
-      if (num != 0 && num <= 230)
-        ++xtalopt.minXtalsOfSpgPerFU[num - 1];
+      int numhyphens = item.count(QLatin1Char('-'));
+      if (numhyphens == 0) {
+        unsigned int num = item.toUInt();
+        if (num != 0 && num <= 230)
+          ++xtalopt.minXtalsOfSpgPerFU[num - 1];
+      } else if (numhyphens == 1) {
+        QStringList num_list = item.split("-", QString::SkipEmptyParts);
+        bool ok1, ok2;
+        unsigned int min_num = num_list[0].toUInt(&ok1);
+        unsigned int max_num = num_list[1].toUInt(&ok2);
+        if (!ok1 || !ok2)
+          continue;
+        for (unsigned int num = min_num; num <= max_num; num++) {
+          if (num != 0 && num <= 230)
+            ++xtalopt.minXtalsOfSpgPerFU[num - 1];
+        }
+      }
     }
   }
 
