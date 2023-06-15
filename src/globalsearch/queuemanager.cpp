@@ -210,58 +210,10 @@ void QueueManager::checkLoop()
   if (!m_opt->readOnly && !m_opt->isStarting) {
     checkPopulation();
     checkRunning();
-    // Check if soft/hard exit flag is on
-    if (m_opt->m_softExit || m_opt->m_hardExit)
-      checkTheExit();
+    checkExit();
   }
 
   QTimer::singleShot(1000, this, SLOT(checkLoop()));
-}
-
-void QueueManager::checkTheExit()
-{
-  // This function, calls the performTheExit function depending
-  //   on the type of exit. For a hard exit, it is done immediately;
-  //   while for a soft exit checks for no running/pending job.
-
-  // If hard exit
-  if (m_opt->m_hardExit) {
-    m_opt->warning(tr("Performing a hard exit ..."));
-    m_opt->performTheExit();
-    return;
-  }
-
-  // If not a hard exit; then we're here for a soft exit
-  int total = 0;
-  int pending = 0;
-
-  QReadLocker trackerReadLocker(m_tracker->rwLock());
-  QList<Structure*> struct2 = *m_tracker->list();
-  for (int i = 0; i < struct2.size(); ++i)
-  {
-    Structure* str2 = struct2.at(i);
-    QReadLocker structureLocker(&str2->lock());
-    Structure::State st = str2->getStatus();
-    structureLocker.unlock();
-    if (st != Structure::Optimized   && st != Structure::Killed         &&
-        st != Structure::FeatureFail && st != Structure::FeatureDismiss &&
-        st != Structure::Removed     && st != Structure::Duplicate      &&
-        st != Structure::Supercell)
-      ++pending;
-    else
-      ++total;
-  }
-  trackerReadLocker.unlock();
-
-  // One more time; check the softExit flag!
-  if (m_opt->m_softExit && (pending == 0 && total >= m_opt->cutoff)) {
-    m_opt->warning(
-        tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
-        .arg(m_opt->cutoff).arg(total).arg(pending));
-    // Call the perform_the_exit with a delay in quitting to make
-    //   sure all output files are transferred/written.
-    m_opt->performTheExit(30);
-  }
 }
 
 void QueueManager::checkPopulation()
@@ -478,6 +430,53 @@ void QueueManager::checkRunning()
   }
 
   return;
+}
+
+void QueueManager::checkExit()
+{
+  // This function, calls the performTheExit function depending
+  //   on the type of exit. For a hard exit, it is done immediately;
+  //   while for a soft exit checks for no running/pending job.
+
+  if (! (m_opt->m_hardExit || m_opt->m_softExit)) {
+    // If no hard or soft exit, return
+    return;
+  } else if (m_opt->m_hardExit) {
+    // If hard exit
+    m_opt->warning(tr("Performing a hard exit ..."));
+    m_opt->performTheExit();
+  } else {
+    // If not a hard exit; then we're here for a soft exit
+    int total = 0;
+    int pending = 0;
+
+    QReadLocker trackerReadLocker(m_tracker->rwLock());
+    QList<Structure*> struct2 = *m_tracker->list();
+    for (int i = 0; i < struct2.size(); ++i)
+    {
+      Structure* str2 = struct2.at(i);
+      QReadLocker structureLocker(&str2->lock());
+      Structure::State st = str2->getStatus();
+      structureLocker.unlock();
+      if (st != Structure::Optimized   && st != Structure::Killed         &&
+          st != Structure::FeatureFail && st != Structure::FeatureDismiss &&
+          st != Structure::Removed     && st != Structure::Duplicate      &&
+          st != Structure::Supercell)
+        ++pending;
+      else
+        ++total;
+    }
+    trackerReadLocker.unlock();
+
+    if (pending == 0 && total >= m_opt->cutoff) {
+      m_opt->warning(
+          tr("Performing a soft exit (total, finished, and pending runs: %1 , %2 , %3)")
+          .arg(m_opt->cutoff).arg(total).arg(pending));
+      // Call the perform_the_exit with a delay in quitting to make
+      //   sure all output files are transferred/written.
+      m_opt->performTheExit(30);
+    }
+  }
 }
 
 void QueueManager::handleInProcessStructure(Structure* s)

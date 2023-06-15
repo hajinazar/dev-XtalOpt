@@ -161,9 +161,11 @@ void OptBase::performTheExit(int delay)
   // This function performs the exit (after deleting some variables, etc.)
   // The input parameter "delay" has a default of 0.
 
-  // Wait for a while just to make sure that all remote files are transferred
-  if (delay > 0)
+  if (delay <= 0) {
+    exit(1);
+  } else {
     QThread::msleep(delay * 1000);
+  }
 
   m_dialog = nullptr;
 

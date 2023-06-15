@@ -3119,19 +3119,6 @@ qDebug().noquote() << QString("NOTE: a total of %1 (from %2) structures "
   QList<QPair<GlobalSearch::Structure*, double>> probs =
     getProbabilityList(structures, popSize, m_hardnessFitnessWeight, featnums, featwgts, featopts);
 
-#ifdef FEATURES_DEBUG
-QString outs = QString("\nNOTE: Sorted structures list with probs is as follows:\n"
-                       "      structure : enthalpy (eV/FU) :    probs   : cumulative probs\n");
-  double previousProbs = 0.0;
-  for (const auto& elem: probs) {
-    outs += QString("        %1 :     %2 : %3 : %4\n")
-      .arg(elem.first->getIDString(),7).arg(elem.first->getEnthalpyPerFU(),12,'f',6)
-      .arg(elem.second - previousProbs,10,'f',6).arg(elem.second,10,'f',6);
-    previousProbs = elem.second;
-  }
-qDebug().noquote() << outs;
-#endif
-
   // Initialize loop vars
   Xtal* xtal = nullptr;
 
@@ -3145,8 +3132,17 @@ qDebug().noquote() << outs;
   }
 
 #ifdef FEATURES_DEBUG
-  qDebug().noquote() << QString("      Selected crystal is %1   ( r is %2 )\n")
-    .arg(xtal->getIDString(),7).arg(r,8,'f',6);
+QString outs = QString("\nNOTE: Selected %1 ( r = %2 ) from structures with probs:\n"
+                       "      structure : enthalpy (eV/FU) :    probs   : cumulative probs\n")
+                       .arg(xtal->getIDString(),7).arg(r,8,'f',6);
+  double previousProbs = 0.0;
+  for (const auto& elem: probs) {
+    outs += QString("        %1 :     %2 : %3 : %4\n")
+      .arg(elem.first->getIDString(),7).arg(elem.first->getEnthalpyPerFU(),12,'f',6)
+      .arg(elem.second - previousProbs,10,'f',6).arg(elem.second,10,'f',6);
+    previousProbs = elem.second;
+  }
+qDebug().noquote() << outs;
 #endif
 
   return xtal;

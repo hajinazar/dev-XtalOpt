@@ -393,10 +393,10 @@ protected:
 
   /**
    * Check the conditions for soft/hard exit.
-   * For a soft exit, checks for no running/pending jobs.
-   * For a hard exit, the acting function will be called immediately.
+   * For a soft exit, checks for no running/pending jobs and quit with a delay.
+   * For a hard exit, the acting function will be called for an immediate quit.
    */
-  void checkTheExit();
+  void checkExit();
 
   /**
    * Monitors the Structures in getAllRunningStructures() and
