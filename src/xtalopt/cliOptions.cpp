@@ -226,7 +226,13 @@ void XtalOptCLIOptions::processLine(const QString& tmpLine,
     return;
   }
 
-  if (csKey == "features" ) // To keep a list of feature lines for further processing
+  // Multi-objective related entries are treated separately. The reason is that
+  //   there might be multiple of these entries, each have multiple fields, and
+  //   some of these fields are optional in the CLI. This requires some flexibity
+  //   and a more complicated handling.
+  // So, we won't assign actual variables here. Rather, the following function
+  //   adds the input info to a sring list, and they will be processed later on.
+  if (csKey == "features" )
     xtalopt.featureListAdd(value);
   else
     options[csKey] = value;
@@ -467,16 +473,18 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.chance_of_mitosis =
     options.value("chanceOfFutureMitosis", "50").toUInt();
   xtalopt.m_softExit = toBool(options.value("softExit", "false"));
-  xtalopt.m_featuresReDo = toBool(options.value("featuresReDo", "false"));
   xtalopt.m_localQueue = toBool(options.value("localQueue", "false"));
 
-  // Process the optimization features (and weights) for energy/aflow-hardness/features
+  // MULTI-OBJECTIVE RELATED ENTRIES.
+  // Process the optimization features (and weights) for energy/aflow-hardness/features.
   // If no features/aflow-hardness; the aflow-hardness weight will be set to -1.0 and
   //   the number of features will be set to 0.
   // For this process, features list will be used that contains all feature/aflow-hardness
-  //   related input (if any).
+  //   related input.
+  xtalopt.m_featuresReDo = toBool(options.value("featuresReDo", "false"));
   if (!xtalopt.processFeaturesInfo())
     return false;
+  ///////////////
 
   // Mutators
   xtalopt.p_strip = options.value("percentChanceStripple", "50").toUInt();

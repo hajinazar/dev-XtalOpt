@@ -140,8 +140,9 @@ bool TabMo::updateOptimizationInfo()
 
   XtalOpt* xtalopt = qobject_cast<XtalOpt*>(m_opt);
 
-  // Features/hardness; the processFeatures... is called here
-  //   at least once to properly initialize weights for hardness and number of features.
+  // Features/hardness; the process_features_info is called
+  // here to properly initialize the number of features and
+  // the hardness weight.
   xtalopt->m_featuresReDo = ui.cb_redo_features->isChecked();
   bool ret = xtalopt->processFeaturesInfo();
   updateFeaturesTable();
@@ -153,7 +154,7 @@ void TabMo::addFeatures()
 {
   XtalOpt* xtalopt = qobject_cast<XtalOpt*>(m_opt);
 
-  // A copy: used for restoring table if anything goes wrong!
+  // A copy: for restoring table if anything goes wrong!
   QStringList tmpfeatureslst;
   for(int i = 0; i < xtalopt->featureListSize(); i++)
    tmpfeatureslst.push_back(xtalopt->featureListGet(i));
@@ -198,7 +199,7 @@ void TabMo::removeFeatures()
 {
   XtalOpt* xtalopt = qobject_cast<XtalOpt*>(m_opt);
 
-  // A copy: used for restoring table if anything goes wrong!
+  // A copy: for restoring table if anything goes wrong!
   QStringList tmpfeatureslst;
   for(int i = 0; i < xtalopt->featureListSize(); i++)
     tmpfeatureslst.push_back(xtalopt->featureListGet(i));
@@ -227,7 +228,7 @@ void TabMo::updateFeaturesTable()
 {
   XtalOpt* xtalopt = qobject_cast<XtalOpt*>(m_opt);
 
-  // Adjust table size:
+  // Adjust the table size.
   int numRows = xtalopt->featureListSize();
 
   ui.table_features->setRowCount(numRows);

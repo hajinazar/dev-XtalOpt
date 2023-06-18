@@ -434,19 +434,21 @@ void QueueManager::checkRunning()
 
 void QueueManager::checkExit()
 {
-  // This function, calls the performTheExit function depending
-  //   on the type of exit. For a hard exit, it is done immediately;
-  //   while for a soft exit checks for no running/pending job.
+  // If either hardExit or softExit flags are set, this function calls
+  //   the performTheExit function. For a hard exit, the code will quit
+  //   immediately. For a soft exit, it will check if there is no any
+  //   running/pending jobs, then waits a few second to make sure all
+  //   files are transferred and status' are saved before quitting.
 
   if (! (m_opt->m_hardExit || m_opt->m_softExit)) {
-    // If no hard or soft exit, return
+    // If no hard or soft exit, return.
     return;
   } else if (m_opt->m_hardExit) {
-    // If hard exit
+    // If hard exit.
     m_opt->warning(tr("Performing a hard exit ..."));
     m_opt->performTheExit();
   } else {
-    // If not a hard exit; then we're here for a soft exit
+    // If not a hard exit; then we're here for a soft exit.
     int total = 0;
     int pending = 0;
 
@@ -658,32 +660,33 @@ void QueueManager::updateStructureFeatureStatus(Structure* s)
 {
   // This is the main entry into processing finished feature calculations.
   // This function:
-  //   (1) starts by either doneWithFeatures and doneWithHardness signals,
-  //   (2) checks if both features and aflow-hardness calculations are
-  //       finished, and if so, hands the structure over to the appropriate
-  //       function; depending on the feature calculation status.
+  //   (1) Starts by either doneWithFeatures or doneWithHardness signals,
+  //   (2) Checks if both features and aflow-hardness calculations are
+  //       finished, and if so, sets the structure status according to the
+  //       outcomes which hands the structure over to the appropriate
+  //       handler function.
   // Note:
   //   (1) If one of the above "doneWith..." signals is emitted while the
   //       other calculation is not finished, we just return from here
   //       doing nothing. By the time the second one is emitted, we get
   //       here again, and this time both calculations are finished.
   //   (2) Handling of aflow-hardness internally is problematic! If it
-  //       "fails", there is no way of knowing that. The result will be
+  //       fails, there is no way of knowing that. The result will be
   //       structure remaining in "Calculating features..." status
   //       indefinitely, while all non-aflow-hardness related output files
   //       from other features are produced and copied to structures directory.
   //   (3) This function is called only with a signal; so basically a tracker
-  //       is not needed!
+  //       is not needed.
 
   QWriteLocker locker(&s->lock());
 
-  // If any of the features or aflow-hardness calculations is not finished, return
+  // If any of the features or aflow-hardness calculations is not finished, return.
   if ((m_opt->m_calculateHardness && s->vickersHardness() < 0.0) ||
       (m_opt->m_calculateFeatures &&
        s->getStrucFeatStatus() == Structure::FS_NotCalculated))
     return;
 
-  // If it's only aflow-hardness calculation
+  // If it's only aflow-hardness calculation.
   if (m_opt->m_calculateHardness && !m_opt->m_calculateFeatures) {
     s->setStatus(Structure::FeatureRetain);
     s->setStrucFeatStatus(Structure::FS_Retain);
@@ -691,7 +694,7 @@ void QueueManager::updateStructureFeatureStatus(Structure* s)
   }
 
   // Getting here means that we have feature calculation for sure.
-  // If we have aflow-hardness, it's finished ok for sure; otherwise wouldn't
+  // If we had aflow-hardness, it's finished for sure; otherwise wouldn't
   //  be here! So, the overall status depends only on feature calculation results.
   if (s->getStrucFeatStatus() == Structure::FS_Retain)
     s->setStatus(Structure::FeatureRetain);
@@ -758,7 +761,7 @@ void QueueManager::handleFailFeature_(Structure* s)
   QWriteLocker locker(&s->lock());
 
   // This might happen if features fail for any reason
-  //   (communication with remote server, no script present, ...)
+  //   (failed communication with remote server, no script present, ...)
   m_opt->error(tr("Features Fail (%1): removing the structure %2 ")
       .arg(s->getStrucFeatStatus()).arg(s->getIDString()));
 

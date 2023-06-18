@@ -58,10 +58,12 @@ public:
     Volume_T,
     Volume_per_FU_T,
     Formula_Units_T,
-    // The feature entries: these will appear in the menu only if it's a multi-objective run.
-    // Note: since the number of features is not fixed:
-    //       (1) Any non-feature entry should be added before this line!
-    //       (2) Don't ever add any entries after this line!
+    // The feature entries: these will appear in the menu only
+    //   if it's a multi-objective run.
+    // Note: since the number of features is not fixed, we add
+    //   their entry at the end: right after the last well-defined one.
+    //   (1) Any non-feature entry should be added before this line!
+    //   (2) Don't ever add any entries after this line!
     Featurei_T
     //
   };
@@ -86,10 +88,12 @@ public:
     Structure_L,
     StructureID_L,
     Formula_Units_L,
-    // The feature entries: these will appear in the menu only if it's a multi-objective run.
-    // Note: since the number of features is not fixed:
-    //       (1) Any non-feature entry should be added before this line!
-    //       (2) Don't ever add any entries after this line!
+    // The feature entries: these will appear in the menu only
+    //   if it's a multi-objective run.
+    // Note: since the number of features is not fixed, we add
+    //   their entry at the end: right after the last well-defined one.
+    //   (1) Any non-feature entry should be added before this line!
+    //   (2) Don't ever add any entries after this line!
     Featurei_L
     //
   };

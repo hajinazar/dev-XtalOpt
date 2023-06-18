@@ -4468,9 +4468,118 @@ void XtalOpt::resetDuplicates_()
   checkForDuplicates();
 }
 
+bool XtalOpt::processFeaturesInfo()
+{
+  // This function processes the feature/aflow-hardness entries from the CLI
+  //   or GUI input. It reads the input info, initiates weights and output files
+  //   (which are optional in CLI mode), sets flags and variables for
+  //    multi-objective run; then, calls the "processFeaturesWeights" function.
+  //
+  // From now on, aflow-hardness is being treated just as one of the features:
+  //      opt_typ = hardness
+  //      weight  = input (default value of -1.0)
+  //      no script path or output file name is needed
+  // Internally, though, the same old flags are set since the nature of the
+  //      aflow-hardness calculations is not similar to that of user-defined features.
+  //      As a result, m_features_num ONLY includes non-aflow-hardness features.
+
+  // Initialize the temp value for *legacy* aflow-hardness flags,
+  //      the weight will be adjusted in processFeaturesWeight
+  m_calculateHardness     = false;  // no aflow-hardness calculations
+  m_hardnessFitnessWeight = -1.0;   // no weight is given
+
+  // This needs to be done: this function might be
+  //   called more than once in gui mode
+  resetFeatures();
+
+  int tmp_num = 0; // Counter for non-aflow-hardness features
+  for (int i = 0; i < featureListSize(); i++)
+  {
+    QString     line  = featureListGet(i);
+    QStringList sline = line.split(" ", QString::SkipEmptyParts);
+    int nparam = sline.size();
+    // There should be at least one entry in the input!
+    if (nparam < 1)
+    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
+    // Initializing tmp variables;
+    // first parameter is always optimization type: min/max/fil/har
+    QString tmps = sline.at(0).toLower().mid(0,3);
+    FeatureType tmp_opt = (tmps == "min") ? FeatureType::FT_Min :
+      ((tmps == "max") ? FeatureType::FT_Max : ((tmps == "fil" ) ?
+        FeatureType::FT_Fil : FeatureType::FT_Har ));
+    QString tmp_out = "feature" + QString::number(tmp_num+1) + ".out";
+    QString tmp_exe = "none";
+    double  tmp_wgt = -1.0;
+    //
+    bool   isNumber;
+    double vline;
+    // aflow-hardness might have only 1 entry, the rest should have at least 2!
+    if (tmp_opt != FeatureType::FT_Har && nparam < 2)
+    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
+    // Start by handling aflow-hardness entry (if any!)
+    if (tmp_opt == FeatureType::FT_Har)
+    {
+      m_calculateHardness = true;
+      // Check if aflow-hardness weight is given
+      for (int j = 1; j < nparam; j++)
+      {
+        vline = sline.at(j).toDouble(&isNumber);
+        if (isNumber && vline >= 0.0)
+          m_hardnessFitnessWeight = vline;
+      }
+    }
+    // Now, the rest of optimization types (min/max/fil)
+    else
+    {
+      tmp_exe = sline.at(1); // The second field is always the script path. Now, read
+                             //   the optional fields of output file and weight if they are
+                             //   given; otherwise, they will remain with their default values.
+      switch(nparam) {
+        case 3: // 3rd item might be weight or output filename
+          vline = sline.at(2).toDouble(&isNumber);
+          if (isNumber && vline >= 0.0)
+            tmp_wgt = vline;
+          else
+            tmp_out = sline.at(2);
+          break;
+        case 4: // one of them is weight and one is output filename
+          vline = sline.at(2).toDouble(&isNumber);
+          if (isNumber && vline >= 0.0) {
+            tmp_wgt = vline;
+            tmp_out = sline.at(3);
+          }
+          else {
+            tmp_wgt = (sline.at(3).toDouble() >= 0.0) ? sline.at(3).toDouble() : -1.0;
+            tmp_out = sline.at(2);
+          }
+          break;
+        default:
+          break;
+      }
+
+      // We have collected all the info! Add to the list of features
+      setFeaturesOpt(tmp_opt);
+      setFeaturesExe(tmp_exe);
+      setFeaturesOut(tmp_out);
+      setFeaturesWgt(tmp_wgt);
+
+      // So, we have a non-aflow-hardness feature; add to the counter
+      tmp_num++;
+    }
+  }
+
+  setFeaturesNum(tmp_num);
+
+  // Process weights and initialize unspecified weights
+  return processFeaturesWeights();
+}
+
 bool XtalOpt::processFeaturesWeights()
 {
-  // Essentially, features/aflow-hardness can have weights 0.0<=w<=1.0.
+  // This function adjusts the weights and performs some sanity checks on the
+  //   features' data.
+  //
+  // Essentially, features/aflow-hardness can have weights of 0.0 <= w <= 1.0.
   //     The 0.0 is to allow the feature being calculated while not enter
   //     the optimization. Here, we want to treat unspecified weights, and
   //     make sure the total optimization weight is fine (0.0<=total_w<=1.0).
@@ -4593,109 +4702,6 @@ bool XtalOpt::processFeaturesWeights()
   }
 
   return true;
-}
-
-bool XtalOpt::processFeaturesInfo()
-{
-  //
-  // From now on, aflow-hardness is being treated just as one of the features:
-  //      the opt_typ = hardness
-  //      the weight  = input (default -1.0)
-  //      no script path or output file name is needed
-  //
-  // Internally, though, the same old flags are set since the nature of the
-  //      aflow-hardness calculations is not similar to that of user-defined features.
-  //      As a result, m_features_num ONLY includes non-aflow-hardness features.
-
-  // Initialize the temp value for *legacy* aflow-hardness flags,
-  //      the weight will be adjusted in processFeaturesWeight
-  m_calculateHardness     = false;  // no aflow-hardness calculations
-  m_hardnessFitnessWeight = -1.0;   // no weight is given
-
-  // This needs to be done: this function might be
-  //   called more than once in gui mode
-  resetFeatures();
-
-  int tmp_num = 0; // Counter for non-aflow-hardness features
-  for (int i = 0; i < featureListSize(); i++)
-  {
-    QString     line  = featureListGet(i);
-    QStringList sline = line.split(" ", QString::SkipEmptyParts);
-    int nparam = sline.size();
-    // There should be at least one entry in the input!
-    if (nparam < 1)
-    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
-    // Initializing tmp variables;
-    // first parameter is always optimization type: min/max/fil/har
-    QString tmps = sline.at(0).toLower().mid(0,3);
-    FeatureType tmp_opt = (tmps == "min") ? FeatureType::FT_Min :
-      ((tmps == "max") ? FeatureType::FT_Max : ((tmps == "fil" ) ?
-        FeatureType::FT_Fil : FeatureType::FT_Har ));
-    QString tmp_out = "feature" + QString::number(tmp_num+1) + ".out";
-    QString tmp_exe = "none";
-    double  tmp_wgt = -1.0;
-    //
-    bool   isNumber;
-    double vline;
-    // aflow-hardness might have only 1 entry, the rest should have at least 2!
-    if (tmp_opt != FeatureType::FT_Har && nparam < 2)
-    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
-    // Start by handling aflow-hardness entry (if any!)
-    if (tmp_opt == FeatureType::FT_Har)
-    {
-      m_calculateHardness = true;
-      // Check if aflow-hardness weight is given
-      for (int j = 1; j < nparam; j++)
-      {
-        vline = sline.at(j).toDouble(&isNumber);
-        if (isNumber && vline >= 0.0)
-          m_hardnessFitnessWeight = vline;
-      }
-    }
-    // Now, the rest of optimization types (min/max/fil)
-    else
-    {
-      tmp_exe = sline.at(1); // The second field is always the script path. Now, read
-                             //   the optional fields of output file and weight if they are
-                             //   given; otherwise, they will remain with their default values.
-      switch(nparam) {
-        case 3: // 3rd item might be weight or output filename
-          vline = sline.at(2).toDouble(&isNumber);
-          if (isNumber && vline >= 0.0)
-            tmp_wgt = vline;
-          else
-            tmp_out = sline.at(2);
-          break;
-        case 4: // one of them is weight and one is output filename
-          vline = sline.at(2).toDouble(&isNumber);
-          if (isNumber && vline >= 0.0) {
-            tmp_wgt = vline;
-            tmp_out = sline.at(3);
-          }
-          else {
-            tmp_wgt = (sline.at(3).toDouble() >= 0.0) ? sline.at(3).toDouble() : -1.0;
-            tmp_out = sline.at(2);
-          }
-          break;
-        default:
-          break;
-      }
-
-      // We have collected all the info! Add to the list of features
-      setFeaturesOpt(tmp_opt);
-      setFeaturesExe(tmp_exe);
-      setFeaturesOut(tmp_out);
-      setFeaturesWgt(tmp_wgt);
-
-      // So, we have a non-aflow-hardness feature; add to the counter
-      tmp_num++;
-    }
-  }
-
-  setFeaturesNum(tmp_num);
-
-  // Process weights and initialize unspecified weights
-  return processFeaturesWeights();
 }
 
 // Helper struct for the map below

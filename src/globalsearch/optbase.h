@@ -45,8 +45,8 @@
 // These are here so other parts of the code (than xtalopt module)  *
 //   can use them.                                                  *
 //                                                                  *
-// This file will be written if XTALOPT_DEBUG flag is defined       *
-//   at the cmake input.                                            *
+// This output file will be written if XTALOPT_DEBUG flag is        *
+//   defined at the cmake input.                                    *
 //                                                                  *
 // The main variables/functions are:                                *
 //   i)  messageHandlerIsSet : (logical) make sure this is set once *
@@ -54,7 +54,7 @@
 // iii)  customMessageOutput : the message handler function         *
 //  iv)  saveLogFileOfRun    : main function to be called           *
 //                                                                  *
-// The saveLogFileOfRun, whenever called, redirects all             *
+// The saveLogFileOfRun, whenever called, saves a copy of all the   *
 //   output messages to the file. This function, can and must       *
 //   be called only once! Either on:                                *
 //   (1) Starting a run (in xtalopt.cpp file, startSearch())        *

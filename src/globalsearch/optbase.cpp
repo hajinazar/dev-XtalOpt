@@ -158,7 +158,7 @@ bool OptBase::createSSHConnections()
 
 void OptBase::performTheExit(int delay)
 {
-  // This function performs the exit (after deleting some variables, etc.)
+  // This functions performs the exit, i.e., terminates the run.
   // The input parameter "delay" has a default of 0.
 
   if (delay <= 0) {
@@ -232,7 +232,7 @@ static inline double calculateProb(double currentEnthalpy,
   double partialFitns;            // (raw) contribution of a single feature to total fitness
   double correctFitns;            // corrected contrib. of a single feature (if zero spread?)
   const double zero     = 1.0e-8; // threshold for zero spread
-  QString outs="";                // auxiliary variable for debug output
+  QString outs = "";              // auxiliary variable for debug output
 
   // ===== multi-objective features
   // If no features calculation; features_num is 0 at this point.
@@ -378,8 +378,8 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
 
   // =======================================================================
   // The probs are set to zero if the spread is zero (i.e., less than 1e-8).
-  // So, all probs can't be "nan" anymore! The following part is not necessary
-  // but is kept for now, just in case.
+  // So, all probs shouldn't be "nan" anymore; unless there is an unfortunate
+  //   case in which the ratio still diverges because of small denaminator, etc.
   //                           -----------------
   // If they are all nan, that means all the probs are equal. Just
   // return an equal list
@@ -491,11 +491,12 @@ void OptBase::calculateFeatures(Structure* s)
   //       - running user script
   //       - copying back feature output files (in a remote run)
   //   However, since error handling in local/local-remote runs is not
-  //   so reliable, we won't force quitting the feature calculcations and just
-  //   print an output message; except than error in writing the output.POSCAR
-  //   which results in return and marking the structure as Fail.
+  //   so reliable (due to error channel pollution, etc.), we won't force
+  //   quitting the feature calculcations and just print an error message;
+  //   except than error in writing the output.POSCAR which will results
+  //   in marking the structure as Fail, signalling the finish, and return.
 
-  // We might get here just because aflow-hardness is requested; so first check
+  // We might be here just because aflow-hardness is requested; so first check
   //   if feature calculations are requested too or not! If not, just do nothing.
   if (!m_calculateFeatures)
     return;
@@ -520,8 +521,8 @@ void OptBase::startFeatureCalculations(Structure* s)
 
   qDebug() << "Feature calculations for " << s->getIDString() << " started!";
 
-  // We set the default feature calc. status to False. In case the run is
-  //   interrupted, this will remain as the overall status for the structure.
+  // We set the default feature calc. status to Fail. In case the run is
+  //   interrupted with a major failure, this will remain as the overall status.
   QWriteLocker structureLocker(&s->lock());
   s->setStrucFeatStatus(Structure::FS_Fail);
   structureLocker.unlock();
@@ -578,10 +579,9 @@ void OptBase::finishFeatureCalculations(Structure* s)
   QString wrkdir =
     (qi->getIDString().toLower() == "local") ? locdir : s->getRempath() + "/";
 
-  // First, check if all output files exist. This step is basically
-  //   important for features that submit their calculation to
-  //   a queue; otherwise the qprocess run command finishes when
-  //   process finishes and files are already generated.
+  // First, check if all output files exist and wait if not. This step is basically
+  //   important for features that submit their calculation to a queue; otherwise
+  //   the qprocess run returns when process finishes and files are already generated.
   // This function runs on a separate thread; so sleep won't freeze gui.
   bool ok = false, exists;
   while (!ok) {
@@ -608,8 +608,8 @@ void OptBase::finishFeatureCalculations(Structure* s)
   int failed_count = 0;
   int dismis_count = 0;
   for (int i = 0; i < getFeaturesNum(); i++) {
-    double flagv {0.0};
-    bool   flags {false};
+    double flagv = 0.0;
+    bool   flags = false;
 
     QFile file(locdir + getFeaturesOut(i));
 
@@ -618,36 +618,44 @@ void OptBase::finishFeatureCalculations(Structure* s)
       QString fline = in.readLine();
       QStringList flist = fline.split(" ", QString::SkipEmptyParts);
       if (flist.size() >= 1) {
-        // The below line, is to read the first entry of the first line.
-        // It can change the default "false" flags to true if a value
-        //   is read successfully.
+        // The below line, aims at reading the first entry of the first line;
+        //   while ignoring everything else. The default "false" value of the
+        //   "flags" variable changes to true if a legit value is read successfully.
         flagv = flist.at(0).toDouble(&flags);
       }
       file.close();
     } else {
-      // This is when failed to read the file for any or it's empty.
-      //   With default values of flagv/flags, the feature will be marked as failed
-      //   in the following automatically. We just produce an error message here.
+      // This is when failed to read the file for any reason, or it's empty.
+      //   With default values of flagv/flags, the feature will be automatically marked
+      // as failed in the following. We just produce an error message here.
       error(tr("Failed to read any results from output file for feature %1 for structure %2")
             .arg(i+1).arg(s->getIDString()));
     }
 
-    // Save the feature's value
+    // Apparently c++ considers "nan" and "inf" valid numerical entries. To avoid issues
+    //   with these type of values, we exclude them and mark the feature calc as failed.
+    //   Otherwise, the probability calculation might end up with a seg fault.
+    if (std::isnan(flagv) || std::isinf(flagv)) {
+      flagv = 0.0;
+      flags = false;
+    }
+
+    // Save the whatever value we end up with for the feature.
     tmp_values.push_back(flagv);
 
     if (!flags)
-      // Calculations went wrong (e.g. output file format is empty or not correct)
+      // Calculations went wrong (e.g. output file is empty or has an incorrect format)
       failed_count += 1;
     else if (getFeaturesOpt(i) == OptBase::FT_Fil && flagv == 0.0)
-      // Structure marked for discarding by fil feature
+      // Structure marked for discarding by a filtration feature
       dismis_count += 1;
   }
 
-  // Update feature calculation status for the structure.
+  // Update feature calculation status for the structure to either: Retain, Dismiss, Fail.
   // If none of features Fail or Dismiss, we mark the structure as Retain.
-  // If at least one Dismiss, we don't care about fails and mark it Dismiss
+  // If at least one Dismiss, we don't care about fails and mark it as Dismiss
   //   since it will be removed from the pull anyways, but gives a chance of redoing.
-  // If there are only Fail features, then we mark it as Fail.
+  // If there are at least Fail features (and no Dismiss), then we mark it as Fail.
 
   QWriteLocker structureLocker(&s->lock());
   s->setStrucFeatValuesVec(tmp_values);
