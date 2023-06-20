@@ -168,10 +168,10 @@ public:
   /**
    * Multi-objective read/write functions for a structure
    */
-  int        getStrucFeatNumber()             {return m_strucFeatValues.size();};
-  double     getStrucFeatValues(int i)        {return m_strucFeatValues.at(i);};
+  int        getStrucFeatNumber() const       {return m_strucFeatValues.size();};
+  double     getStrucFeatValues(int i) const  {return m_strucFeatValues.at(i);};
   FeatStatus getStrucFeatStatus() const       {return m_strucFeatStatus;};
-  int        getStrucFeatFailCt()             {return m_strucFeatFailCt;};
+  int        getStrucFeatFailCt() const       {return m_strucFeatFailCt;};
   void       setStrucFeatValues(double v)     {m_strucFeatValues.push_back(v);};
   void       setStrucFeatStatus(FeatStatus v) {m_strucFeatStatus = v;};
   void       setStrucFeatFailCt(int i)        {m_strucFeatFailCt = i;};
@@ -449,7 +449,7 @@ public:
    * @sa getResultsEntry
    * @sa OptBase::save
    */
-  virtual QString getResultsHeader(bool includeHardness, int features_num = 0) const
+  virtual QString getResultsHeader(bool includeHardness, int features_num) const
   {
     QString out = QString("%1 %2 %3 %4")
       .arg("Rank", 6)
@@ -460,7 +460,7 @@ public:
       out += QString("%1")
         .arg("Hardness", 10);
     for (int i = 0; i< features_num; i++)
-      out += QString("%1").arg("Feature"+QString::number(i+1), 10);
+      out += QString("%1").arg("Feature"+QString::number(i+1), 11);
     out += QString("%1")
       .arg("Status", 11);
 
@@ -472,12 +472,12 @@ public:
    */
   void updateAndAddFeaturesToHistory(Structure* s);
 
-  /** This function is changed (i.e., added extra variables with default values) for multi-objective case
+  /** This function is changed for multi-objective case // SH
    * @return A structure-specific entry for a results printout
    * @sa getResultsHeader
    * @sa OptBase::save
    */
-  virtual QString getResultsEntry(bool includeHardness, int optstep, int features_num= 0, QList<double> features_val= {}) const;
+  virtual QString getResultsEntry(bool includeHardness, int features_num, int optstep) const;
 
   /** Find the smallest separation between all atoms in the
    * Structure.

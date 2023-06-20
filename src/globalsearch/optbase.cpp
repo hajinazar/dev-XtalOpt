@@ -201,20 +201,20 @@ void OptBase::performTheExit(int delay)
   exit(1);
 }
 
-static inline double calculateProb(double currentEnthalpy,
-                                   double currentHardness,
+static inline double calculateProb(QString strucID,
+                                   int    features_num,
+                                   QList<OptBase::FeatureType> features_opt,
+                                   QList<double> features_wgt,
+                                   QList<double> features_val,
+                                   QList<double> features_min,
+                                   QList<double> features_max,
+                                   double currentEnthalpy,
                                    double lowestEnthalpy,
                                    double highestEnthalpy,
-                                   double lowestHardness,
-                                   double highestHardness,
                                    double hardnessWeight,
-                                   QString strucID,
-                                   int    features_num = 0,
-                                   QList<double> features_wgt={},
-                                   QList<OptBase::FeatureType> features_opt={},
-                                   QList<double> features_val={},
-                                   QList<double> features_min={},
-                                   QList<double> features_max={})
+                                   double currentHardness,
+                                   double lowestHardness,
+                                   double highestHardness)
 {
   // General note: if the spread for any feature/property is zero (is less than 1.0e-8);
   //   we take its contribution to be zero so it does not suppress the effect of the other
@@ -359,20 +359,21 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
   for (const auto& s: structures) {
     QReadLocker lock(&s->lock());
 
-    double prob = calculateProb(s->getEnthalpyPerFU(),
-                                s->vickersHardness(),
-                                lowestEnthalpy,
-                                highestEnthalpy,
-                                lowestHardness,
-                                highestHardness,
-                                hardnessWeight,
-                                s->getIDString(),
+    double prob = calculateProb(s->getIDString(),
                                 features_num,
-                                features_wgt,
                                 features_opt,
+                                features_wgt,
                                 s->getStrucFeatValuesVec(),
                                 features_min,
-                                features_max);
+                                features_max,
+                                s->getEnthalpyPerFU(),
+                                lowestEnthalpy,
+                                highestEnthalpy,
+                                hardnessWeight,
+                                s->vickersHardness(),
+                                lowestHardness,
+                                highestHardness);
+
     probs.append(QPair<Structure*, double>(s, prob));
   }
 
@@ -961,8 +962,8 @@ bool OptBase::save(QString stateFilename, bool notify)
       if (!structure)
         continue; // In case there was a problem copying.
       QReadLocker structureLocker(&structure->lock());
-      out << structure->getResultsEntry(m_calculateHardness, structure->getCurrentOptStep(),
-                                        getFeaturesNum(), structure->getStrucFeatValuesVec()) << endl;
+      out << structure->getResultsEntry(m_calculateHardness, getFeaturesNum(),
+                                        structure->getCurrentOptStep()) << endl;
       structureLocker.unlock();
       if (notify && m_dialog) {
         m_dialog->stopProgressUpdate();

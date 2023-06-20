@@ -114,8 +114,8 @@ public:
     const QHash<unsigned int, XtalCompositionStruct>& limits,
     int* atom1 = nullptr, int* atom2 = nullptr, double* IAD = nullptr);
   QHash<QString, QVariant> getFingerprint();
-  virtual QString getResultsEntry(bool includeHardness, int optstep, int features_num = 0, QList<double> features_val = {}) const override;
-  virtual QString getResultsHeader(bool includeHardness, int features_num = 0) const override
+  virtual QString getResultsEntry(bool includeHardness, int features_num, int optstep) const override;
+  virtual QString getResultsHeader(bool includeHardness, int features_num) const override
   {
     QString out = QString("%1 %2 %3 %4 %5")
         .arg("Rank", 5)
@@ -127,7 +127,7 @@ public:
       out += QString("%1")
         .arg("Hardness", 10);
     for (int i = 0; i < features_num; i++)
-      out += QString("%1").arg("Feature"+QString::number(i+1), 10);
+      out += QString("%1").arg("Feature"+QString::number(i+1), 11);
     out += QString("%1 %2")
         .arg("SpaceGroup", 11)
         .arg("Status", 21);

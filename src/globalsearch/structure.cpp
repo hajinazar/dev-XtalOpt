@@ -870,7 +870,7 @@ bool Structure::addAtomRandomly(uint atomicNumber, double minIAD, double maxIAD,
   return true;
 }
 
-QString Structure::getResultsEntry(bool includeHardness, int optstep, int features_num, QList<double> features_val) const
+QString Structure::getResultsEntry(bool includeHardness, int features_num, int optstep) const
 {
   QString status;
   switch (getStatus()) {
@@ -924,8 +924,12 @@ QString Structure::getResultsEntry(bool includeHardness, int optstep, int featur
   if (includeHardness)
     out += QString("%1")
       .arg(vickersHardness(), 10);
-  for(int i = 0; i < features_num; i++)
-    out += (i < features_val.size()) ? QString("%1").arg(features_val[i], 10) : QString("%1").arg("-", 10);
+  for (int i = 0; i < features_num; i++) {
+    if (i < getStrucFeatNumber())
+      out += " "+QString("%1").arg(getStrucFeatValues(i), 10);
+    else
+      out += QString("%1").arg("-", 11);
+  }
   out += QString("%1")
       .arg(status, 11);
 
