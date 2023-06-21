@@ -126,6 +126,7 @@ void TabPlot::readSettings(const QString& filename)
   ui.combo_labelType->setCurrentIndex(10);
   ui.combo_yAxis->setCurrentIndex(3);
   ui.combo_xAxis->setCurrentIndex(1);
+  ui.cb_labelPoints->setChecked(true);
 }
 
 void TabPlot::updateGUI()
