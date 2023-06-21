@@ -1519,7 +1519,7 @@ void OptBase::readOptimizerTemplatesFromSettings(
   SETTINGS(settingsFile.c_str());
 
   optim->setLocalRunCommand(settings->value(getIDString().toLower() + "/edit/optimizer/" +
-                            QString::number(optStep) + "/localRunCommand",
+                            QString::number(optStep) + "/exeLocation",
                             optim->getIDString().toLower()).toString());
   settings->beginGroup(getIDString().toLower() + "/edit/optimizer/" +
                        QString::number(optStep) + "/" +
@@ -1618,7 +1618,7 @@ void OptBase::writeOptimizerTemplatesToSettings(
   SETTINGS(settingsFilename.c_str());
   // Optimizer templates
   settings->setValue(getIDString().toLower() + "/edit/optimizer/" +
-                     QString::number(optStep) + "/localRunCommand" ,
+                     QString::number(optStep) + "/exeLocation",
                      optim->getLocalRunCommand());
   settings->beginGroup(getIDString().toLower() + "/edit/optimizer/" +
                        QString::number(optStep) + "/" +
