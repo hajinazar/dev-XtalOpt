@@ -253,13 +253,6 @@ public slots:
   void setLocalRunCommand(const QString& s) { m_localRunCommand = s; }
 
   /**
-   * Returns the local run command.
-   *
-   * Details given in m_localRunCommand.
-   */
-  QString getLocalRunCommand() { return m_localRunCommand; }
-
-  /**
    * Filename for standard input
    *
    * Details given in m_localRunCommand.

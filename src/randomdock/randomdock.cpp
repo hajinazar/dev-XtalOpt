@@ -138,7 +138,9 @@ void RandomDock::startSearch()
 #endif // ENABLE_SSH
 
   // Here we go!
-  debug("Starting optimization.");
+  QString formattedTime = QDateTime::currentDateTime().toString("MMMM dd, yyyy   hh:mm:ss");
+  QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
+  debug("Starting optimization - " + formattedTimeMsg);
   emit startingSession();
 
   // prepare pointers

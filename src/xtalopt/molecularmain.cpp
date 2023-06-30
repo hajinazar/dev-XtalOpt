@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
   QCoreApplication::setOrganizationName("XtalOpt");
   QCoreApplication::setOrganizationDomain("xtalopt.github.io");
   QCoreApplication::setApplicationName("XtalOpt");
-  QCoreApplication::setApplicationVersion("rc13.0");
+  QCoreApplication::setApplicationVersion("13.0");
 
   QCommandLineParser parser;
   parser.setApplicationDescription("XtalOpt: an open-source evolutionary "

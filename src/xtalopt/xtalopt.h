@@ -212,7 +212,7 @@ public:
   // This function parses the feature-related input and initializes relevant variables
   bool processFeaturesInfo();
 
-  // Initialize unspecified weights and perform a sanity check
+  // This function initializes unspecified weights and performs related sanity checks
   bool processFeaturesWeights();
 
   bool loaded;

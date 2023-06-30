@@ -159,45 +159,48 @@ bool OptBase::createSSHConnections()
 void OptBase::performTheExit(int delay)
 {
   // This functions performs the exit, i.e., terminates the run.
-  // The input parameter "delay" has a default of 0.
+  // The input parameter "delay" has a default of 0. If a non-zero
+  //   delay is specified, the function waits for that amount, and
+  //   will attempt to do some clean up before quitting.
 
-  if (delay <= 0) {
-    exit(1);
-  } else {
+  if (delay > 0) {
+    // Impose a delay if needed
     QThread::msleep(delay * 1000);
-  }
 
-  m_dialog = nullptr;
+    m_dialog = nullptr;
 
-  // Save one last time
-  warning("Saving XtalOpt settings...");
+    // Save one last time
+    warning("Saving XtalOpt settings...");
 
-  // First save the state file (only if we have structures)
-  if (!m_queue->getAllStructures().isEmpty())
-    save("", false);
+    // First save the state file (only if we have structures)
+    if (!m_queue->getAllStructures().isEmpty())
+      save("", false);
 
-  // Then save the config settings
-  QString configFileName = QSettings().fileName();
-  save(configFileName, false);
+    // Then save the config settings
+    QString configFileName = QSettings().fileName();
+    save(configFileName, false);
 
-  // Stop queuemanager thread
-  if (m_queueThread->isRunning()) {
-    m_queueThread->disconnect();
-    m_queueThread->quit();
-    m_queueThread->wait();
-  }
+    // Stop queuemanager thread
+    if (m_queueThread->isRunning()) {
+      m_queueThread->disconnect();
+      m_queueThread->quit();
+      m_queueThread->wait();
+    }
 
-  // Delete queuemanager
-  delete m_queue;
-  m_queue = 0;
+    // Delete queuemanager
+    delete m_queue;
+    m_queue = 0;
 
 #ifdef ENABLE_SSH
-  // Stop SSHManager
-  delete m_ssh;
-  m_ssh = 0;
+    // Stop SSHManager
+    delete m_ssh;
+    m_ssh = 0;
 #endif // ENABLE_SSH
+  }
 
-  warning("Quitting now ...");
+  QString formattedTime = QDateTime::currentDateTime().toString("MMMM dd, yyyy   hh:mm:ss");
+  QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
+  warning("Quitting - " + formattedTimeMsg);
   exit(1);
 }
 
@@ -456,8 +459,8 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
   }
 
 #ifdef OPTBASE_PROBS_DEBUG
-          outs1 = QString("NOTE: Cumulative (final) probs list is:\n"
-                         "    structure :  enthalpy  : probs\n");
+  outs1 = QString("NOTE: Cumulative (final) probs list is:\n"
+                  "    structure :  enthalpy  : probs\n");
   for (const auto& elem: probs) {
     QReadLocker lock(&elem.first->lock());
     outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7)
@@ -1619,7 +1622,7 @@ void OptBase::writeOptimizerTemplatesToSettings(
   // Optimizer templates
   settings->setValue(getIDString().toLower() + "/edit/optimizer/" +
                      QString::number(optStep) + "/exeLocation",
-                     optim->getLocalRunCommand());
+                     optim->localRunCommand());
   settings->beginGroup(getIDString().toLower() + "/edit/optimizer/" +
                        QString::number(optStep) + "/" +
                        optim->getIDString().toLower());

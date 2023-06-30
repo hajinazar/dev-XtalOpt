@@ -305,7 +305,8 @@ public:
    *         The probabilities will be cumulative so that the last probability
    *         is 1. To use this list, generate a random double 'r' between 0
    *         and 1, and select the structure that is immediately larger than r.
-   *         Default arguments are added for the generic multi-objective search.
+   *         Default arguments are added for the multi-objective search which
+   *         is not added to gapc part of the code.
    */
   static QList<QPair<Structure*, double>>
   getProbabilityList(const QList<Structure*>& structures,
@@ -697,7 +698,6 @@ public:
   int     featureListSize()         {return m_features_lst.size();};
 
 signals:
-
   /**
    * Emitted when feature calculations for the structure are finished.
    * @param s Structure
@@ -1447,7 +1447,6 @@ public:
   /// will sometimes think a job is queued even though it is not.
   bool m_cancelJobAfterTime = false;
   double m_hoursForCancelJobAfterTime = 100.0;
-
 };
 
 } // end namespace GlobalSearch

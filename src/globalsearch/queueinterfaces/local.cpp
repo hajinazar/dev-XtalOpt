@@ -217,7 +217,6 @@ bool LocalQueueInterface::logErrorDirectory(Structure* s) const
 
   QString command, command2;
   QProcess proc, proc2;
-
 #ifdef WIN32
   command = "mkdir " + this->m_opt->filePath + "\\errorDirs\\";
   // Does robocopy come with all windows computers?
@@ -419,15 +418,11 @@ bool LocalQueueInterface::fetchFile(Structure* s, const QString& rel_filename,
 {
   QString filename = s->fileName() + "/" + rel_filename;
   QFile output(filename);
-
   if (!output.open(QFile::ReadOnly | QFile::Text)) {
     return false;
   }
-
   *contents = QString(output.readAll());
-
   output.close();
-
   return true;
 }
 

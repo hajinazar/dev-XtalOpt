@@ -143,7 +143,6 @@ bool RemoteQueueInterface::writeFiles(
     }
   }
   m_opt->ssh()->unlockConnection(ssh);
-
   return true;
 }
 
@@ -283,7 +282,6 @@ bool RemoteQueueInterface::copyAFileLocalToRemote(const QString& loc_file,
     return false;
   }
   m_opt->ssh()->unlockConnection(ssh);
-
   return true;
 }
 
@@ -304,6 +302,7 @@ bool RemoteQueueInterface::checkIfFileExists(Structure* s,
   // ===================================================
 
   SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
+
   if (ssh == nullptr) {
     m_opt->warning(tr("Cannot connect to ssh server"));
     return false;
@@ -312,10 +311,10 @@ bool RemoteQueueInterface::checkIfFileExists(Structure* s,
   needle = s->getRempath() + "/" + filename;
   if (!ssh->readRemoteDirectoryContents(searchPath, haystack)) {
     m_opt->warning(tr("Error reading directory %1 on %2@%3:%4")
-        .arg(searchPath)
-        .arg(ssh->getUser())
-        .arg(ssh->getHost())
-        .arg(ssh->getPort()));
+                     .arg(searchPath)
+                     .arg(ssh->getUser())
+                     .arg(ssh->getHost())
+                     .arg(ssh->getPort()));
     m_opt->ssh()->unlockConnection(ssh);
     return false;
   }
@@ -357,6 +356,7 @@ bool RemoteQueueInterface::fetchFile(Structure* s, const QString& rel_filename,
   // ===================================================
 
   SSHConnection* ssh = m_opt->ssh()->getFreeConnection();
+
   if (ssh == nullptr) {
     m_opt->warning(tr("Cannot connect to ssh server"));
     return false;
@@ -429,11 +429,11 @@ bool RemoteQueueInterface::grepFile(Structure* s, const QString& matchText,
   }
 
   if (!ssh->execute(QString("grep %1 '%2' %3/%4")
-        .arg(flags)
-        .arg(matchText)
-        .arg(s->getRempath())
-        .arg(filename),
-        stdout_str, stderr_str, ec)) {
+                      .arg(flags)
+                      .arg(matchText)
+                      .arg(s->getRempath())
+                      .arg(filename),
+                    stdout_str, stderr_str, ec)) {
     m_opt->ssh()->unlockConnection(ssh);
     return false;
   }
@@ -442,6 +442,7 @@ bool RemoteQueueInterface::grepFile(Structure* s, const QString& matchText,
   if (exitcode) {
     *exitcode = ec;
   }
+
   if (matches) {
     *matches = stdout_str.split('\n', QString::SkipEmptyParts);
   }
@@ -473,7 +474,6 @@ bool RemoteQueueInterface::createRemoteDirectory(Structure* structure,
   QProcess proc;
   QString command = "mkdir -p \"" + structure->getRempath() + "\"";
   QString stdout_str, stderr_str;
-
   int ec;
   if (!ssh2->execute(command, stdout_str, stderr_str, ec) || ec != 0) {
     m_opt->warning(tr("Error executing %1: %2").arg(command).arg(stderr_str));
@@ -525,7 +525,7 @@ bool RemoteQueueInterface::cleanRemoteDirectory(Structure* structure,
   // 2nd arg keeps the directory, only removes directory contents.
   if (!ssh2->removeRemoteDirectory(structure->getRempath(), true)) {
     m_opt->warning(
-        tr("Error clearing remote directory %1").arg(structure->getRempath()));
+      tr("Error clearing remote directory %1").arg(structure->getRempath()));
     if (!ssh) m_opt->ssh()->unlockConnection(ssh2);
     return false;
   }

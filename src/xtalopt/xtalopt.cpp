@@ -231,7 +231,10 @@ bool XtalOpt::startSearch()
 #endif // ENABLE_SSH
 
   // Here we go!
-  debug("Starting optimization.");
+  QString formattedTime = QDateTime::currentDateTime().toString("MMMM dd, yyyy   hh:mm:ss");
+  QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
+
+  debug("Starting optimization - " + formattedTimeMsg);
   emit startingSession();
 
   // prepare pointers
@@ -254,6 +257,7 @@ bool XtalOpt::startSearch()
   // Use new xtal count in case "addXtal" falls behind so that we
   // don't duplicate structures when switching from seeds -> random.
   uint newXtalCount = 0;
+
   // Load seeds...
   for (int i = 0; i < seedList.size(); i++) {
     filename = seedList.at(i);
@@ -350,7 +354,6 @@ bool XtalOpt::startSearch()
         spgStillNeeded[i]--;
       }
     }
-
     // If we still haven't generated enough xtals, pick a random FU and spg
     // to be generated
     while (newXtalCount < numInitial) {
@@ -390,6 +393,7 @@ bool XtalOpt::startSearch()
     m_dialog->updateProgressMinimum(0);
     m_dialog->updateProgressMinimum(newXtalCount);
   }
+
   connect(m_tracker, SIGNAL(newStructureAdded(GlobalSearch::Structure*)),
           m_initWC, SLOT(wakeAllSlot()));
 
@@ -2201,13 +2205,11 @@ void XtalOpt::initializeAndAddXtal(Xtal* xtal, uint generation,
               .arg(locpath_s));
     }
   }
-
   // xtal->moveToThread(m_tracker->thread());
   xtal->setupConnections();
   xtal->setFileName(locpath_s);
   xtal->setRempath(rempath_s);
   xtal->setCurrentOptStep(0);
-
   // If none of the cell parameters are fixed, perform a normalization on
   // the lattice (currently a Niggli reduction)
   if (fabs(a_min - a_max) > 0.01 && fabs(b_min - b_max) > 0.01 &&
@@ -2589,6 +2591,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
               return nullptr;
             }
             ++attemptCount;
+
             nxtal = generateSuperCell(selectedXtal->getFormulaUnits(),
                                       formulaUnits, selectedXtal, true);
           }
@@ -2668,6 +2671,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
             if (tempStructures.size() < 3)
               enoughStructures = false;
             if (enoughStructures) {
+
               xtal1 = selectXtalFromProbabilityList(tempStructures);
               xtal2 = selectXtalFromProbabilityList(tempStructures);
 
@@ -2876,18 +2880,6 @@ Xtal* XtalOpt::generatePrimitiveXtal(Xtal* xtal)
   nxtal->setPrimitiveChecked(true);
   nxtal->setSkippedOptimization(true);
 
-/*
-#ifdef FEATURES_DEBUG
-// Copy feature info for the new primitive cell
-  if (m_calculateFeatures) {
-    QString outstr;
-    outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generatePrimitiveXtal",
-      xtal->getIDString().toStdString().c_str(),
-                   nxtal->getIDString().toStdString().c_str());
-    qDebug().noquote() << outstr;
-  }
-#endif
-*/
   nxtal->resetStrucFeat();
   nxtal->setStrucFeatStatus(xtal->getStrucFeatStatus());
   nxtal->setStrucFeatValuesVec(xtal->getStrucFeatValuesVec());
@@ -2936,18 +2928,6 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
   xtal->setParents(parents);
   xtal->setGeneration(gen + 1);
 
-/*
-#ifdef FEATURES_DEBUG
-// Copy feature info for the new supercell
-  if (m_calculateFeatures) {
-    QString outstr;
-    outstr.sprintf("NOTE: copying feature info (%8s to %8s) - generateSuperCell",
-      parentXtal->getIDString().toStdString().c_str(),
-                   xtal->getIDString().toStdString().c_str());
-    qDebug().noquote() << outstr;
-  }
-#endif
-*/
   xtal->resetStrucFeat();
   xtal->setStrucFeatStatus(parentXtal->getStrucFeatStatus());
   xtal->setStrucFeatValuesVec(parentXtal->getStrucFeatValuesVec());
@@ -3144,7 +3124,6 @@ QString outs = QString("\nNOTE: Selected %1 ( r = %2 ) from structures with prob
   }
 qDebug().noquote() << outs;
 #endif
-
   return xtal;
 }
 
@@ -4513,7 +4492,8 @@ bool XtalOpt::processFeaturesInfo()
     //
     bool   isNumber;
     double vline;
-    // aflow-hardness might have only 1 entry, the rest should have at least 2!
+    // aflow-hardness might have only 1 entry (opt type), the rest should have at least 2
+    //   (opt type and executable paht; output file and weight optional in CLI).
     if (tmp_opt != FeatureType::FT_Har && nparam < 2)
     { qDebug() << "Error: features are not properly initiated: " << line; return false; }
     // Start by handling aflow-hardness entry (if any!)
@@ -4725,14 +4705,12 @@ void checkIfDups(dupCheckStruct& st)
       st.j->getStatus() == Xtal::Duplicate) {
     return;
   }
-
   if (st.i->compareCoordinates(*st.j, st.tol_len, st.tol_ang)) {
     // Mark the newest xtal as a duplicate of the oldest. This keeps the
     // lowest-energy plot trace accurate.
     // For some reason, primitive structures do not always update their
     // indices immediately, and they remain the default "-1". So, if one
     // of the indices is -1, set that to be the kickXtal
-
     if (st.i->getIndex() == -1) {
       kickXtal = st.i;
       keepXtal = st.j;

@@ -569,7 +569,7 @@ void QueueManager::handleOptimizedStructure_(Structure* s)
 
   emit structureFinished(s);
 }
-// @endcond
+/// @endcond
 
 void QueueManager::handleStepOptimizedStructure(Structure* s)
 {
@@ -857,6 +857,7 @@ void QueueManager::handleUpdatingStructure(Structure* s)
 {
   // Nothing to do but wait
 }
+
 void QueueManager::handleErrorStructure(Structure* s)
 {
   QWriteLocker locker(m_errorTracker.rwLock());

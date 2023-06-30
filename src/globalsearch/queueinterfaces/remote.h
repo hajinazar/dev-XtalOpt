@@ -259,7 +259,6 @@ public slots:
                         const bool caseSensitive = true) const override;
 
 protected:
-
   /**
    * Create a working directory for \a structure on the remote
    * cluster.

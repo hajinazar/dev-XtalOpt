@@ -56,6 +56,7 @@ public slots:
 
 protected:
   // Fetches the queue from the server
+  // With "true" argument, refresh is done regardless of the queue refresh interval
   QStringList getQueueList(bool forced = false) const;
   // Cached queue data
   QStringList m_queueData;

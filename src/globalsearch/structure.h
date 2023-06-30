@@ -152,14 +152,13 @@ public:
      * another. The other structure's information can be found in
      * getSupercellString(). */
     Supercell,
-    /** The Structure is about to restart it's current optimization
-     * step. */
+    /** The Structure is about to restart it's current optimization step. */
     Restart,
-    /** Structure marked as dismissed in feature calculations */
+    /** Structure marked as dismissed in feature calculations. */
     FeatureDismiss,
-    /** Feature calculations for the structure have failed */
+    /** Feature calculations for the structure have failed. */
     FeatureFail,
-    /** All feature/hardness calculations for structure are successfully finished */
+    /** All feature/hardness calculations for structure are successfully finished. */
     FeatureRetain,
     /** Structure is in the process of feature calculations */
     FeatureCalculation

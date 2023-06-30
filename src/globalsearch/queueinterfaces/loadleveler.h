@@ -60,6 +60,7 @@ protected:
   QString parseStatus(const QStringList& statusList, unsigned int jobId) const;
   unsigned int parseJobId(const QString& submissionOutput, bool* ok) const;
   // Fetches the queue from the server
+  // With "true" argument, refresh is done regardless of the queue refresh interval
   QStringList getQueueList(bool forced = false) const;
   // Cached queue data
   QStringList m_queueData;

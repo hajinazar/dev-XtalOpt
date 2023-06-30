@@ -279,7 +279,6 @@ public slots:
   void unlockForNaming(Structure* s = 0);
 
 protected slots:
-
   /**
    * Check for the status of finished feature/aflow-hardness
    * calculations, and label the structure accordingly for
