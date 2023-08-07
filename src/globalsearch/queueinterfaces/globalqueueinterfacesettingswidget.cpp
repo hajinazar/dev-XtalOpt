@@ -49,6 +49,7 @@ void GlobalQueueInterfaceSettingsWidget::updateGUI(GlobalSearch::OptBase* opt)
   m_ui->cb_cancelJobAfterTime->setChecked(opt->cancelJobAfterTime());
   m_ui->spin_hoursForCancelJobAfterTime->setValue(
     opt->hoursForCancelJobAfterTime());
+  m_ui->cb_local_queue->setChecked(opt->m_localQueue);
 
   m_ui->spin_hoursForCancelJobAfterTime->setEnabled(
     m_ui->cb_cancelJobAfterTime->isChecked());
@@ -71,5 +72,6 @@ void GlobalQueueInterfaceSettingsWidget::accept(GlobalSearch::OptBase* opt)
   opt->m_cancelJobAfterTime = m_ui->cb_cancelJobAfterTime->isChecked();
   opt->m_hoursForCancelJobAfterTime =
     m_ui->spin_hoursForCancelJobAfterTime->value();
+  opt->m_localQueue = m_ui->cb_local_queue->isChecked();
 }
 }

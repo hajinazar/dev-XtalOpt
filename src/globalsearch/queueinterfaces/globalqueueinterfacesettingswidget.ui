@@ -16,13 +16,17 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number of seconds to wait before querying the jobs' statuses again with the queue interface.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
+     <item row="0" column="0" colspan="3">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Queue refresh interval:</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Global Queue Interface Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <widget class="QLineEdit" name="edit_rempath">
+       <property name="toolTip">
+        <string>Path on remote host to use during optimizations. Do not use wildcard characters or BASH-specific characters (e.g. '~' in place of /home/user).</string>
        </property>
       </widget>
      </item>
@@ -42,23 +46,23 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QSpinBox" name="spin_port">
-       <property name="prefix">
-        <string>SSH Port </string>
+     <item row="9" column="0" colspan="3">
+      <widget class="QCheckBox" name="cb_logErrorDirs">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Leaves a copy of a directory in which an error occurred in &amp;lt;local_path&amp;gt;/errorDirs.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This can help when figuring out why an xtal fails when submitted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Only keeps one copy for each xtal directory (so if an error occurred in 00001x00001 twice, the first error directory would have been overwritten by the second)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="maximum">
-        <number>99999</number>
-       </property>
-       <property name="value">
-        <number>22</number>
+       <property name="text">
+        <string>Log error directories</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="edit_host">
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="toolTip">
-        <string>Address of host. Can use IP or host name.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The number of seconds to wait before querying the jobs' statuses again with the queue interface.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Queue refresh interval:</string>
        </property>
       </widget>
      </item>
@@ -69,56 +73,23 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1" colspan="2">
-      <widget class="QLineEdit" name="edit_username">
+     <item row="11" column="0">
+      <widget class="QCheckBox" name="cb_cancelJobAfterTime">
        <property name="toolTip">
-        <string>Username on above host.</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_20">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically cancel a job after a specified amount of time. The next pending job will then be submitted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This option is present primarily because there are sometimes bugs in optimizers that can cause them to run forever. In addition, every once in a while, XtalOpt does not recognize that a job is no longer in the queue; this option prevents that from eventually stopping all jobs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>Working directory (Server):</string>
-       </property>
-       <property name="buddy">
-        <cstring>edit_rempath</cstring>
+        <string>Automatically cancel job after:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_21">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Working directory (Local):</string>
+        <string>Description:</string>
        </property>
        <property name="buddy">
-        <cstring>edit_locpath</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1" colspan="2">
-      <widget class="QLineEdit" name="edit_rempath">
-       <property name="toolTip">
-        <string>Path on remote host to use during optimizations. Do not use wildcard characters or BASH-specific characters (e.g. '~' in place of /home/user).</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1" colspan="2">
-      <widget class="QLineEdit" name="edit_locpath">
-       <property name="toolTip">
-        <string>Local path to store files</string>
+        <cstring>edit_description</cstring>
        </property>
       </widget>
      </item>
@@ -138,13 +109,19 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QCheckBox" name="cb_cancelJobAfterTime">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically cancel a job after a specified amount of time. The next pending job will then be submitted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This option is present primarily because there are sometimes bugs in optimizers that can cause them to run forever. In addition, every once in a while, XtalOpt does not recognize that a job is no longer in the queue; this option prevents that from eventually stopping all jobs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_21">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="text">
-        <string>Automatically cancel job after:</string>
+        <string>Working directory (Local):</string>
+       </property>
+       <property name="buddy">
+        <cstring>edit_locpath</cstring>
        </property>
       </widget>
      </item>
@@ -164,24 +141,41 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0" colspan="3">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt; font-weight:600;&quot;&gt;Global Queue Interface Settings&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <item row="2" column="1" colspan="2">
+      <widget class="QLineEdit" name="edit_username">
+       <property name="toolTip">
+        <string>Username on above host.</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Description:</string>
-       </property>
-       <property name="buddy">
-        <cstring>edit_description</cstring>
+     <item row="4" column="1" colspan="2">
+      <widget class="QLineEdit" name="edit_locpath">
+       <property name="toolTip">
+        <string>Local path to store files</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1" colspan="2">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="edit_host">
+       <property name="toolTip">
+        <string>Address of host. Can use IP or host name.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QSpinBox" name="spin_port">
+       <property name="prefix">
+        <string>SSH Port </string>
+       </property>
+       <property name="maximum">
+        <number>99999</number>
+       </property>
+       <property name="value">
+        <number>22</number>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1" colspan="2">
       <widget class="QDoubleSpinBox" name="spin_hoursForCancelJobAfterTime">
        <property name="enabled">
         <bool>false</bool>
@@ -203,20 +197,36 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0" colspan="3">
-      <widget class="QCheckBox" name="cb_logErrorDirs">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Leaves a copy of a directory in which an error occurred in &amp;lt;local_path&amp;gt;/errorDirs.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;This can help when figuring out why an xtal fails when submitted.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Only keeps one copy for each xtal directory (so if an error occurred in 00001x00001 twice, the first error directory would have been overwritten by the second)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Log error directories</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QCheckBox" name="cb_cleanRemoteOnStop">
        <property name="text">
         <string>Clean remote directories when finished</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_20">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Working directory (Server):</string>
+       </property>
+       <property name="buddy">
+        <cstring>edit_rempath</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QCheckBox" name="cb_local_queue">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run XtalOpt on a cluster, and submit the jobs to the same cluster.&lt;/p&gt;&lt;p&gt;As a result:&lt;/p&gt;&lt;p&gt;(1) No ssh connection will be established.&lt;/p&gt;&lt;p&gt;(2) While jobs are being submitted to the queue, they are treated as &amp;quot;local&amp;quot; jobs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Local queue run</string>
        </property>
       </widget>
      </item>
