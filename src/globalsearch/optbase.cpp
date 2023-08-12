@@ -441,8 +441,8 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     elem.second /= sum;
 
 #ifdef OPTBASE_PROBS_DEBUG
-          outs1 = QString("NOTE: Normalized, sorted, and trimmed probs list is:\n"
-                         "    structure :  enthalpy  : probs\n");
+  outs1 = QString("NOTE: Normalized, sorted, and trimmed probs list is:\n"
+                  "    structure :  enthalpy  : probs\n");
   for (const auto& elem: probs) {
     QReadLocker lock(&elem.first->lock());
     outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7)

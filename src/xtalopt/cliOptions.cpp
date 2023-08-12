@@ -781,26 +781,20 @@ bool XtalOptCLIOptions::printOptions(const QHash<QString, QString>& options,
   // We need to convert to c string to properly print newlines
   qDebug() << output.toUtf8().data();
 
-  // Let's clean out the directory if old data is here - before we write logs
   // Check if xtalopt data is already saved at the filePath
+  // Up to r12, xtalopt would ask the user if they want the code to clean up the folder.
+  // But there were cases which user had mistakenly specified an important directory
+  //   such as Desktop/ or Documents/, and then asked the code to clean up which
+  //   results in permanent deletion of data!
+  // So, now we only let the user know that the directory is not empty and quit (in the
+  //   GUI there is dialog for this).
   if (QFile::exists(xtalopt.filePath + QDir::separator() + "xtalopt.state")) {
-    bool proceed;
-    QString msg = QString("Warning: XtalOpt data is already saved at: ") +
-                  xtalopt.filePath +
-                  "\nDo you wish to proceed and overwrite it?"
-                  "\n\nIf no, please change the "
-                  "'localWorkingDirectory' option in the input file";
-
-    xtalopt.promptForBoolean(msg, &proceed);
-    if (!proceed) {
-      return false;
-    } else {
-      bool result = FileUtils::removeDir(xtalopt.filePath);
-      if (!result) {
-        qDebug() << "Error removing directory at" << xtalopt.filePath;
-        return false;
-      }
-    }
+    QString msg = QString("Error: XtalOpt data is already saved at:\n") +
+                          xtalopt.filePath +
+                          "\n\nEmpty the directory or select a new one!"
+                          "\n\nQuitting now ...";
+    qDebug().noquote() << msg;
+    return false;
   }
   // Make the directory if it doesn't exist...
   if (!QFile::exists(xtalopt.filePath))

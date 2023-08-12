@@ -159,23 +159,19 @@ bool XtalOpt::startSearch()
 
   // Check if xtalopt data is already saved at the filePath
   // If we are in cli mode, we check it elsewhere
-  if (QFile::exists(filePath + QDir::separator() + "xtalopt.state") &&
+  while (QFile::exists(filePath + QDir::separator() + "xtalopt.state") &&
       !testingMode && m_usingGUI) {
     bool proceed;
-    needBoolean(tr("Warning: XtalOpt data is already saved at: %1"
-                   "\nDo you wish to proceed and overwrite it?"
-                   "\n\nIf no, please change the local working "
-                   "directory under Queue configure located in the "
-                   "'Optimization Settings' tab")
-                  .arg(filePath),
-                &proceed);
+    needBoolean(tr("Error: XtalOpt data is already saved at:"
+                   "\n%1"
+                   "\n\nEmpty the directory or select a new one!"
+                   "\n\nShould we proceed?"
+                   "\n[Yes] - directory is cleaned up now"
+                   "\n[No]   - return to the setup dialog")
+                   .arg(filePath),
+                   &proceed);
     if (!proceed) {
       return false;
-    } else {
-      bool result = FileUtils::removeDir(filePath);
-      if (!result) {
-        error(tr("Error removing directory at:\n %1").arg(filePath));
-      }
     }
   }
 
