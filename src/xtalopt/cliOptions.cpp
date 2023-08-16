@@ -791,7 +791,8 @@ bool XtalOptCLIOptions::printOptions(const QHash<QString, QString>& options,
   if (QFile::exists(xtalopt.filePath + QDir::separator() + "xtalopt.state")) {
     QString msg = QString("Error: XtalOpt data is already saved at:\n") +
                           xtalopt.filePath +
-                          "\n\nEmpty the directory or select a new one!"
+                          "\n\nEmpty the directory to proceed or "
+                          "select a new 'Local working directory'!"
                           "\n\nQuitting now ...";
     qDebug().noquote() << msg;
     return false;

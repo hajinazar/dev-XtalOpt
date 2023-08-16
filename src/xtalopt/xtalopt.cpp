@@ -164,10 +164,11 @@ bool XtalOpt::startSearch()
     bool proceed;
     needBoolean(tr("Error: XtalOpt data is already saved at:"
                    "\n%1"
-                   "\n\nEmpty the directory or select a new one!"
-                   "\n\nShould we proceed?"
-                   "\n[Yes] - directory is cleaned up now"
-                   "\n[No]   - return to the setup dialog")
+                   "\n\nEmpty the directory to proceed or "
+                   "select a new 'Local working directory'!"
+                   "\n\nDo you wish to proceed?"
+                   "\n[Yes] directory is cleaned up"
+                   "\n[No] return")
                    .arg(filePath),
                    &proceed);
     if (!proceed) {
