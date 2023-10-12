@@ -18,6 +18,7 @@
 #include <QFile>
 #include <QString>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/queueinterfaces/queueinterfaces.h>
 #include <globalsearch/utilities/fileutils.h>
@@ -207,22 +208,19 @@ void XtalOptCLIOptions::processLine(const QString& tmpLine,
   QString value = line.section('=', 1, 1).trimmed();
 
   if (key.isEmpty()) {
-    qDebug() << "Warning: invalid line '" << tmpLine
-             << "' was read in options file.";
+    debug("Warning: invalid line '" + tmpLine + "' was read in options file.");
     return;
   }
 
   if (value.isEmpty()) {
-    qDebug() << "Warning: invalid line '" << tmpLine
-             << "' was read in options file.";
+    debug("Warning: invalid line '" + tmpLine + "' was read in options file.");
     return;
   }
 
   // Case sensitive key
   QString csKey = key;
   if (!isKeyword(key, csKey) && !isMultiLineEntry(key)) {
-    qDebug() << "Warning: ignoring unrecognized option in line '" << tmpLine
-             << "'";
+    debug("Warning: ignoring unrecognized option in line '" + tmpLine + "'");
     return;
   }
 
@@ -244,26 +242,26 @@ bool XtalOptCLIOptions::requiredOptionsSet(
   // Do we have all the required keywords?
   for (const auto& requiredKeyword : requiredKeywords) {
     if (options[requiredKeyword].isEmpty()) {
-      qDebug() << "Error: required option, '" << requiredKeyword
-               << "', was not set in the options file.\n"
-               << "Required options for every run are: " << requiredKeywords;
+      debug("Error: required option, '" + requiredKeyword +
+            "', was not set in the options file.\n" +
+            "Required options for every run are: " + requiredKeywords.join(","));
       return false;
     }
   }
 
   // Make sure that the queue interface is valid
   if (!validQueueInterfaces.contains(options["queueInterface"].toLower())) {
-    qDebug() << "Error: unrecognized queue interface, '"
-             << options["queueInterface"] << "', was entered.\n"
-             << "Valid queue interfaces are: " << validQueueInterfaces;
+    debug("Error: unrecognized queue interface, '" +
+          options["queueInterface"] + "', was entered.\n" +
+          "Valid queue interfaces are: " + validQueueInterfaces.join(","));
     return false;
   }
 
   // Make sure that the optimizer is valid
   if (!validOptimizers.contains(options["optimizer"].toLower())) {
-    qDebug() << "Error: unrecognized optimizer, '" << options["optimizer"]
-             << "', was entered.\n"
-             << "Valid optimizers are: " << validOptimizers;
+    debug("Error: unrecognized optimizer, '" + options["optimizer"] +
+          "', was entered.\n" +
+          "Valid optimizers are: " + validOptimizers.join(","));
     return false;
   }
 
@@ -272,10 +270,10 @@ bool XtalOptCLIOptions::requiredOptionsSet(
   if (options["queueInterface"].toLower() != "local") {
     for (const auto& requiredKeyword : requiredRemoteKeywords) {
       if (options[requiredKeyword].isEmpty()) {
-        qDebug() << "Error: required option for remote queue interfaces, '"
-                 << requiredKeyword << "', was not set in the options file.\n"
-                 << "Required options for remote queue interfaces are: "
-                 << requiredRemoteKeywords;
+        debug("Error: required option for remote queue interfaces, '" +
+              requiredKeyword + "', was not set in the options file.\n" +
+              "Required options for remote queue interfaces are: " +
+              requiredRemoteKeywords.join(","));
         return false;
       }
     }
@@ -289,10 +287,10 @@ bool XtalOptCLIOptions::requiredOptionsSet(
 
   for (const auto& requiredKeyword : requiredOptKeys) {
     if (options[requiredKeyword].isEmpty()) {
-      qDebug() << "Error: required option for" << options["optimizer"] << ",'"
-               << requiredKeyword << "', was not set in the options file.\n"
-               << "Required options for" << options["optimizer"]
-               << "are: " << requiredOptKeys;
+      debug("Error: required option for" + options["optimizer"] + ",'" +
+            requiredKeyword + "', was not set in the options file.\n" +
+            "Required options for" + options["optimizer"] +
+            "are: " + requiredOptKeys.join(","));
       return false;
     }
   }
@@ -314,7 +312,7 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   map<uint, uint> comp;
   if (!ElemInfo::readComposition(options["empiricalFormula"].toStdString(),
                                  comp)) {
-    qDebug() << "Error reading composition: " << options["empiricalFormula"];
+    debug("Error reading composition: " + options["empiricalFormula"]);
     return false;
   } else {
     for (const auto& elem : comp) {
@@ -367,9 +365,9 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.using_customIAD = toBool(options.value("usingCustomIADs", "false"));
 
   if (xtalopt.using_interatomicDistanceLimit && xtalopt.using_customIAD) {
-    qDebug() << "Error: usingRadiiInteratomicDistanceLimit (default is true)"
-             << "and usingCustomIADs (default is false) cannot both be set to"
-             << "true.\nPlease set one to false and try again";
+    debug("Error: usingRadiiInteratomicDistanceLimit (default is true)"
+          "and usingCustomIADs (default is false) cannot both be set to"
+          "true.\nPlease set one to false and try again");
     return false;
   }
 
@@ -385,20 +383,20 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.using_molUnit = toBool(options.value("usingMolecularUnits", "false"));
 
   if (xtalopt.using_molUnit && !processMolUnits(options, xtalopt)) {
-    qDebug() << "Error: Invalid settings entered for molecular units."
-             << "Please check your input and try again.";
+    debug("Error: Invalid settings entered for molecular units."
+          "Please check your input and try again.");
     return false;
   }
 
   if (xtalopt.using_customIAD && !processCustomIADs(options, xtalopt)) {
-    qDebug() << "Error: Invalid settings entered for custom IADs."
-             << "Please check your input and try again.";
+    debug("Error: Invalid settings entered for custom IADs."
+          "Please check your input and try again.");
     return false;
   }
 
   if (xtalopt.using_mitosis && !isMitosisOk(xtalopt)) {
-    qDebug() << "Error: Invalid numbers entered for mitosis. Please check"
-             << "your input and try again.";
+    debug("Error: Invalid numbers entered for mitosis. Please check"
+          "your input and try again.");
     return false;
   }
 
@@ -432,9 +430,9 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
 
   if ((xtalopt.using_randSpg && xtalopt.using_molUnit) ||
       (xtalopt.using_randSpg && xtalopt.using_mitosis)) {
-    qDebug() << "Error: randSpg cannot be used with molUnit or subcell"
-             << "mitosis. Please turn both of these off if you wish to"
-             << "use randSpg.";
+    debug("Error: randSpg cannot be used with molUnit or subcell"
+          "mitosis. Please turn both of these off if you wish to"
+          "use randSpg.");
     return false;
   }
 
@@ -456,8 +454,8 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   else if (failAction.toLower() == "replacewithoffspring")
     xtalopt.failAction = OptBase::FA_NewOffspring;
   else {
-    qDebug() << "Warning: unrecognized jobFailAction: " << failAction;
-    qDebug() << "Using default option: replaceWithRandom";
+    debug("Warning: unrecognized jobFailAction: " + failAction +
+          "\nUsing default option: replaceWithRandom");
     xtalopt.failAction = OptBase::FA_Randomize;
   }
 
@@ -492,8 +490,8 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
 
   // Sanity check
   if (xtalopt.p_strip + xtalopt.p_perm + xtalopt.p_cross != 100) {
-    qDebug() << "Error: percentChanceStripple + percentChancePermustrain"
-             << "+ percentChanceCrossover must equal 100!";
+    debug("Error: percentChanceStripple + percentChancePermustrain"
+          "+ percentChanceCrossover must equal 100!");
     return false;
   }
 
@@ -546,9 +544,8 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
       i, options["queueInterface"].toLower().toStdString());
 #else
     if (options["queueInterface"].toLower() != "local") {
-      qDebug() << "Error: SSH is disabled, so only 'local' interface is"
-               << "allowed.";
-      qDebug() << "Please use the option 'queueInterface <optStep> = local'";
+      debug("Error: SSH is disabled, so only 'local' interface is allowed."
+            "\n   Please use the option 'queueInterface <optStep> = local'");
       return false;
     }
     xtalopt.setQueueInterface(i, "local");
@@ -621,19 +618,17 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
         QString filename =
           options["psffile " + symbol.toLower()];
         if (filename.isEmpty()) {
-          qDebug() << "Error: no PSF file found for atom type" << symbol;
-          qDebug() << "You must set the PSF file in the options like so:";
           QString tmp = "psfFile " + symbol +
                         " = /path/to/siesta_psfs/symbol.psf";
-          qDebug() << tmp;
+          debug("Error: no PSF file found for atom type" + symbol +
+                "\n   You must set the PSF file in the options like so:" + tmp);
           return false;
         }
 
         // Check if psf file exists
         QFileInfo check_file(filename);
         if (!check_file.exists() || !check_file.isFile()) {
-          qDebug() << "Error: the PSF file for atom type" << symbol
-                   << "was not found at " << filename;
+          debug("Error: the PSF file for atom type" + symbol + "was not found at " + filename);
           return false;
         }
 
@@ -680,19 +675,17 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
         QString filename =
           options["potcarfile " + symbol.toLower()];
         if (filename.isEmpty()) {
-          qDebug() << "Error: no POTCAR file found for atom type" << symbol;
-          qDebug() << "You must set the POTCAR file in the options like so:";
           QString tmp = "potcarFile " + symbol +
                         " = /path/to/vasp_potcars/symbol/POTCAR";
-          qDebug() << tmp;
+          debug("Error: no POTCAR file found for atom type" + symbol +
+                "\n   You must set the POTCAR file in the options like so:" + tmp);
           return false;
         }
 
         // Check if potcar file exists
         QFileInfo check_file(filename);
         if (!check_file.exists() || !check_file.isFile()) {
-          qDebug() << "Error: the POTCAR file for atom type" << symbol
-                   << "was not found at " << filename;
+          debug("Error: the POTCAR file for atom type" + symbol + "was not found at " + filename);
           return false;
         }
 
@@ -714,7 +707,7 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
       // Set POTCAR info
       optimizer->setData("POTCAR info", QVariant(potcarInfo));
     } else {
-      qDebug() << "Error: unknown optimizer:" << options["optimizer"];
+      debug("Error: unknown optimizer:" + options["optimizer"]);
       return false;
     }
 
@@ -779,7 +772,7 @@ bool XtalOptCLIOptions::printOptions(const QHash<QString, QString>& options,
   xtalopt.printOptionSettings(stream);
 
   // We need to convert to c string to properly print newlines
-  qDebug() << output.toUtf8().data();
+  debug(output);
 
   // Check if xtalopt data is already saved at the filePath
   // Up to r12, xtalopt would ask the user if they want the code to clean up the folder.
@@ -794,7 +787,7 @@ bool XtalOptCLIOptions::printOptions(const QHash<QString, QString>& options,
                           "\n\nEmpty the directory to proceed or "
                           "select a new 'Local working directory'!"
                           "\n\nQuitting now ...";
-    qDebug().noquote() << msg;
+    debug(msg);
     return false;
   }
   // Make the directory if it doesn't exist...
@@ -814,7 +807,7 @@ bool XtalOptCLIOptions::readOptions(const QString& filename, XtalOpt& xtalopt)
   // Attempt to open the file
   QFile file(filename);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    qDebug() << "Error: could not open file '" << filename << "'.";
+    debug("Error: could not open file '" + filename + "'.");
     return false;
   }
 
@@ -898,11 +891,11 @@ QString convertedTemplateName(const QString& s, const QString& queueName)
       return "job.sh";
     else if (queueName.compare("SLURM", Qt::CaseInsensitive) == 0)
       return "job.slurm";
-    qDebug() << "Unknown queue id:" << queueName;
+    debug("Unknown queue id:" + queueName);
     return "job.sh";
   }
 
-  qDebug() << "Unknown template name:" << s;
+  debug("Unknown template name:" + s);
   return "";
 }
 
@@ -914,24 +907,23 @@ bool XtalOptCLIOptions::addOptimizerTemplate(
   QStringList fileList = options[templateName].split(",");
 
   if (fileList.size() <= optStep) {
-    qDebug() << "Error in" << __FUNCTION__ << ": " << templateName
-             << "does not contain a template for opt step " << optStepStr;
+    debug(QString("Error in %1: %2 does not contain a template"
+                  "for opt step %3").arg(__FUNCTION__).arg(templateName).arg(optStepStr));
     return false;
   }
 
   QString filename = fileList[optStep].trimmed();
   if (filename.isEmpty()) {
-    qDebug() << "Error in" << __FUNCTION__ << ": " << templateName
-             << "is missing!";
+    debug(QString("Error in %1: %2 is missing!").arg(__FUNCTION__).arg(templateName));
     return false;
   }
 
   // Now we have to open the files and read their contents
   QFile file(options.value("templatesDirectory", ".") + "/" + filename);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    qDebug() << "Error: could not open file '" << filename << "' in"
-             << "the templates directory: "
-             << options.value("templatesDirectory", ".");
+    debug("Error: could not open file '" + filename + "' in" +
+          "the templates directory: " +
+          options.value("templatesDirectory", "."));
     return false;
   }
   QString text = file.readAll();
@@ -945,8 +937,7 @@ bool XtalOptCLIOptions::addOptimizerTemplate(
 bool XtalOptCLIOptions::isMitosisOk(XtalOpt& xtalopt)
 {
   if (xtalopt.ax * xtalopt.bx * xtalopt.cx != xtalopt.divisions) {
-    qDebug() << "Error: mitosisDivisions must equal"
-             << "mitosisA * mitosisB * mitosisC";
+    debug("Error: mitosisDivisions must equal mitosisA * mitosisB * mitosisC");
     return false;
   }
 
@@ -959,17 +950,17 @@ bool XtalOptCLIOptions::isMitosisOk(XtalOpt& xtalopt)
       ->quantity;
 
   if (minNumAtoms == 0) {
-    qDebug() << "Error: no atoms were found when checking mitosis!";
+    debug("Error: no atoms were found when checking mitosis!");
     return false;
   }
 
   minNumAtoms *= xtalopt.minFU();
 
   if (minNumAtoms < xtalopt.divisions) {
-    qDebug() << "Error: mitosisDivisions cannot be greater than the smallest"
-             << "formula unit times the smallest number of atoms of one type";
-    qDebug() << "With the current composition and formula unit, the largest"
-             << "number of divisions possible is:" << minNumAtoms;
+    debug("Error: mitosisDivisions cannot be greater than the smallest"
+          "formula unit times the smallest number of atoms of one type"
+          "\n   With the current composition and formula unit, the largest"
+          "number of divisions possible is:" + minNumAtoms);
     return false;
   }
 
@@ -1024,10 +1015,10 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
       QStringList splitLine =
         options[option].split(",", QString::SkipEmptyParts);
       if (splitLine.size() != 6) {
-        qDebug() << "Error: molecularUnits line must have 6 comma-delimited"
-                 << "items on the right-hand side of the equals sign."
-                 << "\nFaulty option is as follows: "
-                 << option + " = " + options[option];
+        debug(QString("Error: molecularUnits line must have 6 comma-delimited"
+                      "items on the right-hand side of the equals sign."
+                      "\n   Faulty option is as follows: %1 = %2 ")
+                      .arg(option).arg(options[option]));
         return false;
       }
       QString centerSymbol = splitLine[0].trimmed(),
@@ -1043,11 +1034,11 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
 
       // If the centerSymbol == "None", then 0 is the correct number for it
       if (centerSymbol.toLower() != "none" && centerAtomicNum == 0) {
-        qDebug() << "Error processing molecularUnits line:"
-                 << "Invalid atomic symbol:" << centerSymbol;
-        qDebug() << "Proper format is as follows: "
-                 << "<centerSymbol>, <numCenters>, <neighborSymbol>,"
-                 << "<numNeighbors>, <geometry>, <distances>";
+        debug(QString("Error processing molecularUnits line:"
+              "Invalid atomic symbol: %1 "
+              "\n   Proper format is as follows: "
+              "<centerSymbol>, <numCenters>, <neighborSymbol>,"
+              "<numNeighbors>, <geometry>, <distances>").arg(centerSymbol));
         return false;
       }
 
@@ -1055,36 +1046,33 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
         ElemInfo::getAtomicNum(neighborSymbol.toStdString());
 
       if (neighborAtomicNum == 0) {
-        qDebug() << "Error processing molecularUnits line:"
-                 << "Invalid atomic symbol:" << neighborSymbol;
-        qDebug() << "Proper format is as follows: "
-                 << "<centerSymbol>, <numCenters>, <neighborSymbol>,"
-                 << "<numNeighbors>, <geometry>, <distances>";
+        debug(QString("Error processing molecularUnits line:"
+                      "Invalid atomic symbol:"
+                      "\n   Proper format is as follows: "
+                      "<centerSymbol>, <numCenters>, <neighborSymbol>,"
+                      "<numNeighbors>, <geometry>, <distances>").arg(neighborSymbol));
         return false;
       }
 
       if (numCenters == 0) {
-        qDebug() << "Error processing molecularUnits line:"
-                 << "numCenters cannot be zero.";
+        debug("Error processing molecularUnits line: numCenters cannot be zero.");
         return false;
       }
 
       switch (numNeighbors) {
         case 1:
           if (geometry.toLower() != "linear") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "linear.";
+            debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                          "\n   Possible geometries are: linear.")
+                          .arg(numNeighbors));
             return false;
           }
           break;
         case 2:
           if (geometry.toLower() != "linear" && geometry.toLower() != "bent") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "linear and bent.";
+            debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                          "\n   Possible geometries are: linear and bent.")
+                          .arg(numNeighbors));
             return false;
           }
           break;
@@ -1092,10 +1080,9 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
           if (geometry.toLower() != "trigonal planar" &&
               geometry.toLower() != "trigonal pyramidal" &&
               geometry.toLower() != "t-shaped") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "trigonal planar, trigonal pyramidal, and t-shaped.";
+              debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                            "\n   Possible geometries are: trigonal planar, trigonal pyramidal, and t-shaped.")
+                            .arg(numNeighbors));
             return false;
           }
           break;
@@ -1103,35 +1090,32 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
           if (geometry.toLower() != "tetrahedral" &&
               geometry.toLower() != "see-saw" &&
               geometry.toLower() != "square planar") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "tetrahedral, see-saw, and square planar.";
+              debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                            "\n   Possible geometries are: tetrahedral, see-saw, and square planar.")
+                            .arg(numNeighbors));
             return false;
           }
           break;
         case 5:
           if (geometry.toLower() != "trigonal bipyramidal" &&
               geometry.toLower() != "square pyramidal") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "trigonal bipyramidal and square pyramidal.";
+              debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                            "\n   Possible geometries are: trigonal bipyramidal and square pyramidal.")
+                            .arg(numNeighbors));
             return false;
           }
           break;
         case 6:
           if (geometry.toLower() != "octahedral") {
-            qDebug() << "Error reading molecularUnits:"
-                     << "for numNeighbors ==" << numNeighbors << ", possible"
-                     << "geometries are:"
-                     << "octahedral.";
+              debug(QString("Error reading molecularUnits: for numNeighbors == %1,"
+                            "\n   Possible geometries are: octahedral.")
+                            .arg(numNeighbors));
             return false;
           }
           break;
         default:
-          qDebug() << "Error reading molecularUnits: invalid numNeighbors"
-                   << "was entered. Valid numbers are 1 - 6";
+          debug("Error reading molecularUnits: invalid numNeighbors"
+                "was entered. Valid numbers are 1 - 6");
           return false;
       }
 
@@ -1162,12 +1146,12 @@ bool XtalOptCLIOptions::processMolUnits(const QHash<QString, QString>& options,
       QString elemName = countKey;
       if (!elemName.isEmpty())
         elemName[0] = elemName[0].toUpper();
-      qDebug() << "Error reading molecularUnits: for atom" << elemName << ","
-               << "there are more atoms predicted to be generated with"
-               << "the molUnit settings than there are for minFU * numAtoms";
-      qDebug() << "You must make sure that for each atom, minFU * numAtoms is"
-               << "greater than the number of atoms to be generated with"
-               << "MolUnits.";
+      debug(QString("Error reading molecularUnits: for atom %1,"
+                    "there are more atoms predicted to be generated with"
+                    "the molUnit settings than there are for minFU * numAtoms"
+                    "\n   You must make sure that for each atom, minFU * numAtoms is"
+                    "greater than the number of atoms to be generated with"
+                    "MolUnits.").arg(elemName));
       return false;
     }
   }
@@ -1184,12 +1168,11 @@ bool XtalOptCLIOptions::processCustomIADs(
       QStringList splitLine =
         options[option].split(",", QString::SkipEmptyParts);
       if (splitLine.size() != 3) {
-        qDebug() << "Error: customIAD line must have 3 comma-delimited"
-                 << "items on the right-hand side of the equals sign."
-                 << "\nFaulty option is as follows: "
-                 << option + " = " + options[option];
-        qDebug() << "Proper format is as follows: "
-                 << "<firstSymbol>, <secondSymbol>, <minDistance>";
+        debug(QString("Error: customIAD line must have 3 comma-delimited"
+                      "items on the right-hand side of the equals sign."
+                      "\n   Faulty option is as follows: %1 = %2"
+                      "Proper format is as follows: "
+                      "<firstSymbol>, <secondSymbol>, <minDistance>").arg(option).arg(options[option]));
         return false;
       }
       QString firstSymbol = splitLine[0].trimmed(),
@@ -1202,10 +1185,10 @@ bool XtalOptCLIOptions::processCustomIADs(
 
       // If the atomic number is 0, the symbol is invalid
       if (firstAtomicNum == 0) {
-        qDebug() << "Error processing customIAD line:"
-                 << "Invalid atomic symbol:" << firstSymbol;
-        qDebug() << "Proper format is as follows: "
-                 << "<firstSymbol>, <secondSymbol>, <minDistance>";
+        debug(QString("Error processing customIAD line:"
+                      "Invalid atomic symbol: %1"
+                      "\n   Proper format is as follows: "
+                      "<firstSymbol>, <secondSymbol>, <minDistance>").arg(firstSymbol));
         return false;
       }
 
@@ -1214,10 +1197,10 @@ bool XtalOptCLIOptions::processCustomIADs(
 
       // If the atomic number is 0, the symbol is invalid
       if (secondAtomicNum == 0) {
-        qDebug() << "Error processing customIAD line:"
-                 << "Invalid atomic symbol:" << secondSymbol;
-        qDebug() << "Proper format is as follows: "
-                 << "<firstSymbol>, <secondSymbol>, <minDistance>";
+        debug(QString("Error processing customIAD line:"
+                      "Invalid atomic symbol: %1"
+                      "\n   Proper format is as follows: "
+                      "<firstSymbol>, <secondSymbol>, <minDistance>").arg(secondSymbol));
         return false;
       }
 
@@ -1405,9 +1388,8 @@ void XtalOptCLIOptions::processRuntimeOptions(
       xtalopt.formulaUnitsList =
         FileUtils::parseUIntString(options["formulaUnits"], unused);
       if (xtalopt.formulaUnitsList.isEmpty()) {
-        qDebug()
-          << "Warning: in runtime options, formula units unsuccessfully read."
-          << "\nSetting formula units to be 1.";
+        debug("Warning: in runtime options, formula units unsuccessfully read."
+              "\nSetting formula units to be 1.");
         xtalopt.formulaUnitsList = { 1 };
       }
     } else if (CICompare("aMin", option)) {
@@ -1459,9 +1441,9 @@ void XtalOptCLIOptions::processRuntimeOptions(
     } else if (CICompare("usingCustomIADs", option)) {
       xtalopt.using_customIAD = toBool(options[option]);
       if (xtalopt.using_customIAD && xtalopt.using_interatomicDistanceLimit) {
-        qDebug() << "Warning: usingRadiiInteratomicDistanceLimit and"
-                 << "usingCustomIADs cannot both be set to true.\n"
-                 << "Switching off usingCustomIADs";
+        debug("Warning: usingRadiiInteratomicDistanceLimit and"
+              "usingCustomIADs cannot both be set to true.\n"
+              "Switching off usingCustomIADs");
         xtalopt.using_customIAD = false;
       }
     } else if (CICompare("checkIADPostOptimization", option)) {
@@ -1487,8 +1469,8 @@ void XtalOptCLIOptions::processRuntimeOptions(
       else if (failAction.toLower() == "replacewithoffspring")
         xtalopt.failAction = OptBase::FA_NewOffspring;
       else {
-        qDebug() << "Warning: unrecognized jobFailAction: " << failAction;
-        qDebug() << "Ignoring change in jobFailAction.";
+        debug("Warning: unrecognized jobFailAction: " + failAction +
+              "Ignoring change in jobFailAction.");
       }
     } else if (CICompare("maxNumStructures", option)) {
       xtalopt.cutoff = options[option].toUInt();
@@ -1503,8 +1485,8 @@ void XtalOptCLIOptions::processRuntimeOptions(
     } else if (CICompare("chanceOfFutureMitosis", option)) {
       xtalopt.chance_of_mitosis = options[option].toUInt();
       if (xtalopt.chance_of_mitosis > 100) {
-        qDebug() << "Warning: chanceOfFutureMitosis must not be greater"
-                 << "than 100. Setting chanceOfFutureMitosis to 100";
+        debug("Warning: chanceOfFutureMitosis must not be greater"
+              "than 100. Setting chanceOfFutureMitosis to 100");
         xtalopt.chance_of_mitosis = 100;
       }
     } else if (CICompare("percentChanceStripple", option)) {
@@ -1532,12 +1514,12 @@ void XtalOptCLIOptions::processRuntimeOptions(
     } else if (CICompare("crossoverMinContribution", option)) {
       xtalopt.cross_minimumContribution = options[option].toUInt();
       if (xtalopt.cross_minimumContribution < 25) {
-        qDebug() << "Warning: crossover minimum contribution must be"
-                    "at least 25. Setting it to 25.";
+        debug("Warning: crossover minimum contribution must be"
+              "at least 25. Setting it to 25.");
         xtalopt.cross_minimumContribution = 25;
       } else if (xtalopt.cross_minimumContribution > 50) {
-        qDebug() << "Warning: crossover minimum contribution must not"
-                 << "be greater than 50. Setting it to 50";
+        debug("Warning: crossover minimum contribution must not"
+              "be greater than 50. Setting it to 50");
         xtalopt.cross_minimumContribution = 50;
       }
     } else if (CICompare("xtalcompToleranceLength", option)) {
@@ -1559,16 +1541,16 @@ void XtalOptCLIOptions::processRuntimeOptions(
     } else if (CICompare("featuresReDo", option)) {
       xtalopt.m_featuresReDo = toBool(options[option]);
     } else {
-      qDebug() << "Warning: option," << option << ", is not a valid runtime"
-               << "option! It is being ignored.";
+      debug("Warning: option," + option + ", is not a valid runtime"
+            "option! It is being ignored.");
     }
   }
 
   // Sanity checks
   if (xtalopt.p_strip + xtalopt.p_perm + xtalopt.p_cross != 100) {
-    qDebug() << "Error: percentChanceStripple + percentChancePermustrain"
-             << "+ percentChanceCrossover must equal 100!";
-    qDebug() << "Setting them to default values of 50, 35, 15, respectively";
+    debug("Error: percentChanceStripple + percentChancePermustrain"
+          "+ percentChanceCrossover must equal 100!"
+          "\n   Setting them to default values of 50, 35, 15, respectively");
     xtalopt.p_strip = 50;
     xtalopt.p_perm = 35;
     xtalopt.p_cross = 15;

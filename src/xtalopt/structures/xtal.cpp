@@ -17,6 +17,7 @@
 
 #include <xtalopt/xtalopt.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/formats/cmlformat.h>
 #include <globalsearch/formats/poscarformat.h>
@@ -769,29 +770,25 @@ void Xtal::setCurrentFractionalCoords(const QList<QString>& ids,
 
 void Xtal::printLatticeInfo() const
 {
-  std::stringstream outs;
-  outs << "a is " << this->getA() << "\n";
-  outs << "b is " << this->getB() << "\n";
-  outs << "c is " << this->getC() << "\n";
-  outs << "alpha is " << this->getAlpha() << "\n";
-  outs << "beta is " << this->getBeta() << "\n";
-  outs << "gamma is " << this->getGamma() << "\n";
-  outs << "volume is " << this->getVolume() << "\n";
-
-  outs << "cellMatrix is (row vectors):\n";
+  QString outs = QString("a is %1 \n b is %2 \n c is %3\n"
+      "alpha is %4 \n beta is %5 \n gamma is %6 \n"
+      "volume is %7\n cellMatrix is (row vectors):\n")
+    .arg(this->getA()).arg(this->getB()).arg(this->getC())
+    .arg(this->getAlpha()).arg(this->getBeta()).arg(getGamma())
+    .arg(this->getVolume());
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      outs << unitCell().cellMatrix()(i, j) << "  ";
+      outs += QString::number(unitCell().cellMatrix()(i, j)) + "  ";
     }
-    outs << "\n";
+    outs += "\n";
   }
-  qDebug().noquote() << outs.str().c_str();
+
+  debug(outs);
 }
 
 void Xtal::printAtomInfo() const
 {
-  std::stringstream outs;
-  outs << "Frac coords info (blank if none):\n";
+  QString outs = "Frac coords info (blank if none):\n";
   const std::vector<Atom>& atoms = this->atoms();
   QList<Vector3> fracCoords;
 
@@ -799,11 +796,11 @@ void Xtal::printAtomInfo() const
     fracCoords.append(cartToFrac(atoms.at(i).pos()));
 
   for (size_t i = 0; i < atoms.size(); i++) {
-    outs << "  For atomic num " << atoms.at(i).atomicNumber()
-         << ", coords are (" << fracCoords.at(i)[0] << ","
-         << fracCoords.at(i)[1] << "," << fracCoords.at(i)[2] << ")\n";
+    outs += "  For atomic num " + QString::number(atoms.at(i).atomicNumber()) +
+            ", coords are (" + QString::number(fracCoords.at(i)[0]) + "," +
+            QString::number(fracCoords.at(i)[1]) + "," + QString::number(fracCoords.at(i)[2]) + ")\n";
   }
-  qDebug().noquote() << outs.str().c_str();
+  debug(outs);
 }
 
 void Xtal::printXtalInfo() const
@@ -816,9 +813,10 @@ bool Xtal::fixAngles(int attempts)
 {
   // Perform niggli reduction
   if (!niggliReduce(attempts)) {
-    qDebug() << "Unable to perform cell reduction on Xtal " << getIDString()
-             << "( " << getA() << getB() << getC() << getAlpha() << getBeta()
-             << getGamma() << " )";
+    debug(QString("Unable to perform cell reduction on Xtal %1"
+                  "( %2 %3 %4 %5 %6 %7 )")
+                  .arg(getIDString()).arg(getA()).arg(getB()).arg(getC())
+                  .arg(getAlpha()).arg(getBeta()).arg(getGamma()));
     return false;
   }
 
@@ -1212,8 +1210,8 @@ bool Xtal::moveAtomRandomly(
         double minDistSquared = minDist * minDist;
 
         if (curDistSquared < minDistSquared) {
-          qDebug() << "XtalOpt::moveAtomRandomlyIAD: Failed to add atoms with "
-                      "specified interatomic distance. Distance too small";
+          debug("XtalOpt::moveAtomRandomlyIAD: Failed to add atoms with "
+                "specified interatomic distance. Distance too small");
           success = false;
           break;
         }
@@ -1223,7 +1221,7 @@ bool Xtal::moveAtomRandomly(
     if (i >= maxAttempts)
       return false;
   }
-  qDebug() << "XtalOpt::moveAtomRandomlyIAD: Success in moving atom";
+  debug("XtalOpt::moveAtomRandomlyIAD: Success in moving atom");
   atom->setPos(cartCoords);
   return true;
 }
@@ -1271,8 +1269,8 @@ bool Xtal::addAtomRandomlyIAD(
         double minDistSquared = minDist * minDist;
 
         if (curDistSquared < minDistSquared) {
-          qDebug() << "XtalOpt::addAtomRandomlyIAD: Failed to add atoms with "
-                      "specified interatomic distance. Distance too small";
+          debug("XtalOpt::addAtomRandomlyIAD: Failed to add atoms with "
+                "specified interatomic distance. Distance too small");
           success = false;
           break;
         }
@@ -1332,8 +1330,8 @@ bool Xtal::moveAtomRandomlyIAD(
         double minDistSquared = minDist * minDist;
 
         if (curDistSquared < minDistSquared) {
-          qDebug() << "XtalOpt::moveAtomRandomlyIAD: Failed to add atoms with "
-                      "specified interatomic distance. Distance too small";
+          debug("XtalOpt::moveAtomRandomlyIAD: Failed to add atoms with "
+                "specified interatomic distance. Distance too small");
           success = false;
           break;
         }
@@ -1343,7 +1341,7 @@ bool Xtal::moveAtomRandomlyIAD(
     if (i >= maxAttempts)
       return false;
   }
-  qDebug() << "XtalOpt::moveAtomRandomlyIAD: Success in moving atom";
+  debug("XtalOpt::moveAtomRandomlyIAD: Success in moving atom");
   atom->setPos(cartCoords);
   return true;
 }
@@ -2303,8 +2301,8 @@ QString Xtal::getHTMLSpaceGroupSymbol()
 QString Xtal::getHMName(unsigned short spg)
 {
   if (spg == 0 || spg > 230) {
-    qDebug() << "Error in " << __FUNCTION__ << ": an invalid "
-             << "spg number of " << spg << " was entered!";
+    debug(QString("Error in %1: an invalid "
+                  "spg number of %2 was entered!").arg(__FUNCTION__).arg(spg));
     return QString();
   }
   return QString::fromStdString(_HMNames[spg]);
@@ -2403,7 +2401,7 @@ void Xtal::getSpglibFormat() const
   }
   out << " };\n";
   out << "int num_atom = " << numAtoms() << ";\n";
-  qDebug() << t;
+  debug(t);
 }
 
 bool Xtal::rotateCellToStandardOrientation()
@@ -2414,8 +2412,8 @@ bool Xtal::rotateCellToStandardOrientation()
   // check that the matrix is valid
   if (newMat.isZero()) {
     const Matrix3 mat = unitCell().cellMatrix();
-    qDebug() << "Cannot rotate cell to std orientation:\n"
-             << QString("%L1 %L2 %L3\n%L4 %L5 %L6\n%L7 %L8 %L9")
+    debug(QString("Cannot rotate cell to std orientation:\n"
+                  "%L1 %L2 %L3\n%L4 %L5 %L6\n%L7 %L8 %L9")
                   .arg(mat(0, 0), -9, 'g')
                   .arg(mat(0, 1), -9, 'g')
                   .arg(mat(0, 2), -9, 'g')
@@ -2424,7 +2422,7 @@ bool Xtal::rotateCellToStandardOrientation()
                   .arg(mat(1, 2), -9, 'g')
                   .arg(mat(2, 0), -9, 'g')
                   .arg(mat(2, 1), -9, 'g')
-                  .arg(mat(2, 2), -9, 'g');
+                  .arg(mat(2, 2), -9, 'g'));
     return false;
   }
 

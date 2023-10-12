@@ -20,6 +20,7 @@
 
 #include <globalsearch/queueinterfaces/loadleveler.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/optimizer.h>
 #include <globalsearch/random.h>
@@ -368,7 +369,7 @@ QueueInterface::QueueStatus LoadLevelerQueueInterface::getStatus(
     //
     // I've seen this a few times when mpd dies unexpectedly and the
     // output files are never copied back. Just restart.
-    m_opt->debug(tr("Structure %1 with jobID %2 is missing "
+    debug(tr("Structure %1 with jobID %2 is missing "
                     "from the queue and has not written any output.")
                    .arg(s->getIDString())
                    .arg(s->getJobID()));
@@ -376,7 +377,7 @@ QueueInterface::QueueStatus LoadLevelerQueueInterface::getStatus(
   }
   // Unrecognized status:
   else {
-    m_opt->debug(tr("Structure %1 with jobID %2 has "
+    debug(tr("Structure %1 with jobID %2 has "
                     "unrecognized status: %3")
                    .arg(s->getIDString())
                    .arg(s->getJobID())

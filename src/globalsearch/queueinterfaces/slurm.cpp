@@ -20,6 +20,7 @@
 
 #include <globalsearch/queueinterfaces/slurm.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/optimizer.h>
 #include <globalsearch/random.h>
@@ -406,7 +407,7 @@ QueueInterface::QueueStatus SlurmQueueInterface::getStatus(Structure* s) const
     // I've seen this a few times on PBS when mpd dies unexpectedly
     // and the (incomplete) output files are never copied back. This
     // is an error, just restart.
-    m_opt->debug(tr("Structure %1 with jobID %2 is missing "
+    debug(tr("Structure %1 with jobID %2 is missing "
                     "from the queue and has not written any output.")
                    .arg(s->getIDString())
                    .arg(s->getJobID()));
@@ -414,7 +415,7 @@ QueueInterface::QueueStatus SlurmQueueInterface::getStatus(Structure* s) const
   }
   // Unrecognized status:
   else {
-    m_opt->debug(tr("Structure %1 with jobID %2 has "
+    debug(tr("Structure %1 with jobID %2 has "
                     "unrecognized status: %3")
                    .arg(s->getIDString())
                    .arg(s->getJobID())

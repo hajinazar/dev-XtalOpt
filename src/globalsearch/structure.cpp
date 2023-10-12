@@ -14,6 +14,7 @@
 
 #include <globalsearch/structure.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/bt.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/macros.h>
@@ -550,7 +551,7 @@ void Structure::readStructureSettings(const QString& filename,
   switch (loadedVersion) {
     case 0: {
       // Call load(QTextStream) to update
-      qDebug() << "Updating " << filename << " from Version 0 -> 1";
+      debug(QString("Updating %1 from Version 0 -> 1").arg(filename));
       QFile file(filename);
       file.open(QIODevice::ReadOnly);
       QTextStream stream(&file);

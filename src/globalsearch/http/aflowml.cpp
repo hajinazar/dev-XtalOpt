@@ -26,6 +26,8 @@
 #include "aflowml.h"
 #include "httprequestmanager.h"
 
+#include <globalsearch/iomain.h>
+
 AflowML::AflowML(const std::shared_ptr<QNetworkAccessManager>& networkManager,
                  QObject* parent)
   : QObject(parent), m_httpRequestManager(networkManager, parent),
@@ -70,9 +72,9 @@ void AflowML::checkLoop(QUrl url, size_t requestId)
 
     // Make sure it has the data we are looking for
     if (!m_httpRequestManager.containsData(replyInd)) {
-      qDebug() << "Error in AflowML:" << __FUNCTION__
-               << ": the HttpRequestManager does not contain the response"
-               << "data!";
+      debug(QString("Error in AflowML: %1"
+                    ": the HttpRequestManager does not contain the response"
+                    "data!").arg(__FUNCTION__));
       return;
     }
 
@@ -85,9 +87,8 @@ void AflowML::checkLoop(QUrl url, size_t requestId)
 
     // It should contain a "status" entry
     if (!rootObject.contains("status")) {
-      qDebug() << "Error in AflowML:" << __FUNCTION__
-               << ": invalid aflow response:\n"
-               << response;
+      debug(QString("Error in AflowML: %1"
+                    ": invalid aflow response: %2\n").arg(__FUNCTION__).arg(QString(response)));
       return;
     }
 
@@ -104,9 +105,8 @@ void AflowML::checkLoop(QUrl url, size_t requestId)
     }
 
     if (status != "SUCCESS") {
-      qDebug() << "Error in AflowML:" << __FUNCTION__
-               << ": job was not successful:\n"
-               << response;
+      debug(QString("Error in AflowML: %1"
+                    ": job was not successful: %2\n").arg(__FUNCTION__).arg(QString(response)));
       return;
     }
 
@@ -172,8 +172,8 @@ void AflowML::_submitPoscar(QString poscar, size_t requestId)
 
   // Make sure it has the data we are looking for
   if (!m_httpRequestManager.containsData(replyInd)) {
-    qDebug() << "Error in" << __FUNCTION__ << ": the HttpRequestManager"
-             << "does not contain the response data!";
+    debug(QString("Error in %1: the HttpRequestManager"
+                  "does not contain the response data!").arg(__FUNCTION__));
     return;
   }
 
@@ -186,8 +186,7 @@ void AflowML::_submitPoscar(QString poscar, size_t requestId)
 
   // It should contain an "id" entry
   if (!rootObject.contains("id")) {
-    qDebug() << "Error in" << __FUNCTION__ << ": invalid aflow response:\n"
-             << response;
+    debug(QString("Error in %1: invalid aflow response:\n").arg(__FUNCTION__).arg(QString(response)));
     return;
   }
 

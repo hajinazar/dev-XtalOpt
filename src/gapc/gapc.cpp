@@ -20,6 +20,7 @@
 #include <gapc/structures/protectedcluster.h>
 #include <gapc/ui/dialog.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/queuemanager.h>
 #include <globalsearch/slottedwaitcondition.h>

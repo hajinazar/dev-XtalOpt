@@ -16,6 +16,8 @@
 #include <QString>
 #include <QStringList>
 
+#include <globalsearch/iomain.h>
+
 #ifdef _HAVE_EXECINFO_H_
 #include <cxxabi.h>
 #include <execinfo.h>
@@ -110,5 +112,5 @@ void printBackTrace()
 {
   QStringList bt = getBackTrace();
   for (const auto& item : bt)
-    qDebug() << item;
+    debug(item);
 }

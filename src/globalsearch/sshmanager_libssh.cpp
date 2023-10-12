@@ -16,6 +16,7 @@
 
 #include <globalsearch/sshmanager_libssh.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/sshconnection_libssh.h>
 
@@ -72,8 +73,8 @@ SSHManagerLibSSH::~SSHManagerLibSSH()
   for (it = m_conns.begin(); it != m_conns.end(); it++) {
     while ((*it)->inUse() && timeout >= 0) {
       // Wait for connection to become free
-      qDebug() << "Spinning while waiting for SSHConnection to free." << *it
-               << "\nTimeout in" << QString::number(timeout) << "seconds.";
+      debug(QString("Spinning while waiting for SSHConnection to free."
+                    "\n   Timeout in %1 seconds.").arg(timeout));
       GS_SLEEP(1);
       timeout--;
     }

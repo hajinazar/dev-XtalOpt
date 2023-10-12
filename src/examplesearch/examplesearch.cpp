@@ -16,6 +16,7 @@
 
 #include <examplesearch/ui/dialog.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/optbase.h>
 #include <globalsearch/queueinterfaces/remote.h>
 #include <globalsearch/queuemanager.h>

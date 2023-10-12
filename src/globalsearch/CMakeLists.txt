@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(${XtalOpt_BINARY_DIR}/src/globalsearch/)
 INCLUDE_DIRECTORIES(${LIBSSH_INCLUDE_DIRS})
 
 set( globalsearch_SRCS
+     iomain.cpp
      optbase.cpp
      queuemanager.cpp
      eleminfo.cpp

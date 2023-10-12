@@ -14,6 +14,7 @@
 
 #include <globalsearch/queuemanager.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/optbase.h>
 #include <globalsearch/optimizer.h>
@@ -100,7 +101,7 @@ QueueManager::~QueueManager()
        it != it_end; it++) {
     timeout = 10;
     while (timeout > 0 && (*it)->size()) {
-      qDebug() << "Spinning on QueueManager handler trackers to empty...";
+      debug("Spinning on QueueManager handler trackers to empty...");
       GS_SLEEP(1);
       --timeout;
     }
@@ -109,7 +110,7 @@ QueueManager::~QueueManager()
   // Wait for m_requestedStructures to == 0
   timeout = 15;
   while (timeout > 0 && m_requestedStructures > 0) {
-    qDebug() << "Waiting for structure generation threads to finish...";
+    debug("Waiting for structure generation threads to finish...");
     GS_SLEEP(1);
     --timeout;
   }
@@ -318,13 +319,11 @@ void QueueManager::checkPopulation()
     // Check if we are testing. If so, have we reached the testing limit?
     (!m_opt->testingMode || total < m_opt->test_nStructs)) {
     // emit requests
-    qDebug() << "Need " << needed << " structures. " << incomplete
-             << " already incomplete.";
+    debug(QString("Need %1 structures. %2 already incomplete.").arg(needed).arg(incomplete));
     for (int i = 0; i < needed; ++i) {
       ++m_requestedStructures;
       emit needNewStructure();
-      qDebug() << "Requested new structure. Total requested: "
-               << m_requestedStructures;
+      debug(QString("Requested new structure. Total requested: %1").arg(m_requestedStructures));
     }
   }
 }
@@ -612,10 +611,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
 
     // Print an update to the terminal if we are not using the GUI
     if (!m_opt->usingGUI()) {
-      qDebug() << "Structure"
-               << QString::number(s->getGeneration()) + "x" +
-                    QString::number(s->getIDNumber())
-               << "completed step" << s->getCurrentOptStep();
+      debug(QString("Structure %1 completed step %2").arg(s->getIDString()).arg(s->getCurrentOptStep()));
     }
 
     s->setCurrentOptStep(s->getCurrentOptStep() + 1);
@@ -642,10 +638,7 @@ void QueueManager::handleStepOptimizedStructure_(Structure* s)
     } else {
       // No feature/aflow-hardness calculations; proceed to optimized!
       if (!m_opt->usingGUI()) {
-        qDebug() << "Structure"
-          << QString::number(s->getGeneration()) + "x" +
-          QString::number(s->getIDNumber())
-          << "is optimized!";
+        debug(QString("Structure %1 is optimized!").arg(s->getIDString()));
       }
       s->setStatus(Structure::Optimized);
       locker.unlock();
@@ -729,10 +722,7 @@ void QueueManager::handleRetainFeature_(Structure* s)
     return;
 
   if (!m_opt->usingGUI()) {
-    qDebug() << "Structure"
-      << QString::number(s->getGeneration()) + "x" +
-      QString::number(s->getIDNumber())
-      << "is optimized!";
+    debug(QString("Structure %1 is optimized!").arg(s->getIDString()));
   }
 
   s->setStatus(Structure::Optimized);
@@ -803,7 +793,7 @@ void QueueManager::handleDismissFeature_(Structure* s)
         "NOTE: redo str %8s with feature outcome % 2d ( action = % 3d ) !",
         s->getIDString().toStdString().c_str(),
         s->getStrucFeatStatus(), OptBase::FailActions(m_opt->failAction));
-    qDebug() << outstr;
+    debug(outstr);
 #endif
     // Update structure feature info; for the record, and to
     //   not repeat this step (we do this once)
@@ -879,10 +869,7 @@ void QueueManager::handleErrorStructure_(Structure* s)
   }
 
   if (!m_opt->usingGUI()) {
-    qDebug() << "Structure"
-             << QString::number(s->getGeneration()) + "x" +
-                  QString::number(s->getIDNumber())
-             << "failed";
+    debug(QString("Structure %1 failed").arg(s->getIDString()));
   }
 
   stopJob(s);
@@ -1209,11 +1196,8 @@ void QueueManager::startJob()
 
   if (!m_opt->usingGUI()) {
     QReadLocker locker(&s->lock());
-    qDebug() << "Structure"
-             << QString::number(s->getGeneration()) + "x" +
-                  QString::number(s->getIDNumber())
-             << "has been submitted"
-             << "step" << s->getCurrentOptStep();
+    debug(QString("Structure %1 has been submitted at step %2")
+                  .arg(s->getIDString()).arg(s->getCurrentOptStep()));
   }
 
   emit structureSubmitted(s);
@@ -1367,7 +1351,7 @@ void QueueManager::unlockForNaming(Structure* s)
   Q_ASSERT_X(m_requestedStructures >= 0, Q_FUNC_INFO,
              "The requested structures counter has become negative.");
 
-  qDebug() << "New structure accepted (" << s->getIDString() << ")";
+  debug(QString("New structure accepted ( %1 )").arg(s->getIDString()));
 
   m_newStructureTracker.unlock();
   m_tracker->unlock();

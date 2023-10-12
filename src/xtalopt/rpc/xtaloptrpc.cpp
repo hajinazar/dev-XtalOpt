@@ -17,6 +17,7 @@
 
 #include <xtalopt/structures/xtal.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/utilities/makeunique.h>
 
 #include <QDataStream>
@@ -147,16 +148,15 @@ void XtalOptRpc::readData()
   QJsonDocument doc = QJsonDocument::fromJson(data);
 
   if (doc.isNull()) {
-    qDebug() << "In XtalOptRpc: JsonData received from Avogadro2 is null!";
-    qDebug() << "JsonData is as follows:" << data;
+    debug(QString("In XtalOptRpc: JsonData received from Avogadro2 is null!"
+                  "JsonData is as follows: %1 ").arg(QString(data)));
     m_dataStream->resetStatus();
     return;
   }
 
   if (!doc.isObject()) {
-    qDebug() << "In XtalOptRpc: JsonData received from Avogadro2 is not"
-             << "an object!";
-    qDebug() << "JsonData is as follows:" << data;
+    debug(QString("In XtalOptRpc: JsonData received from Avogadro2 is not an object!"
+                  "JsonData is as follows: %1 ").arg(QString(data)));
     return;
   }
 
@@ -174,9 +174,10 @@ void XtalOptRpc::readData()
      * }
      */
     QJsonObject errorObj = obj["error"].toObject();
-    qDebug() << "Error received from RPC to Avogadro2";
-    qDebug() << "Error code: " << errorObj["code"].toInt();
-    qDebug() << "Error message: " << errorObj["message"].toString();
+    debug(QString("Error received from RPC to Avogadro2"
+                  "\n   Error code: %1"
+                  "\n   Error message: %2")
+                  .arg(errorObj["code"].toInt()).arg(errorObj["message"].toString()));
   }
 }
 

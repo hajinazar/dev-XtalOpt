@@ -18,6 +18,8 @@
 #include <QDebug>
 #include <QNetworkRequest>
 
+#include <globalsearch/iomain.h>
+
 HttpRequestManager::HttpRequestManager(
   const std::shared_ptr<QNetworkAccessManager>& networkManager, QObject* parent)
   : QObject(parent), m_networkManager(networkManager), m_requestCounter(0)
@@ -110,8 +112,7 @@ void HttpRequestManager::handleError(QNetworkReply::NetworkError ec)
   // Make sure the sender is a QNetworkReply
   QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
   if (!reply) {
-    qDebug() << "Error in" << __FUNCTION__ << ": sender() is not a"
-             << "QNetworkReply!";
+    debug(QString("Error in %1: sender() is not a QNetworkReply!").arg(__FUNCTION__));
     return;
   }
 
@@ -124,8 +125,8 @@ void HttpRequestManager::handleError(QNetworkReply::NetworkError ec)
 
   // If not, print an error and return
   if (it == m_pendingReplies.end()) {
-    qDebug() << "Error in" << __FUNCTION__ << ": sender() is not owned by"
-             << "this HttpRequestManager instance!";
+    debug(QString("Error in %1: sender() is not owned by"
+                  "this HttpRequestManager instance!").arg(__FUNCTION__));
     return;
   }
 
@@ -133,15 +134,15 @@ void HttpRequestManager::handleError(QNetworkReply::NetworkError ec)
 
   // Print a message for some of the more common errors
   if (ec == QNetworkReply::ConnectionRefusedError)
-    qDebug() << "QNetworkReply received an error: connection refused";
+    debug("QNetworkReply received an error: connection refused");
   else if (ec == QNetworkReply::RemoteHostClosedError)
-    qDebug() << "QNetworkReply received an error: remote host closed";
+    debug("QNetworkReply received an error: remote host closed");
   else if (ec == QNetworkReply::HostNotFoundError)
-    qDebug() << "QNetworkReply received an error: host not found";
+    debug("QNetworkReply received an error: host not found");
   else if (ec == QNetworkReply::TimeoutError)
-    qDebug() << "QNetworkReply received an error: timeout";
+    debug("QNetworkReply received an error: timeout");
   else
-    qDebug() << "QNetworkReply received error code:" << ec;
+    debug(QString("QNetworkReply received error code:").arg(ec));
 
   m_receivedReplies[receivedInd] = reply->readAll();
 
@@ -160,8 +161,7 @@ void HttpRequestManager::handleFinished()
   // Make sure the sender is a QNetworkReply
   QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
   if (!reply) {
-    qDebug() << "Error in" << __FUNCTION__ << ": sender() is not a"
-             << "QNetworkReply!";
+    debug(QString("Error in %1: sender() is not a QNetworkReply!").arg(__FUNCTION__));
     return;
   }
 

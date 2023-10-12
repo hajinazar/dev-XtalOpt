@@ -21,6 +21,7 @@
 #include <qwt_plot_canvas.h>
 #include <qwt_scale_engine.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/utilities/makeunique.h>
 
 namespace XtalOpt {
@@ -121,7 +122,7 @@ void XrdPlot::clearPlotCurves()
 void XrdPlot::removePlotCurve(size_t i)
 {
   if (i >= m_curveList.size()) {
-    qDebug() << "Error: removePlotCurve() was called with an invalid index!";
+    debug("Error: removePlotCurve() was called with an invalid index!");
     return;
   }
 
@@ -137,13 +138,13 @@ void XrdPlot::removePlotCurve(QwtPlotCurve* pc)
       return;
     }
   }
-  qDebug() << "Error: curve in parameter not found in removePlotCurve()!";
+  debug("Error: curve in parameter not found in removePlotCurve()!");
 }
 
 QwtPlotCurve* XrdPlot::plotCurve(size_t i)
 {
   if (i >= m_curveList.size()) {
-    qDebug() << "Error: plotCurve() was called with an invalid index!";
+    debug("Error: plotCurve() was called with an invalid index!");
     return nullptr;
   }
   return m_curveList[i].get();

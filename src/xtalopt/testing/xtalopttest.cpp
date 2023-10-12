@@ -18,6 +18,7 @@
 #include <xtalopt/ui/dialog.h>
 #include <xtalopt/xtalopt.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/queuemanager.h>
 
 #include <QDebug>
@@ -197,7 +198,7 @@ void XtalOptTest::resetOpt()
 
 void XtalOptTest::writeDataFile(int run)
 {
-  qDebug() << "Run " << run << " Finished!!" << endl;
+  debug(QString("Run %1 Finished!!").arg(run));
   QFile file;
   file.setFileName(m_opt->filePath + "/run" + QString::number(run) +
                    "-results.txt");
@@ -309,38 +310,40 @@ void XtalOptTest::outputStatus(const QString& message, int currentRun,
                    m_opt->runningJobLimit))
       .toString("ddd, MMM dd hh:mm:ss");
 
-  qDebug() << "";
+  QString outs = "\n";
   for (int i = 0; i < 2; i++) {
-    qDebug() << "--------------------------------------------------------------"
-                "---------------------";
+    outs += "--------------------------------------------------------------"
+            "---------------------";
   }
   for (int i = 0; i < 2; i++) {
-    qDebug() << "##############################################################"
-                "#####################";
+    outs += "##############################################################"
+            "#####################";
   }
-  qDebug() << tr("%1\nCurrent run: %2 of %3\nCurrent Structure: %4 of "
-                 "%5\nTotal Structures: %6 of %7")
-                .arg(message)
-                .arg(currentRun)
-                .arg(numberRuns)
-                .arg(currentStructure)
-                .arg(numberStructures)
-                .arg(totalStructures)
-                .arg(totalNumberStructures);
-  qDebug() << tr("%1 remaining, estimating finish at %2\ngiven the current "
-                 "rate of %3 seconds per structure.")
-                .arg(remainingTime)
-                .arg(finishedAt)
-                .arg(QString::number(secondsPerStructure));
+  outs += QString("%1\nCurrent run: %2 of %3\nCurrent Structure: %4 of "
+                  "%5\nTotal Structures: %6 of %7")
+                  .arg(message)
+                  .arg(currentRun)
+                  .arg(numberRuns)
+                  .arg(currentStructure)
+                  .arg(numberStructures)
+                  .arg(totalStructures)
+                  .arg(totalNumberStructures);
+  outs += QString("%1 remaining, estimating finish at %2\ngiven the current "
+                  "rate of %3 seconds per structure.")
+                  .arg(remainingTime)
+                  .arg(finishedAt)
+                  .arg(QString::number(secondsPerStructure));
   for (int i = 0; i < 2; i++) {
-    qDebug() << "##############################################################"
-                "#####################";
+    outs += "##############################################################"
+            "#####################";
   }
   for (int i = 0; i < 2; i++) {
-    qDebug() << "--------------------------------------------------------------"
-                "---------------------";
+    outs += "--------------------------------------------------------------"
+            "---------------------";
   }
-  qDebug() << "";
+  outs += "\n";
+
+  debug(outs);
 }
 
 } // end namespace XtalOpt

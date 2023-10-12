@@ -14,6 +14,7 @@
 
 #include <globalsearch/optbase.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/bt.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/formats/poscarformat.h>
@@ -294,7 +295,7 @@ outs += QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %
   .arg((1.0 - weightsTotal) * correctFitns,7,'f',5);
 outs += QString("NOTE: struc %1   oldFitness %2   newFitness %3")
   .arg(strucID,8).arg(correctFitns,8,'f',6).arg(fitnessTotal,8,'f',6);
-qDebug().noquote() << outs;
+debug(outs);
 #endif
 
   // Finally, return the calculated total fitness
@@ -428,7 +429,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7)
       .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
-  qDebug().noquote() << outs1;
+  debug(outs1);
 #endif
 
   // Sum the resulting probs
@@ -448,7 +449,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7)
       .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
-  qDebug().noquote() << outs1;
+  debug(outs1);
 #endif
 
   // Now replace each entry with a cumulative total
@@ -466,7 +467,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     outs1 += QString("      %1 : %3 : %4\n").arg(elem.first->getIDString(),7)
       .arg(elem.first->getEnthalpyPerFU(),0,'f',6).arg(elem.second,0,'f',6);
   }
-  qDebug().noquote() << outs1;
+  debug(outs1);
 #endif
 
   return probs;
@@ -523,7 +524,7 @@ void OptBase::startFeatureCalculations(Structure* s)
   QString wrkdir =
     (qi->getIDString().toLower() == "local") ? locdir : s->getRempath() + "/";
 
-  qDebug() << "Feature calculations for " << s->getIDString() << " started!";
+  debug(QString("Feature calculations for %1 started!").arg(s->getIDString()));
 
   // We set the default feature calc. status to Fail. In case the run is
   //   interrupted with a major failure, this will remain as the overall status.
@@ -671,8 +672,7 @@ void OptBase::finishFeatureCalculations(Structure* s)
     s->setStrucFeatStatus(Structure::FS_Fail);
   structureLocker.unlock();
 
-  qDebug() << "Feature calculations for " << s->getIDString()
-           << " finished ( status = " << s->getStrucFeatStatus() << " )";
+  debug(QString("Feature calculations for %1 finished ( status = %2 ) ").arg(s->getIDString()).arg(s->getStrucFeatStatus()));
 
   // We are done here.
   emit doneWithFeatures(s);
@@ -730,7 +730,7 @@ void OptBase::calculateHardness(Structure* s)
 
   QString id = QString::number(s->getGeneration()) + "x" +
                QString::number(s->getIDNumber());
-  qDebug() << "Submitting structure" << id << "for Aflow ML calculation...";
+  debug(QString("Submitting structure %1 for Aflow ML calculation...").arg(id));
   size_t ind = m_aflowML->submitPoscar(ss.str().c_str());
   m_pendingHardnessCalculations[ind] = s;
 }
@@ -761,9 +761,9 @@ void OptBase::_finishHardnessCalculation(size_t ind)
   auto it = m_pendingHardnessCalculations.find(ind);
 
   if (it == m_pendingHardnessCalculations.end()) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": Received hardness data for index" << ind << ", but could"
-             << "not find the structure for this index!";
+    debug(QString("Error in %1"
+                  ": Received hardness data for index %2, but could"
+                  "not find the structure for this index!").arg(__FUNCTION__).arg(ind));
     return;
   }
 
@@ -772,13 +772,13 @@ void OptBase::_finishHardnessCalculation(size_t ind)
 
   QString id = QString::number(s->getGeneration()) + "x" +
                QString::number(s->getIDNumber());
-  qDebug() << "Received Aflow ML data for structure" << id;
+  debug(QString("Received Aflow ML data for structure %1").arg(id));
 
   // Make sure AflowML actually has the data
   if (!m_aflowML->containsData(ind)) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": Received hardness data for index" << ind << ", but could"
-             << "not find the AflowMLData for this index!";
+    debug(QString("Error in %1"
+                  ": Received hardness data for index %2, but could"
+                  "not find the AflowMLData for this index!").arg(__FUNCTION__).arg(ind));
     return;
   }
 
@@ -1091,7 +1091,7 @@ void OptBase::interpretKeyword_base(QString& line, Structure* structure)
     // Attempt to open the file
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-      qDebug() << "Error in" << __FUNCTION__ << ": could not open" << filename;
+      debug(QString("Error in %1: could not open %2").arg(__FUNCTION__).arg(filename));
     }
     rep += file.readAll();
   }
@@ -1152,24 +1152,23 @@ QString OptBase::getTemplateKeywordHelp_base()
 std::unique_ptr<QueueInterface> OptBase::createQueueInterface(
   const std::string& queueName)
 {
-  qDebug() << "Error:" << __FUNCTION__ << "not implemented. It needs to"
-           << "be overridden in a derived class.";
+  debug(QString("Error: %1 not implemented. It needs to"
+                " be overridden in a derived class.").arg(__FUNCTION__));
   return nullptr;
 }
 
 std::unique_ptr<Optimizer> OptBase::createOptimizer(const std::string& optName)
 {
-  qDebug() << "Error:" << __FUNCTION__ << "not implemented. It needs to"
-           << "be overridden in a derived class.";
+  debug(QString("Error: %1 not implemented. It needs to"
+                " be overridden in a derived class.").arg(__FUNCTION__));
   return nullptr;
 }
 
 QueueInterface* OptBase::queueInterface(int optStep) const
 {
   if (optStep >= getNumOptSteps()) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds! The number of optimization steps is:"
-             << getNumOptSteps();
+    debug(QString("Error in %1 : optStep, %2, is out of bounds! The number of optimization steps is: %3")
+      .arg(__FUNCTION__).arg(optStep).arg(getNumOptSteps()));
     return nullptr;
   }
   return m_queueInterfaceAtOptStep[optStep].get();
@@ -1187,9 +1186,9 @@ int OptBase::queueInterfaceIndex(const QueueInterface* qi) const
 Optimizer* OptBase::optimizer(int optStep) const
 {
   if (optStep >= getNumOptSteps()) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds! The number of optimization steps is:"
-             << getNumOptSteps();
+    debug(QString("Error in %1: optStep, %2"
+                  ", is out of bounds! The number of optimization steps is: %3")
+                  .arg(__FUNCTION__).arg(optStep).arg(getNumOptSteps()));
     return nullptr;
   }
   return m_optimizerAtOptStep[optStep].get();
@@ -1278,9 +1277,8 @@ void OptBase::insertOptStep(size_t optStep)
   }
 
   if (optStep > m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": attempting to insert"
-             << "an opt step," << optStep << ", that is greater than"
-             << "the number of opt steps," << m_numOptSteps;
+    debug(QString("Error in %1: attempting to insert an opt step, %2, that is greater than"
+                  "the number of opt steps, %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
 
@@ -1309,9 +1307,9 @@ void OptBase::insertOptStep(size_t optStep)
 void OptBase::removeOptStep(size_t optStep)
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": attempting to remove"
-             << "an opt step," << optStep << ", that is out of bounds.\n"
-             << "The number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: attempting to remove"
+                  "an opt step, %2, that is out of bounds.\n"
+                  "The number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
 
@@ -1327,8 +1325,8 @@ void OptBase::removeOptStep(size_t optStep)
 void OptBase::setQueueInterface(size_t optStep, const std::string& qiName)
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+                  "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
   m_queueInterfaceAtOptStep[optStep] = createQueueInterface(qiName);
@@ -1344,13 +1342,13 @@ std::string OptBase::getQueueInterfaceTemplate(size_t optStep,
                                                const std::string& name) const
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+                  "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return "";
   }
   if (m_queueInterfaceTemplates[optStep].count(name) == 0) {
-    qDebug() << "Error in" << __FUNCTION__ << ": invalid key entry"
-             << "Name:" << name.c_str() << ", for opt step:" << optStep;
+    debug(QString("Error in %1: invalid key entry Name: %2,"
+                  "for opt step: %3").arg(__FUNCTION__).arg(name.c_str()).arg(optStep));
     return "";
   }
   return m_queueInterfaceTemplates[optStep].at(name);
@@ -1360,8 +1358,8 @@ void OptBase::setQueueInterfaceTemplate(size_t optStep, const std::string& name,
                                         const std::string& temp)
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+                  "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
   m_queueInterfaceTemplates[optStep][name] = temp;
@@ -1370,8 +1368,8 @@ void OptBase::setQueueInterfaceTemplate(size_t optStep, const std::string& name,
 void OptBase::setOptimizer(size_t optStep, const std::string& optName)
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+                  "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
   m_optimizerAtOptStep[optStep] = createOptimizer(optName);
@@ -1387,13 +1385,13 @@ std::string OptBase::getOptimizerTemplate(size_t optStep,
                                           const std::string& name) const
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+                  "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return "";
   }
   if (m_optimizerTemplates[optStep].count(name) == 0) {
-    qDebug() << "Error in" << __FUNCTION__ << ": invalid key entry"
-             << "Name:" << name.c_str() << ", for opt step:" << optStep;
+    debug(QString("Error in %1: invalid key entry Name: %2,"
+          "for opt step: %3").arg(__FUNCTION__).arg(name.c_str()).arg(optStep));
     return "";
   }
   return m_optimizerTemplates[optStep].at(name);
@@ -1403,8 +1401,8 @@ void OptBase::setOptimizerTemplate(size_t optStep, const std::string& name,
                                    const std::string& temp)
 {
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of bounds. Number of opt steps is" << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+          "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return;
   }
   m_optimizerTemplates[optStep][name] = temp;
@@ -1416,16 +1414,16 @@ OptBase::TemplateType OptBase::getTemplateType(size_t optStep,
   TemplateType ret = TT_Unknown;
 
   if (optStep >= m_numOptSteps) {
-    qDebug() << "Error in" << __FUNCTION__ << ": optStep," << optStep
-             << ", is out of range! Num opt steps is: " << m_numOptSteps;
+    debug(QString("Error in %1: optStep, %2, is out of bounds."
+          "Number of opt steps is %3").arg(__FUNCTION__).arg(optStep).arg(m_numOptSteps));
     return ret;
   }
 
   if (queueInterface(optStep) &&
       queueInterface(optStep)->isTemplateFileName(name.c_str())) {
     if (ret != TT_Unknown) {
-      qDebug() << "Error: in" << __FUNCTION__ << ": template name,"
-               << name.c_str() << ", in multiple template types!";
+      debug(QString("Error: in %1: template name, %2, in multiple template types!")
+            .arg(__FUNCTION__).arg(name.c_str()));
       ret = TT_Unknown;
       return ret;
     }
@@ -1435,8 +1433,8 @@ OptBase::TemplateType OptBase::getTemplateType(size_t optStep,
   if (optimizer(optStep) &&
       optimizer(optStep)->isTemplateFileName(name.c_str())) {
     if (ret != TT_Unknown) {
-      qDebug() << "Error: in" << __FUNCTION__ << ": template name,"
-               << name.c_str() << ", in multiple template types!";
+      debug(QString("Error: in %1: template name, %2, in multiple template types!")
+          .arg(__FUNCTION__).arg(name.c_str()));
       ret = TT_Unknown;
       return ret;
     }
@@ -1444,8 +1442,8 @@ OptBase::TemplateType OptBase::getTemplateType(size_t optStep,
   }
 
   if (ret == TT_Unknown) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": unknown template type: " << name.c_str();
+    debug(QString("Error in %1: unknown template type: %2")
+        .arg(__FUNCTION__).arg(name.c_str()));
   }
 
   return ret;
@@ -1490,8 +1488,8 @@ void OptBase::readQueueInterfaceTemplatesFromSettings(
 {
   QueueInterface* queue = queueInterface(optStep);
   if (!queue) {
-    qDebug() << "Error in " << __FUNCTION__ << ": queue interface at"
-             << "opt step" << optStep << "does not exist!";
+    debug(QString("Error in %1: queue interface at"
+                  "opt step %2 does not exist!").arg(__FUNCTION__).arg(optStep));
     return;
   }
 
@@ -1514,8 +1512,8 @@ void OptBase::readOptimizerTemplatesFromSettings(
 {
   Optimizer* optim = optimizer(optStep);
   if (!optim) {
-    qDebug() << "Error in " << __FUNCTION__ << ": optimizer at"
-             << "opt step" << optStep << "does not exist!";
+    debug(QString("Error in %1: queue interface at"
+                  "opt step %2 does not exist!").arg(__FUNCTION__).arg(optStep));
     return;
   }
 
@@ -1588,8 +1586,8 @@ void OptBase::writeQueueInterfaceTemplatesToSettings(
 {
   QueueInterface* queue = queueInterface(optStep);
   if (!queue) {
-    qDebug() << "Error in " << __FUNCTION__ << ": queue interface at"
-             << "opt step" << optStep << "does not exist!";
+    debug(QString("Error in %1: queue interface at"
+                  "opt step %2 does not exist!").arg(__FUNCTION__).arg(optStep));
     return;
   }
 
@@ -1613,8 +1611,8 @@ void OptBase::writeOptimizerTemplatesToSettings(
 {
   Optimizer* optim = optimizer(optStep);
   if (!optim) {
-    qDebug() << "Error in " << __FUNCTION__ << ": optimizer at"
-             << "opt step" << optStep << "does not exist!";
+    debug(QString("Error in %1: queue interface at"
+                  "opt step %2 does not exist!").arg(__FUNCTION__).arg(optStep));
     return;
   }
 
@@ -1861,12 +1859,6 @@ void OptBase::warning(const QString& s)
   emit warningStatement(s);
 }
 
-void OptBase::debug(const QString& s)
-{
-  qDebug() << "Debug: " << s;
-  emit debugStatement(s);
-}
-
 void OptBase::error(const QString& s)
 {
   qWarning() << "Error: " << s;
@@ -1875,7 +1867,7 @@ void OptBase::error(const QString& s)
 
 void OptBase::message(const QString& s)
 {
-  qDebug() << "Message: " << s;
+  printf("Message:\n");
   emit messageStatement(s);
 }
 

@@ -22,6 +22,7 @@
 #include <QProcess>
 #include <QString>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/formats/cmlformat.h>
 #include <globalsearch/formats/obconvert.h>
 #include <globalsearch/structure.h>
@@ -53,7 +54,7 @@ bool GenerateXrd::executeGenXrdPattern(const QStringList& args,
     else if (QFile::exists(path + "/../bin/" + executable))
       program = path + "/../bin/" + executable;
     else {
-      qDebug() << "Error: could not find genXrdPattern executable!";
+      debug("Error: could not find genXrdPattern executable!");
       return false;
     }
   }
@@ -62,8 +63,7 @@ bool GenerateXrd::executeGenXrdPattern(const QStringList& args,
   p.start(program, args);
 
   if (!p.waitForStarted()) {
-    qDebug() << "Error: The genXrdPattern executable at" << program
-             << "failed to start.";
+    debug(QString("Error: The genXrdPattern executable at %1 failed to start.").arg(program));
     return false;
   }
 
@@ -74,9 +74,9 @@ bool GenerateXrd::executeGenXrdPattern(const QStringList& args,
   p.closeWriteChannel();
 
   if (!p.waitForFinished()) {
-    qDebug() << "Error: " << program << "failed to finish.";
+    debug(QString("Error: %1 failed to finish.").arg(program));
     output = p.readAll();
-    qDebug() << "Output is as follows:\n" << output;
+    debug(QString("Output is as follows:\n%1").arg(QString(output)));
     return false;
   }
 
@@ -84,15 +84,14 @@ bool GenerateXrd::executeGenXrdPattern(const QStringList& args,
   output = p.readAll();
 
   if (exitStatus == QProcess::CrashExit) {
-    qDebug() << "Error:" << program << "crashed!\n";
-    qDebug() << "Output is as follows:\n" << output;
+    debug(QString("Error: %1 crashed!\n"
+                  "   Output is as follows:\n%2").arg(program).arg(QString(output)));
     return false;
   }
 
   if (exitStatus != QProcess::NormalExit) {
-    qDebug() << "Error:" << program << "finished abnormally with exit code "
-             << exitStatus;
-    qDebug() << "Output is as follows:\n" << output;
+    debug(QString("Error: %1 finished abnormally with exit code %2\n"
+                  "   Output is as follows:\n%3").arg(program).arg(exitStatus).arg(QString(output)));
     return false;
   }
 
@@ -108,17 +107,16 @@ bool GenerateXrd::generateXrdPattern(const Structure& s, XrdData& results,
   std::stringstream cml;
 
   if (!CmlFormat::write(s, cml)) {
-    qDebug() << "Error in" << __FUNCTION__ << ": failed to convert structure'"
-             << s.getGeneration() << "x" << s.getIDNumber() << "' to CML"
-             << "format!";
+    debug(QString("Error in %1: failed to convert structure '%2' to CML format!")
+                  .arg(__FUNCTION__).arg(s.getIDString()));
     return false;
   }
 
   // Then, convert to CIF format
   QByteArray cif;
   if (!OBConvert::convertFormat("cml", "cif", cml.str().c_str(), cif)) {
-    qDebug() << "Error in" << __FUNCTION__ << ": failed to convert CML"
-             << "format to CIF format with obabel";
+    debug(QString("Error in %1: failed to convert CML"
+                  "format to CIF format with obabel").arg(__FUNCTION__));
     return false;
   }
 
@@ -132,8 +130,8 @@ bool GenerateXrd::generateXrdPattern(const Structure& s, XrdData& results,
 
   QByteArray output;
   if (!executeGenXrdPattern(args, cif, output)) {
-    qDebug() << "Error in" << __FUNCTION__ << ": failed to run external"
-             << "genXrdPattern program";
+    debug(QString("Error in %1: failed to run external"
+                  "genXrdPattern program").arg(__FUNCTION__));
     return false;
   }
 
@@ -152,10 +150,10 @@ bool GenerateXrd::generateXrdPattern(const Structure& s, XrdData& results,
     if (dataStarted) {
       QStringList rowData = line.split(" ", QString::SkipEmptyParts);
       if (rowData.size() != 2) {
-        qDebug() << "Error in" << __FUNCTION__ << ": data read from"
-                 << "genXrdPattern appears to be corrupt! Data is:";
+        debug(QString("Error in %1: data read from"
+                      "genXrdPattern appears to be corrupt! Data is:").arg(__FUNCTION__));
         for (const auto& lineTmp: lines)
-          qDebug() << lineTmp;
+          debug(lineTmp);
         return false;
       }
       results.push_back(

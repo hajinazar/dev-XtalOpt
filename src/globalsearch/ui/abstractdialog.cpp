@@ -15,6 +15,7 @@
 
 #include <globalsearch/ui/abstractdialog.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/optbase.h>
 #include <globalsearch/optimizer.h>
 #include <globalsearch/queuemanager.h>
@@ -267,7 +268,7 @@ void AbstractDialog::errorBox_(const QString& s)
   if (m_opt->usingGUI()) {
     QMessageBox::critical(this, "Error", s);
   } else {
-    qDebug() << "Error: " << s;
+    debug(QString("Error: %1").arg(s));
   }
 }
 

@@ -14,6 +14,7 @@
 
 #include <globalsearch/optimizer.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/formats/formats.h>
 #include <globalsearch/macros.h>
 #include <globalsearch/optbase.h>
@@ -205,12 +206,9 @@ bool Optimizer::checkForSuccessfulOutput(Structure* s, bool* success)
        it != it_end; ++it) {
     if (!m_opt->queueInterface(s->getCurrentOptStep())
            ->grepFile(s, (*it), m_completionFilename, 0, &ec)) {
-      qDebug() << "For structure "
-               << QString::number(s->getGeneration()) + "x" +
-                    QString::number(s->getIDNumber())
-               << ":";
-      qDebug() << "The completion string, " << (*it) << ", was not found"
-               << "in the output file. Job failed.";
+      debug(QString("For structure %1:"
+                    "The completion string, %2 , was not found"
+                    "in the output file. Job failed.").arg(s->getIDString()).arg((*it)));
       return false;
     }
     if (ec == 0) {
@@ -291,8 +289,7 @@ bool Optimizer::read(Structure* structure, const QString& filename)
   file.close();
 
   if (!Formats::read(structure, filename, m_idString)) {
-    qDebug().noquote() << "Failed to read the output file " +
-      filename + " for " + structure->getIDString();
+    debug(QString("Failed to read the output file %1 for %2").arg(filename).arg(structure->getIDString()));
     return false;
   }
 

@@ -24,6 +24,7 @@
 
 #include <randSpg/include/xtaloptWrapper.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/bt.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/formats/cmlformat.h>
@@ -98,7 +99,7 @@ XtalOpt::~XtalOpt()
   m_dialog = nullptr;
 
   // Save one last time
-  qDebug() << "Saving XtalOpt settings...";
+  debug("Saving XtalOpt settings...");
 
   // First save the state file (only if we have structures)
   if (!m_queue->getAllStructures().isEmpty())
@@ -189,12 +190,12 @@ bool XtalOpt::startSearch()
                "\n\nYou will need to increase this value before the search "
                "can begin (The option is on the 'Search Settings' tab)."));
     } else {
-      qDebug() << "\nWarning: the number of running jobs is currently set to"
-               << "0."
-               << "\nYou will need to increase this value before the"
-               << "search can begin \n(You can change this in the"
-               << "xtalopt-runtime-options.txt file in the local working"
-               << "directory).\n";
+      debug("\nWarning: the number of running jobs is currently set to"
+            "0."
+            "\nYou will need to increase this value before the"
+            "search can begin \n(You can change this in the"
+            "xtalopt-runtime-options.txt file in the local working"
+            "directory).\n");
     }
   };
 
@@ -207,19 +208,19 @@ bool XtalOpt::startSearch()
                "can move past the first generation (The option is on the "
                "'Search Settings' tab)."));
     } else {
-      qDebug() << "\nWarning: the number of continuous structures is"
-               << "currently set to 0."
-               << "\nYou will need to increase this value before the"
-               << "search can move past the first generation \n(You can"
-               << "change this in the xtalopt-runtime-options.txt file in"
-               << "the local working directory).\n";
+      debug("\nWarning: the number of continuous structures is"
+            "currently set to 0."
+            "\nYou will need to increase this value before the"
+            "search can move past the first generation \n(You can"
+            "change this in the xtalopt-runtime-options.txt file in"
+            "the local working directory).\n");
     }
   };
 
 #ifdef ENABLE_SSH
   // Create the SSHManager if running remotely
   if (anyRemoteQueueInterfaces()) {
-    qDebug() << "Creating SSH connections...";
+    debug("Creating SSH connections...");
     if (!this->createSSHConnections()) {
       error(tr("Could not create ssh connections."));
       return false;
@@ -720,8 +721,8 @@ bool XtalOpt::readEditSettings(const QString& filename)
     QString optimizer = settings->value("edit/optimizer", "").toString();
     if (optimizer.isEmpty()) {
       if (!filename.isEmpty()) {
-        qDebug() << "Error: loading settings for older XtalOpt version and"
-                 << "the optimizer is empty!";
+        debug("Error: loading settings for older XtalOpt version and"
+              "the optimizer is empty!");
         return false;
       }
       optimizer = "gulp";
@@ -730,8 +731,8 @@ bool XtalOpt::readEditSettings(const QString& filename)
     QString qi = settings->value("edit/queueInterface", "").toString();
     if (qi.isEmpty()) {
       if (!filename.isEmpty()) {
-        qDebug() << "Error: loading settings for older XtalOpt version and"
-                 << "the queue interface is empty!";
+        debug("Error: loading settings for older XtalOpt version and"
+              "the queue interface is empty!");
         return false;
       }
       qi = "local";
@@ -1249,7 +1250,7 @@ Structure* XtalOpt::replaceWithRandom(Structure* s, const QString& reason)
       xtal = 0;
     }
     if (attemptCount >= maxAttempts) {
-      qDebug() << "Failed too many times in replaceWithRandom. Giving up";
+      debug("Failed too many times in replaceWithRandom. Giving up");
       return nullptr;
     }
     ++attemptCount;
@@ -1316,7 +1317,7 @@ Structure* XtalOpt::replaceWithOffspring(Structure* s, const QString& reason)
       xtal = nullptr;
     }
     if (attemptCount >= maxAttempts) {
-      qDebug() << "Failed too many times in replaceWithOffspring. Giving up";
+      debug("Failed too many times in replaceWithOffspring. Giving up");
       return nullptr;
     }
     ++attemptCount;
@@ -1414,9 +1415,8 @@ Xtal* XtalOpt::randSpgXtal(uint generation, uint id, uint FU, uint spg,
     if (using_fixed_volume)
       xtal->setVolume(vol_fixed * FU);
   } else {
-    qDebug() << "After" << QString::number(input.maxAttempts)
-             << "attempts, failed to generate an xtal with spg of"
-             << QString::number(spg);
+    debug(QString("After %1 attempts, failed to generate an xtal with spg of %2")
+             .arg(input.maxAttempts).arg(spg));
     return nullptr;
   }
 
@@ -1576,8 +1576,7 @@ Xtal* XtalOpt::generateRandomMolecularXtal(uint generation, uint id, uint FU)
 {
   std::string confFile = chooseMolecularConformer();
   if (confFile.empty()) {
-    qDebug() << "XtalOpt::generateRandomMolecularXtal(): failed to choose"
-             << "a conformer.";
+    debug("XtalOpt::generateRandomMolecularXtal(): failed to choose a conformer.");
     return nullptr;
   }
 
@@ -2299,7 +2298,7 @@ Xtal* XtalOpt::generateNewXtal(uint FU)
               xtal = 0;
             }
             if (attemptCount >= maxAttempts) {
-              qDebug() << "Failed too many times in generateNewXtal1. Giving up";
+              debug("Failed too many times in generateNewXtal1. Giving up");
               return nullptr;
             }
             ++attemptCount;
@@ -2331,7 +2330,7 @@ Xtal* XtalOpt::generateNewXtal(uint FU)
       if (xtal)
         xtal->deleteLater();
       if (attemptCount >= maxAttempts) {
-        qDebug() << "Failed too many times in generateNewXtal2. Giving up";
+        debug("Failed too many times in generateNewXtal2. Giving up");
         return nullptr;
       }
       ++attemptCount;
@@ -2536,7 +2535,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
     }
 
     if (attemptCount >= maxAttempts) {
-      qDebug() << "Failed too many times in H_getMutatedXtal1. Giving up";
+      debug("Failed too many times in H_getMutatedXtal1. Giving up");
       return nullptr;
     }
     ++attemptCount;
@@ -2584,7 +2583,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
             }
 
             if (attemptCount >= maxAttempts) {
-              qDebug() << "Failed too many times in H_getMutatedXtal2. Giving up";
+              debug("Failed too many times in H_getMutatedXtal2. Giving up");
               return nullptr;
             }
             ++attemptCount;
@@ -2630,7 +2629,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
       }
 
       if (attemptCount >= maxAttempts) {
-        qDebug() << "Failed too many times in H_getMutatedXtal3. Giving up";
+        debug("Failed too many times in H_getMutatedXtal3. Giving up");
         return nullptr;
       }
       ++attemptCount;
@@ -2892,9 +2891,10 @@ Xtal* XtalOpt::generateSuperCell(uint initialFU, uint finalFU, Xtal* parentXtal,
 {
   // First perform a sanity check
   if (finalFU % initialFU != 0) {
-    qDebug() << "Warning:" << __FUNCTION__ << "was called with an impossible"
-             << "ratio of finalFU to initialFU! initialFU is" << initialFU
-             << "and finalFU is" << finalFU << "\nReturning nullptr";
+    debug(QString("Warning: %1 was called with an impossible"
+                  "ratio of finalFU to initialFU! initialFU is %2"
+                  "and finalFU is %3 \nReturning nullptr")
+                  .arg(__FUNCTION__).arg(initialFU).arg(finalFU));
     return nullptr;
   }
 
@@ -3054,16 +3054,14 @@ Xtal* XtalOpt::selectXtalFromProbabilityList(QList<Structure*> structures,
         structures.removeAt(i);
         --i;
 #ifdef FEATURES_DEBUG
-qDebug().noquote() << QString("NOTE: structure %1 excluded from pool "
-                              "with features status %2 ")
-  .arg(structures[i]->getIDString(),7).arg(structures[i]->getStrucFeatStatus(),2);
+debug(QString("NOTE: structure %1 excluded from pool with features status %2 ")
+  .arg(structures[i]->getIDString(),7).arg(structures[i]->getStrucFeatStatus(),2));
 #endif
       }
     }
 #ifdef FEATURES_DEBUG
-qDebug().noquote() << QString("NOTE: a total of %1 (from %2) structures "
-                              "left for pool after feature analysis\n")
-  .arg(structures.size(),5).arg(sizeBeforeFeaturesPruning,5);
+debug(QString("NOTE: a total of %1 (from %2) structures left for pool after feature analysis\n")
+  .arg(structures.size(),5).arg(sizeBeforeFeaturesPruning,5));
 #endif
 
     if (structures.size() == 1 && sizeBeforeFeaturesPruning > 1) {
@@ -3119,7 +3117,7 @@ QString outs = QString("\nNOTE: Selected %1 ( r = %2 ) from structures with prob
       .arg(elem.second - previousProbs,10,'f',6).arg(elem.second,10,'f',6);
     previousProbs = elem.second;
   }
-qDebug().noquote() << outs;
+debug(outs);
 #endif
   return xtal;
 }
@@ -3198,7 +3196,7 @@ bool XtalOpt::checkComposition(Xtal* xtal, QString* err)
       static_cast<unsigned int>(xtal->atom(i).atomicNumber()));
     // Type not found:
     if (typeIndex == -1) {
-      qDebug() << "XtalOpt::checkXtal: Composition incorrect.";
+      debug("XtalOpt::checkXtal: Composition incorrect.");
       if (err != nullptr) {
         *err = "Bad composition.";
       }
@@ -3211,16 +3209,13 @@ bool XtalOpt::checkComposition(Xtal* xtal, QString* err)
   for (size_t i = 0; i < atomTypes.size(); ++i) {
     if (atomCounts[i] !=
         comp[atomTypes[i]].quantity * xtal->getFormulaUnits()) { // PSA
-      qDebug() << "atomCounts for atomic num " << QString::number(atomTypes[i])
-               << "is" << QString::number(atomCounts[i]) << ". It should be "
-               << QString::number(comp[atomTypes[i]].quantity *
-                                  xtal->getFormulaUnits())
-               << "instead.";
-      qDebug() << "FU is " << QString::number(xtal->getFormulaUnits())
-               << " and comp[atomTypes[i]].quantity is "
-               << QString::number(comp[atomTypes[i]].quantity);
+      debug(QString("atomCounts for atomic num %1 is %2. It should be %3 instead.")
+                    .arg(atomTypes[i]).arg(atomCounts[i])
+                    .arg(comp[atomTypes[i]].quantity * xtal->getFormulaUnits()));
+      debug(QString("FU is %1 and comp[atomTypes[i]].quantity is %2.")
+                    .arg(xtal->getFormulaUnits()).arg(comp[atomTypes[i]].quantity));
       // Incorrect count:
-      qDebug() << "XtalOpt::checkXtal: Composition incorrect.";
+      debug("XtalOpt::checkXtal: Composition incorrect.");
       if (err != nullptr) {
         *err = "Bad composition.";
       }
@@ -3281,8 +3276,8 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
   // cell matrix is negative (otherwise VASP complains about a
   // "negative triple product")
   if (xtal->unitCell().cellMatrix().determinant() <= 0.0) {
-    qDebug() << "Rejecting structure" << xtal->getIDString()
-             << ": determinant of unit cell is negative or zero.";
+    debug("Rejecting structure" + xtal->getIDString() +
+          ": determinant of unit cell is negative or zero.");
     if (err != nullptr) {
       *err = "Unit cell matrix cannot have a negative or zero determinant.";
     }
@@ -3297,8 +3292,8 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
       GS_IS_NAN_OR_INF(xtal->getAlpha()) || fabs(xtal->getAlpha()) < 1e-8 ||
       GS_IS_NAN_OR_INF(xtal->getBeta()) || fabs(xtal->getBeta()) < 1e-8 ||
       GS_IS_NAN_OR_INF(xtal->getGamma()) || fabs(xtal->getGamma()) < 1e-8) {
-    qDebug() << "XtalOpt::checkXtal: A cell parameter is either 0, nan, or "
-                "inf. Discarding.";
+    debug("XtalOpt::checkXtal: A cell parameter is either 0, nan, or "
+          "inf. Discarding.");
     if (err != nullptr) {
       *err = "A cell parameter is too small (<10^-8) or not a number.";
     }
@@ -3317,9 +3312,9 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
         xtal->getB() * cutoff < xtal->getC() ||
         xtal->getC() * cutoff < xtal->getA() ||
         xtal->getC() * cutoff < xtal->getB()) {
-      qDebug() << "Error: one of the lengths is more than 25x shorter"
-               << "than another length.\nCrystals like these can sometimes"
-               << "cause spglib to crash the program. Discarding the xtal:";
+      debug("Error: one of the lengths is more than 25x shorter"
+            "than another length.\nCrystals like these can sometimes"
+            "cause spglib to crash the program. Discarding the xtal:");
       xtal->printXtalInfo();
       return false;
     }
@@ -3330,9 +3325,9 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
         xtal->getBeta() * cutoff < xtal->getGamma() ||
         xtal->getGamma() * cutoff < xtal->getAlpha() ||
         xtal->getGamma() * cutoff < xtal->getBeta()) {
-      qDebug() << "Error: one of the angles is more than 25x smaller"
-               << "than another angle.\nCrystals like these can sometimes"
-               << "cause spglib to crash the program. Discarding the xtal:";
+      debug("Error: one of the angles is more than 25x smaller"
+            "than another angle.\nCrystals like these can sometimes"
+            "cause spglib to crash the program. Discarding the xtal:");
       xtal->printXtalInfo();
       return false;
     }
@@ -3349,19 +3344,19 @@ bool XtalOpt::checkLattice(Xtal* xtal, uint formulaUnits, QString* err)
       (!beta && (xtal->getBeta() < beta_min || xtal->getBeta() > beta_max)) ||
       (!gamma &&
        (xtal->getGamma() < gamma_min || xtal->getGamma() > gamma_max))) {
-    qDebug() << "Discarding structure -- Bad lattice:" << endl
-             << "A:     " << a_min << " " << xtal->getA() << " " << a_max
-             << endl
-             << "B:     " << b_min << " " << xtal->getB() << " " << b_max
-             << endl
-             << "C:     " << c_min << " " << xtal->getC() << " " << c_max
-             << endl
-             << "Alpha: " << alpha_min << " " << xtal->getAlpha() << " "
-             << alpha_max << endl
-             << "Beta:  " << beta_min << " " << xtal->getBeta() << " "
-             << beta_max << endl
-             << "Gamma: " << gamma_min << " " << xtal->getGamma() << " "
-             << gamma_max;
+    debug(QString("Discarding structure -- Bad lattice:"
+                  "\n   A:   %1   %2   %3"
+                  "\n   B:   %4   %5   %6"
+                  "\n   C:   %7   %8   %9"
+                  "\n   Alpha:   %10   %11   %12"
+                  "\n   Beta:   %13   %14   %15"
+                  "\n   Gamma:   %16   %17   %18")
+                  .arg(a_min).arg(xtal->getA()).arg(a_max)
+                  .arg(b_min).arg(xtal->getB()).arg(b_max)
+                  .arg(c_min).arg(xtal->getC()).arg(c_max)
+                  .arg(alpha_min).arg(xtal->getAlpha()).arg(alpha_max)
+                  .arg(beta_min).arg(xtal->getBeta()).arg(beta_max)
+                  .arg(gamma_min).arg(xtal->getGamma()).arg(gamma_max));
     if (err != nullptr) {
       *err = "The unit cell parameters do not fall within the specified "
              "limits.";
@@ -3401,7 +3396,7 @@ bool XtalOpt::checkXtal(Xtal* xtal, QString* err)
   // Sometimes, all the atom positions are set to 'nan' for an unknown reason
   // Make sure that the position of the first atom is not nan
   if (GS_IS_NAN_OR_INF(xtal->atoms().at(0).pos().x())) {
-    qDebug() << "Discarding structure -- contains 'nan' atom positions";
+    debug("Discarding structure -- contains 'nan' atom positions");
     return false;
   }
 
@@ -3410,9 +3405,8 @@ bool XtalOpt::checkXtal(Xtal* xtal, QString* err)
   for (size_t i = 0; i < xtal->numAtoms(); ++i) {
     for (size_t j = i + 1; j < xtal->numAtoms(); ++j) {
       if (fuzzyCompare(xtal->atom(i).pos(), xtal->atom(j).pos())) {
-        qDebug() << "Discarding structure -- two atoms are basically on "
-                 << "top of one another. This can confuse some "
-                 << "optimizers.";
+        debug("Discarding structure -- two atoms are basically on "
+              "top of one another. This can confuse some optimizers.");
         return false;
       }
     }
@@ -3428,8 +3422,7 @@ bool XtalOpt::checkXtal(Xtal* xtal, QString* err)
       const double minIAD = this->comp.value(a1.atomicNumber()).minRadius +
                             this->comp.value(a2.atomicNumber()).minRadius;
 
-      qDebug() << "Discarding structure -- Bad IAD (" << IAD << " < " << minIAD
-               << ")";
+      debug(QString("Discarding structure -- Bad IAD ( %1 < %2 )").arg(IAD).arg(minIAD));
       if (err != nullptr) {
         *err = "Two atoms are too close together.";
       }
@@ -3448,8 +3441,7 @@ bool XtalOpt::checkXtal(Xtal* xtal, QString* err)
           .value(qMakePair<int, int>(a1.atomicNumber(), a2.atomicNumber()))
           .minIAD;
       xtal->setStatus(Xtal::Killed);
-      qDebug() << "Discarding structure -- Bad IAD (" << IAD << " < " << minIAD
-               << ")";
+      debug(QString("Discarding structure -- Bad IAD ( %1 < %2 )").arg(IAD).arg(minIAD));
       if (err != NULL) {
         *err = "Two atoms are too close together (post-optimization).";
       }
@@ -3530,9 +3522,8 @@ bool XtalOpt::checkStepOptimizedStructure(Structure* s, QString* err)
                   .minIAD;
               s->setStatus(Xtal::Killed);
 
-              qDebug() << "Custom IAD: Discarding structure"
-                       << "-- Bad IAD (" << IAD << " < " << minIAD
-                       << ") \n Could not fix the IAD issue.";
+              debug(QString("Custom IAD: Discarding structure -- Bad IAD ( %1 < %2 )"
+                    "\n   Could not fix the IAD issue.").arg(IAD).arg(minIAD));
               return false;
             }
           } else {
@@ -3542,9 +3533,8 @@ bool XtalOpt::checkStepOptimizedStructure(Structure* s, QString* err)
                                     .minIAD;
             s->setStatus(Xtal::Killed);
 
-            qDebug() << "Custom IAD: Discarding structure"
-                     << "-- Bad IAD (" << IAD << " < " << minIAD
-                     << ") \n Exceeded the number of fixes.";
+            debug(QString("Custom IAD: Discarding structure -- Bad IAD ( %1 < %2 )"
+                          "\n   Exceeded the number of fixes.").arg(IAD).arg(minIAD));
             return false;
           }
         } else {
@@ -3569,8 +3559,7 @@ bool XtalOpt::checkStepOptimizedStructure(Structure* s, QString* err)
         const double minIAD = this->comp.value(a1.atomicNumber()).minRadius +
                               this->comp.value(a2.atomicNumber()).minRadius;
 
-        qDebug() << "Discarding structure -- Bad IAD (" << IAD << " < "
-                 << minIAD << ")";
+        debug(QString("Custom IAD: Discarding structure -- Bad IAD ( %1 < %2 )").arg(IAD).arg(minIAD));
         if (err != NULL) {
           *err = "Two atoms are too close together.";
         }
@@ -3837,8 +3826,7 @@ std::unique_ptr<GlobalSearch::QueueInterface> XtalOpt::createQueueInterface(
     return make_unique<SlurmQueueInterface>(this);
 #endif
 
-  qDebug() << "Error in" << __FUNCTION__
-           << ": Unknown queue interface:" << queueName.c_str();
+  debug(QString("Error in %1: Unknown queue interface: %2").arg(__FUNCTION__).arg(queueName.c_str()));
   return nullptr;
 }
 
@@ -3863,8 +3851,7 @@ std::unique_ptr<GlobalSearch::Optimizer> XtalOpt::createOptimizer(
   if (caseInsensitiveCompare(optName, "vasp"))
     return make_unique<VASPOptimizer>(this);
 
-  qDebug() << "Error in" << __FUNCTION__
-           << ": Unknown optimizer:" << optName.c_str();
+  debug(QString("Error in %1: Unknown optimizer: %2").arg(__FUNCTION__).arg(optName.c_str()));
   return nullptr;
 }
 
@@ -3968,7 +3955,7 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
 #ifdef ENABLE_SSH
   // Create the SSHManager if running remotely
   if (anyRemoteQueueInterfaces()) {
-    qDebug() << "Creating SSH connections...";
+    debug("Creating SSH connections...");
     if (!this->createSSHConnections()) {
       error(tr("Could not create ssh connections."));
       return false;
@@ -4241,7 +4228,7 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
                 &resume);
 
     readOnly = !resume;
-    qDebug() << "Read only? " << readOnly;
+    debug(QString("Read only? %1").arg(readOnly));
   }
 
   // Set this up to prevent a bug if "replace with random" is the failure
@@ -4257,7 +4244,7 @@ bool XtalOpt::load(const QString& filename, const bool forceReadOnly)
 bool XtalOpt::plotDir(const QDir& dataDir)
 {
   readOnly = true;
-  qDebug() << "Loading xtals for plotting...";
+  debug("Loading xtals for plotting...");
 
   QStringList xtalDirs =
     dataDir.entryList(QStringList(), QDir::AllDirs, QDir::Size);
@@ -4270,11 +4257,11 @@ bool XtalOpt::plotDir(const QDir& dataDir)
     }
   }
 
-  qDebug() << xtalDirs.size() << "xtals were found!";
+  debug(QString("%1 xtals were found!").arg(xtalDirs.size()));
 
   if (xtalDirs.isEmpty()) {
-    qDebug() << "Error: no xtals were found in" << dataDir.absolutePath()
-             << "! Please check your data directory and try again.";
+    debug(QString("Error: no xtals were found in"
+                  "! Please check your data directory and try again.").arg(dataDir.absolutePath()));
     return false;
   }
 
@@ -4282,7 +4269,7 @@ bool XtalOpt::plotDir(const QDir& dataDir)
   QList<Structure*> loadedStructures;
 
   for (int i = 0; i < xtalDirs.size(); i++) {
-    qDebug() << "Loading xtal" << i + 1 << "...";
+    debug(QString("Loading xtal %1 ...").arg(i + 1));
     QString xtalStateFileName =
       dataDir.absolutePath() + "/" + xtalDirs.at(i) + "/structure.state";
 
@@ -4370,9 +4357,9 @@ bool XtalOpt::plotDir(const QDir& dataDir)
     loadedStructures.at(i)->setIndex(i);
 
   // Append to tracker for the plot
-  qDebug() << "Preparing GUI...";
+  debug("Preparing GUI...");
   for (int i = 0; i < loadedStructures.size(); i++) {
-    qDebug() << "Loading xtal" << i + 1 << "into the GUI...";
+    debug(QString("Loading xtal %1 into the GUI...").arg(i + 1));
     Structure* s = loadedStructures.at(i);
     m_tracker->append(s);
     if (s->getStatus() == Structure::WaitingForOptimization)
@@ -4383,7 +4370,7 @@ bool XtalOpt::plotDir(const QDir& dataDir)
 
   // If no structures were loaded successfully, warn the user.
   if (loadedStructures.isEmpty()) {
-    qDebug() << "Error: no structures were loaded successfully!";
+    debug("Error: no structures were loaded successfully!");
     return false;
   }
 
@@ -4476,7 +4463,7 @@ bool XtalOpt::processFeaturesInfo()
     int nparam = sline.size();
     // There should be at least one entry in the input!
     if (nparam < 1)
-    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
+    { debug("Error: features are not properly initiated: " + line); return false; }
     // Initializing tmp variables;
     // first parameter is always optimization type: min/max/fil/har
     QString tmps = sline.at(0).toLower().mid(0,3);
@@ -4492,7 +4479,7 @@ bool XtalOpt::processFeaturesInfo()
     // aflow-hardness might have only 1 entry (opt type), the rest should have at least 2
     //   (opt type and executable paht; output file and weight optional in CLI).
     if (tmp_opt != FeatureType::FT_Har && nparam < 2)
-    { qDebug() << "Error: features are not properly initiated: " << line; return false; }
+    { debug("Error: features are not properly initiated: " + line); return false; }
     // Start by handling aflow-hardness entry (if any!)
     if (tmp_opt == FeatureType::FT_Har)
     {
@@ -4996,8 +4983,8 @@ std::vector<uint> XtalOpt::getStdVecOfAtoms(uint FU)
 uint XtalOpt::pickRandomSpgFromPossibleOnes()
 {
   if (minXtalsOfSpgPerFU.size() == 0) {
-    qDebug() << "Error! pickRandomSpgFromPossibleOnes() was called before"
-             << "minXtalsOfSpgPerFU was set up!";
+    debug("Error! pickRandomSpgFromPossibleOnes() was called before"
+          "minXtalsOfSpgPerFU was set up!");
     return 1;
   }
 
@@ -5010,9 +4997,9 @@ uint XtalOpt::pickRandomSpgFromPossibleOnes()
 
   // If they are all impossible, print an error and return 1
   if (possibleSpgs.size() == 0) {
-    qDebug() << "Error! In pickRandomSpgFromPossibleOnes(), no spacegroups"
-             << "were selected to be allowed! We will be generating a"
-             << "structure with a spacegroup of 1";
+    debug("Error! In pickRandomSpgFromPossibleOnes(), no spacegroups"
+          "were selected to be allowed! We will be generating a"
+          "structure with a spacegroup of 1");
     return 1;
   }
 

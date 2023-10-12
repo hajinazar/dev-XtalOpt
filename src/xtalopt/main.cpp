@@ -16,6 +16,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/utilities/makeunique.h>
 
 #include <xtalopt/cliOptions.h>
@@ -118,26 +119,26 @@ int main(int argc, char* argv[])
 
   // Make sure we have valid options set...
   if (plotMode && !parser.isSet(dataDirOption)) {
-    qDebug() << "To use plot mode, you must specify an XtalOpt results"
-             << "directory with --dir";
+    debug("To use plot mode, you must specify an XtalOpt results"
+          "directory with --dir");
     return 1;
   }
 
   if (cliResume && !parser.isSet(dataDirOption)) {
-    qDebug() << "To resume an XtalOpt run in CLI mode, you must specify an"
-             << "XtalOpt results directory with --dir";
+    debug("To resume an XtalOpt run in CLI mode, you must specify an"
+          "XtalOpt results directory with --dir");
     return 1;
   }
 
   if (plotMode && cliMode) {
-    qDebug() << "Error: you cannot use CLI mode and plot mode"
-             << "at the same time!";
+    debug("Error: you cannot use CLI mode and plot mode"
+          "at the same time!");
     return 1;
   }
 
   if (plotMode && cliResume) {
-    qDebug() << "Error: you cannot resume in CLI mode and use plot mode"
-             << "at the same time!";
+    debug("Error: you cannot resume in CLI mode and use plot mode"
+          "at the same time!");
     return 1;
   }
 
@@ -167,8 +168,8 @@ int main(int argc, char* argv[])
 
     // Make sure the state file exists
     if (!QDir(dataDir).exists("xtalopt.state")) {
-      qDebug() << "Error: no xtalopt.state file found in" << dataDir;
-      qDebug() << "Please check your --dir option and try again";
+      debug(QString("Error: no xtalopt.state file found in %1 \n"
+                    "Please check your --dir option and try again").arg(dataDir));
       return 1;
     }
 
@@ -178,14 +179,12 @@ int main(int argc, char* argv[])
 
     // Warn the user if they need to change something to get XtalOpt to run
     if (xtalopt.limitRunningJobs && xtalopt.runningJobLimit == 0) {
-      qDebug() << "Warning: the running job limit is set to zero. You can"
-               << "change this in the runtime options file in the local"
-               << "working directory";
+      debug("Warning: the running job limit is set to zero. You can"
+            "change this in the runtime options file in the local working directory");
     }
     if (xtalopt.contStructs == 0) {
-      qDebug() << "Warning: the continuous structure limit is set to zero. You"
-               << "can change this in the runtime options file in the local"
-               << "working directory";
+      debug("Warning: the continuous structure limit is set to zero. You"
+            "can change this in the runtime options file in the local working directory");
     }
 
     // softExit is always set to false in resume

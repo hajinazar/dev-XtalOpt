@@ -863,19 +863,6 @@ public slots:
   virtual void generateNewStructure(){};
 
   /**
-   * Prints a debug message to the terminal and emits
-   * debugStatement
-   * @param s The debug statement.
-   * @sa debug
-   * @sa debugStatement
-   * @sa warning
-   * @sa warningStatement
-   * @sa error
-   * @sa errorStatement
-   */
-  void debug(const QString& s);
-
-  /**
    * Prints a warning message to the terminal and emits
    * warningStatement
    * @param s The warning message.

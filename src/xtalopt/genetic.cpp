@@ -19,6 +19,7 @@
 #include <xtalopt/structures/xtal.h>
 #include <xtalopt/ui/dialog.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/eleminfo.h>
 #include <globalsearch/random.h>
 
@@ -541,26 +542,22 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
 
   // Perform a few sanity checks
   if (atomList1.empty()) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": no atoms found for" << xtal1IDString;
+    debug(QString("Error in %1: no atoms found for %2").arg(__FUNCTION__).arg(xtal1IDString));
     return nullptr;
   }
 
   if (atomList2.empty()) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": no atoms found for" << xtal2IDString;
+    debug(QString("Error in %1: no atoms found for %2").arg(__FUNCTION__).arg(xtal2IDString));
     return nullptr;
   }
 
   if (empiricalFormulaList.empty()) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": empirical formula units list is empty!";
+    debug(QString("Error in %1: empirical formula units list is empty!").arg(__FUNCTION__));
     return nullptr;
   }
 
   if (xtal1FU == 0) {
-    qDebug() << "Error in" << __FUNCTION__
-             << ": number of formula units for xtal1 is 0!";
+    debug(QString("Error in %1: number of formula units for xtal1 is 0!").arg(__FUNCTION__));
     return nullptr;
   }
 
@@ -745,10 +742,10 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
 
     ++iterationCount;
     if (iterationCount > maxWhileLoopIterations) {
-      qDebug() << "Error in" << __FUNCTION__ << ": max while loop iterations"
-               << "exceeded for randomly adjusting the smallest number of"
-               << "atoms in an xtal.\nThis error should not be possible."
-               << "Please contact the developers of XtalOpt about this.";
+      debug(QString("Error in %1: max while loop iterations"
+                    "exceeded for randomly adjusting the smallest number of"
+                    "atoms in an xtal.\nThis error should not be possible."
+                    "Please contact the developers of XtalOpt about this.").arg(__FUNCTION__));
       return nullptr;
     }
   }
@@ -779,10 +776,10 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
       }
       ++iterationCount;
       if (iterationCount > maxWhileLoopIterations) {
-        qDebug() << "Error in" << __FUNCTION__ << ": max while loop iterations"
-                 << "exceeded for adjusting ratios."
-                 << "\nThis error should not be possible."
-                 << "Please contact the developers of XtalOpt about this.";
+        debug(QString("Error in %1: max while loop iterations"
+                      "exceeded for adjusting ratios."
+                      "\nThis error should not be possible."
+                      "Please contact the developers of XtalOpt about this.").arg(__FUNCTION__));
         return nullptr;
       }
     }
@@ -853,10 +850,10 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
     }
     ++iterationCount;
     if (iterationCount > maxWhileLoopIterations) {
-      qDebug() << "Error in" << __FUNCTION__ << ": max while loop iterations"
-               << "exceeded for choosing a formula unit on the list."
-               << "\nThis error should not be possible."
-               << "Please contact the developers of XtalOpt about this.";
+      debug(QString("Error in %1: max while loop iterations"
+                    "exceeded for choosing a formula unit on the list."
+                    "\nThis error should not be possible."
+                    "Please contact the developers of XtalOpt about this.").arg(__FUNCTION__));
       return nullptr;
     }
   }
@@ -900,10 +897,10 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
       }
       ++iterationCount;
       if (iterationCount > maxWhileLoopIterations) {
-        qDebug() << "Error in" << __FUNCTION__ << ": max while loop iterations"
-                 << "exceeded for adjusting delta < 0."
-                 << "\nThis error should not be possible."
-                 << "Please contact the developers of XtalOpt about this.";
+        debug(QString("Error in %1: max while loop iterations"
+                      "exceeded for adjusting delta < 0."
+                      "\nThis error should not be possible."
+                      "Please contact the developers of XtalOpt about this.").arg(__FUNCTION__));
         return nullptr;
       }
     }
@@ -981,10 +978,10 @@ Xtal* XtalOptGenetic::FUcrossover(Xtal* xtal1, Xtal* xtal2,
       }
       ++iterationCount;
       if (iterationCount > maxWhileLoopIterations) {
-        qDebug() << "Error in" << __FUNCTION__ << ": max while loop iterations"
-                 << "exceeded for adjusting delta > 0."
-                 << "\nThis error should not be possible."
-                 << "Please contact the developers of XtalOpt about this.";
+        debug(QString("Error in %1: max while loop iterations"
+                      "exceeded for adjusting delta > 0."
+                      "\nThis error should not be possible."
+                      "Please contact the developers of XtalOpt about this.").arg(__FUNCTION__));
         return nullptr;
       }
     }

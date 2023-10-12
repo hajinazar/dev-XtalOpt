@@ -14,6 +14,7 @@
 
 #include <xtalopt/ui/tab_progress.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/optbase.h>
 #include <globalsearch/optimizer.h>
 #include <globalsearch/queueinterface.h>
@@ -150,7 +151,7 @@ void TabProgress::updateProgressTable()
 {
   // Only allow one update at a time
   if (!m_update_mutex->tryLock()) {
-    qDebug() << "Killing extra TabProgress::updateProgressTable() call";
+    debug("Killing extra TabProgress::updateProgressTable() call");
     return;
   }
 
@@ -236,7 +237,7 @@ void TabProgress::addNewEntry()
 void TabProgress::updateAllInfo()
 {
   if (!m_update_all_mutex->tryLock()) {
-    qDebug() << "Killing extra TabProgress::updateAllInfo() call";
+    debug("Killing extra TabProgress::updateAllInfo() call");
     return;
   }
   QReadLocker trackerLocker(m_opt->tracker()->rwLock());
@@ -266,9 +267,8 @@ void TabProgress::updateInfo()
 
   // Don't update while a context operation is in the works
   if (m_context_xtal != 0) {
-    qDebug()
-      << "TabProgress::updateInfo: Waiting for context operation to complete ("
-      << m_context_xtal << ") Trying again very soon.";
+    debug(QString("TabProgress::updateInfo: Waiting for context operation to complete ( %1 )"
+                  "\n   Trying again very soon...").arg(reinterpret_cast<quintptr>(m_context_xtal)));
     QTimer::singleShot(1000, this, SLOT(updateInfo()));
     return;
   }
@@ -294,9 +294,9 @@ void TabProgress::updateInfo_()
   Xtal* xtal = qobject_cast<Xtal*>(structure);
 
   if (i < 0 || i > ui.table_list->rowCount() - 1) {
-    qDebug() << "TabProgress::updateInfo: Trying to update an index that "
-                "doesn't exist...yet: ("
-             << i << ") Waiting...";
+    debug(QString("TabProgress::updateInfo: Trying to update an index that "
+                  "doesn't exist...yet: ( %1 )"
+                  "\n   Waiting...").arg(i));
     m_infoUpdateTracker.lockForWrite();
     m_infoUpdateTracker.append(xtal);
     m_infoUpdateTracker.unlock();
@@ -545,7 +545,7 @@ void TabProgress::progressContextMenu(QPoint p)
   bool canGenerateOffspring =
     (this->m_opt->queue()->getAllOptimizedStructures().size() >= 3);
 
-  qDebug() << "Context menu at row " << index;
+  debug(QString("Context menu at row %1").arg(index));
 
   // Set m_context_xtal after locking to avoid threading issues.
   Xtal* xtal = nullptr;
@@ -914,9 +914,7 @@ void TabProgress::plotXrdProgress()
   if (!GlobalSearch::GenerateXrd::generateXrdPattern(*m_context_xtal, results,
                                                      wavelength, peakwidth,
                                                      numpoints, max2theta)) {
-    qDebug() << "GenerateXrd failed for xtal '"
-             << m_context_xtal->getGeneration() << "x"
-             << m_context_xtal->getIDNumber();
+    debug(QString("GenerateXrd failed for xtal '%1'").arg(m_context_xtal->getIDString()));
     m_context_xtal = 0;
     return;
   }

@@ -21,6 +21,7 @@
 #include <qwt_plot_canvas.h>
 #include <qwt_scale_map.h>
 
+#include <globalsearch/iomain.h>
 #include <globalsearch/utilities/makeunique.h>
 
 namespace XtalOpt {
@@ -125,7 +126,7 @@ void XtalOptPlot::clearAll()
 void XtalOptPlot::removePlotMarker(size_t i)
 {
   if (i >= m_markerList.size()) {
-    qDebug() << "Error: removePlotMarker() was called with an invalid index!";
+    debug("Error: removePlotMarker() was called with an invalid index!");
     return;
   }
 
@@ -144,13 +145,13 @@ void XtalOptPlot::removePlotMarker(QwtPlotMarker* pm)
       return;
     }
   }
-  qDebug() << "Error: marker in parameter not found in removePlotMarker()!";
+  debug("Error: marker in parameter not found in removePlotMarker()!");
 }
 
 QwtPlotMarker* XtalOptPlot::plotMarker(size_t i)
 {
   if (i >= m_markerList.size()) {
-    qDebug() << "Error: plotMarker() was called with an invalid index!";
+    debug("Error: plotMarker() was called with an invalid index!");
     return nullptr;
   }
   return m_markerList[i].get();

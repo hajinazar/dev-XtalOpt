@@ -16,6 +16,8 @@
 #include <xtalopt/structures/xtal.h>
 #include <xtalopt/xtalopt.h>
 
+#include <globalsearch/iomain.h>
+
 #include <QString>
 
 using namespace GlobalSearch;
@@ -54,29 +56,26 @@ bool GenericOptimizer::read(Structure* structure, const QString& filename)
 {
   // Call the base class read() function
   if (!Optimizer::read(structure, filename)) {
-    qDebug() << "In" << __FUNCTION__ << ": Optimizer::read() failed!";
+    debug(QString("In %1: Optimizer::read() failed!").arg(__FUNCTION__));
     return false;
   }
 
   // Now perform some safety checks
   // There should always be some atoms
   if (structure->numAtoms() == 0) {
-    qDebug() << "Error: there are no atoms in generic output file:"
-             << filename;
+    debug("Error: there are no atoms in generic output file:" + filename);
     return false;
   }
 
   // There should be a unit cell
   if (!structure->hasUnitCell()) {
-    qDebug() << "Error: no unit cell was found in the generic output file:"
-             << filename;
+    debug("Error: no unit cell was found in the generic output file:" + filename);
     return false;
   }
 
   // An energy/enthalpy should have been set
   if (!structure->hasEnthalpy() && structure->getEnergy() == 0) {
-    qDebug() << "Error: enthalpy and energy were not found in the generic"
-             << "output file:" << filename;
+    debug("Error: enthalpy and energy were not found in the generic output file:" + filename);
     return false;
   }
 
