@@ -676,28 +676,48 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
       qSort(symbols);
       QVariantHash hash;
       std::string potcarStr;
-      for (const auto& symbol : symbols) {
-        QString filename =
-          options["potcarfile " + symbol.toLower()];
-        if (filename.isEmpty()) {
-          qDebug() << "Error: no POTCAR file found for atom type" << symbol;
-          qDebug() << "You must set the POTCAR file in the options like so:";
-          QString tmp = "potcarFile " + symbol +
-                        " = /path/to/vasp_potcars/symbol/POTCAR";
-          qDebug() << tmp;
-          return false;
-        }
 
+      // We first check if a "single" POTCAR for the "system" is given
+      //   by the user as "potcarfile system" in the setup file!
+      // If so, then single potcarfile entries for the elements are
+      //   ignored and this single file will be used "as is".
+      // If not, then a traditional element-by-element check is performed
+      //   to see all required POTCAR files are present.
+      QString filename =
+        options["potcarfile system"];
+      if (!filename.isEmpty()) {
         // Check if potcar file exists
         QFileInfo check_file(filename);
         if (!check_file.exists() || !check_file.isFile()) {
-          qDebug() << "Error: the POTCAR file for atom type" << symbol
-                   << "was not found at " << filename;
+          qDebug() << "Error: the POTCAR file for the system"
+            << "was not found at " << filename;
           return false;
         }
-
-        hash.insert(symbol, QVariant(filename));
+        qDebug() << "A single POTCAR file for the system was found at " << filename;
+        hash.insert("system", QVariant(filename));
         potcarStr += "%fileContents:" + filename.toStdString() + "%\n";
+      } else {
+        for (const auto& symbol : symbols) {
+          filename =
+            options["potcarfile " + symbol.toLower()];
+          if (filename.isEmpty()) {
+            qDebug() << "Error: no POTCAR file found for atom type" << symbol;
+            qDebug() << "You must set the POTCAR file in the options like so:";
+            QString tmp = "potcarFile " + symbol +
+              " = /path/to/vasp_potcars/symbol/POTCAR";
+            qDebug() << tmp;
+            return false;
+          }
+          // Check if potcar file exists
+          QFileInfo check_file(filename);
+          if (!check_file.exists() || !check_file.isFile()) {
+            qDebug() << "Error: the POTCAR file for atom type" << symbol
+              << "was not found at " << filename;
+            return false;
+          }
+          hash.insert(symbol, QVariant(filename));
+          potcarStr += "%fileContents:" + filename.toStdString() + "%\n";
+        }
       }
 
       potcarInfo.append(QVariant(hash));
