@@ -27,15 +27,6 @@ set( xtalopt_SRCS
      ui/xtalopt_plot.cpp
      ui/tab_log.cpp)
 
-if(ENABLE_MOLECULAR)
-  set(xtalopt_SRCS
-      ${xtalopt_SRCS}
-      ui/molecular/conformergeneratordialog.cpp
-      ui/molecular/moleculardialog.cpp
-      ui/molecular/tab_molecularinit.cpp
-      ui/molecular/tab_molecularopt.cpp)
-endif()
-
 set( xtalopt_RCS xtalopt.qrc )
 
 # This is so the executable will have an icon
@@ -66,23 +57,12 @@ if(UNIX AND ENABLE_RPATH)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
-if(ENABLE_MOLECULAR)
-  include_directories(SYSTEM ${RDKit_INCLUDE_DIRS})
-  include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-  link_directories(${Boost_LIBRARY_DIRS})
-endif(ENABLE_MOLECULAR)
-
 add_library(xtalopt_static STATIC ${xtalopt_SRCS} ${xtalopt_RCS})
 target_link_libraries(xtalopt_static globalsearch XtalComp spglib RandSpg
                       "${QWT_LIBRARIES}")
 
 add_executable(xtalopt WIN32 MACOSX_BUNDLE main.cpp ${xtalopt_RCS})
 target_link_libraries(xtalopt xtalopt_static)
-
-if(ENABLE_MOLECULAR)
-  add_executable(mxtalopt WIN32 MACOSX_BUNDLE molecularmain.cpp)
-  target_link_libraries(mxtalopt xtalopt_static)
-endif()
 
 # Install instructions
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

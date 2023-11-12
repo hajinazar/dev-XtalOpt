@@ -385,20 +385,6 @@ public:
   // Calculate and return the number of formula units
   uint getFormulaUnits() const;
 
-#ifdef ENABLE_MOLECULAR
-  /**
-   * Get the filename for the conformer from which this structure was
-   * created. Only applicable for molecular crystals.
-   */
-  std::string getParentConformer() { return m_parentConformer; }
-
-  /**
-   * Get the number of molecules in a molecular crystal. Returns -1 for
-   * atomistic crystals.
-   */
-  int getZValue() const { return m_zValue.load(); }
-#endif // ENABLE_MOLECULAR
-
   /** @return A pointer for the parent structure of a given structure
    */
   Structure* getParentStructure() const { return m_parentStructure; };
@@ -1282,20 +1268,6 @@ public slots:
    */
   void setFailCount(uint count) { m_failCount = count; };
 
-#ifdef ENABLE_MOLECULAR
-  /**
-   * Set the filename for the conformer from which this structure was
-   * created. Only applicable for molecular crystals.
-   */
-  void setParentConformer(const std::string& p) { m_parentConformer = p; }
-
-  /**
-   * Set the number of molecules in a molecular crystal. Used for formula
-   * unit calculation purposes.
-   */
-  void setZValue(int z) { m_zValue = z; }
-#endif // ENABLE_MOLECULAR
-
   /** Set the parent structure for this structure
    */
   void setParentStructure(Structure* structure)
@@ -1512,15 +1484,6 @@ protected:
   QList<double> m_histEnergies;
   QList<QList<Vector3>> m_histCoords;
   QList<Matrix3> m_histCells;
-
-#ifdef ENABLE_MOLECULAR
-  // The name of the conformer file from which this crystal was generated
-  std::string m_parentConformer;
-
-  // The number of molecules in a molecular crystal. Set to -1 in
-  // atomistic crystals.
-  std::atomic<int> m_zValue;
-#endif // ENABLE_MOLECULAR
 
   // Pointer to parent structure if one is saved.
   Structure* m_parentStructure;

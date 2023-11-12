@@ -80,12 +80,6 @@ public:
     const QHash<unsigned int, XtalCompositionStruct>& limits,
     int maxAttempts = 100.0, GlobalSearch::Atom* atom = 0);
 
-#ifdef ENABLE_MOLECULAR
-  bool addMoleculeRandomly(GlobalSearch::Molecule& mol,
-                           const minIADs& iads = minIADs(),
-                           int maxAttempts = 1000);
-#endif
-
   bool addAtomRandomlyIAD(
     unsigned int atomicNumber,
     const QHash<unsigned int, XtalCompositionStruct>& limits,

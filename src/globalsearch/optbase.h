@@ -485,29 +485,11 @@ public:
    */
   void setUsingGUI(bool b) { m_usingGUI = b; }
 
-#ifdef ENABLE_MOLECULAR
   /**
-   * Are we in molecular mode? If not, then we are in inorganic mode.
-   *
-   * @return Whether or not we are in molecular mode.
-   */
-  bool molecularMode() { return m_molecularMode; }
-
-  /**
-   * Are we in molecular mode? If not, then we are in inorganic mode.
-   *
-   * @param b True if we are in molecular mode. False otherwise.
-   */
-  void setMolecularMode(bool b) { m_molecularMode = b; }
-
-#else
-
-  /**
-   * If this is not a molecular build, always return false for this function
+   * Old molecular unit is removed; so always return false for this function
    */
   bool molecularMode() { return false; }
 
-#endif // ENABLE_MOLECULAR
 
   /**
    * Set the refresh interval for checking remote jobs.
@@ -532,40 +514,6 @@ public:
    * Get whether or not to clean remote directories when a job finishes.
    */
   bool cleanRemoteOnStop() const { return m_cleanRemoteOnStop; }
-
-#ifdef ENABLE_MOLECULAR
-
-  /// Generate conformers using the settings set below
-  long long generateConformers();
-
-  /// Conformer generation settings
-
-  /// The initial molecule file (usually SDF) with which to generate
-  /// conformers
-  std::string m_initialMolFile;
-
-  /// The output directory for the conformers (SDF format) and their energies
-  std::string m_conformerOutDir;
-
-  /// The number of conformers to generate
-  size_t m_numConformersToGenerate;
-
-  /// The RMSD threshold to use when pruning conformers (also used for
-  /// pruning conformers after optimization if that is set to true)
-  double m_rmsdThreshold;
-
-  /// The maximum number of optimization iterations (only valid if
-  /// m_mmffOptConfs is true)
-  size_t m_maxOptIters;
-
-  /// Whether or not to use MMFF94 to optimize conformers after generation
-  bool m_mmffOptConfs;
-
-  /// Whether or not to prune conformers again after using MMFF94 to optimize
-  /// them.
-  bool m_pruneConfsAfterOpt;
-
-#endif // ENABLE_MOLECULAR
 
   /// Whether to impose the running job limit
   bool limitRunningJobs;
@@ -1416,11 +1364,6 @@ protected:
 
   /// Whether or not to clean remote directories after completion
   bool m_cleanRemoteOnStop;
-
-#ifdef ENABLE_MOLECULAR
-  /// Whether or not we are in molecular mode
-  bool m_molecularMode;
-#endif // ENABLE_MOLECULAR
 
 public:
   /// Log error directories?

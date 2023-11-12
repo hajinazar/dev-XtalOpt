@@ -41,9 +41,6 @@ Structure::Structure(QObject* parent)
     m_generation(0), m_id(0), m_rank(0), m_jobID(0), m_energy(0), m_enthalpy(0),
     m_PV(0), m_optStart(QDateTime()), m_optEnd(QDateTime()), m_index(-1),
     m_lock(QReadWriteLock::Recursive),
-#ifdef ENABLE_MOLECULAR
-    m_zValue(-1),
-#endif // ENABLE_MOLECULAR
     m_parentStructure(nullptr), m_copyFiles(), m_reusePreoptBonding(true),
     m_bulkModulus(-1.0), m_shearModulus(-1.0), m_vickersHardness(-1.0),
     m_strucFeatStatus(Structure::FS_NotCalculated), m_strucFeatFailCt(0)
@@ -59,9 +56,6 @@ Structure::Structure(const Structure& other)
     m_histogramGenerationPending(false), m_generation(0), m_id(0), m_rank(0),
     m_jobID(0), m_energy(0), m_enthalpy(0), m_PV(0), m_optStart(QDateTime()),
     m_optEnd(QDateTime()), m_index(-1), m_lock(QReadWriteLock::Recursive),
-#ifdef ENABLE_MOLECULAR
-    m_zValue(-1),
-#endif // ENABLE_MOLECULAR
     m_parentStructure(nullptr), m_copyFiles(), m_reusePreoptBonding(true),
     m_bulkModulus(-1.0), m_shearModulus(-1.0), m_vickersHardness(-1.0),
     m_strucFeatStatus(Structure::FS_NotCalculated), m_strucFeatFailCt(0)
@@ -80,9 +74,6 @@ Structure::Structure(const GlobalSearch::Molecule& other)
     m_histogramGenerationPending(false), m_generation(0), m_id(0), m_rank(0),
     m_jobID(0), m_energy(0), m_enthalpy(0), m_PV(0), m_optStart(QDateTime()),
     m_optEnd(QDateTime()), m_index(-1), m_lock(QReadWriteLock::Recursive),
-#ifdef ENABLE_MOLECULAR
-    m_zValue(-1),
-#endif // ENABLE_MOLECULAR
     m_parentStructure(nullptr), m_copyFiles(), m_reusePreoptBonding(true),
     m_bulkModulus(-1.0), m_shearModulus(-1.0), m_vickersHardness(-1.0),
     m_strucFeatStatus(Structure::FS_NotCalculated), m_strucFeatFailCt(0)
@@ -136,9 +127,6 @@ Structure& Structure::operator=(const Structure& other)
     m_optStart = other.m_optStart;
     m_optEnd = other.m_optEnd;
     m_index = other.m_index;
-#ifdef ENABLE_MOLECULAR
-    m_zValue = other.m_zValue.load(),
-#endif // ENABLE_MOLECULAR
     m_parentStructure = other.m_parentStructure;
     m_copyFiles = other.m_copyFiles;
     m_reusePreoptBonding = other.m_reusePreoptBonding;
@@ -183,9 +171,6 @@ Structure& Structure::operator=(Structure&& other) noexcept
     m_optStart = std::move(other.m_optStart);
     m_optEnd = std::move(other.m_optEnd);
     m_index = std::move(other.m_index);
-#ifdef ENABLE_MOLECULAR
-    m_zValue = std::move(other.m_zValue.load()),
-#endif // ENABLE_MOLECULAR
     m_parentStructure = std::move(other.m_parentStructure);
 
     other.m_parentStructure = nullptr;
@@ -259,11 +244,6 @@ void Structure::writeStructureSettings(const QString& filename)
     settings->setValue("value", entry);
   }
   settings->endArray();
-
-#ifdef ENABLE_MOLECULAR
-  settings->setValue("parentConformer", getParentConformer().c_str());
-  settings->setValue("zValue", getZValue());
-#endif // ENABLE_MOLECULAR
 
   // Check if a parent structure is saved
   // This is NOT a variable that can be read in readSettings().
@@ -438,12 +418,6 @@ void Structure::readStructureSettings(const QString& filename,
     }
     setPreoptBonding(preoptBonds);
     settings->endArray();
-
-#ifdef ENABLE_MOLECULAR
-    setParentConformer(
-      settings->value("parentConformer", "").toString().toStdString());
-    setZValue(settings->value("zValue", "-1").toInt());
-#endif // ENABLE_MOLECULAR
 
     setBulkModulus(settings->value("bulkModulus", "-1.0").toDouble());
     setShearModulus(settings->value("shearModulus", "-1.0").toDouble());
@@ -1604,12 +1578,6 @@ uint gcd(uint a, uint b)
 
 uint Structure::getFormulaUnits() const
 {
-#ifdef ENABLE_MOLECULAR
-  // First, check and see if it is molecular. z != -1 for molecular
-  if (getZValue() != -1)
-    return getZValue();
-#endif // ENABLE_MOLECULAR
-
   // Perform an atomistic formula unit calculation
   QList<uint> counts = getNumberOfAtomsAlpha();
   if (counts.empty())

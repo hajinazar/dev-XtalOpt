@@ -126,14 +126,6 @@ option( ENABLE_GAPC
   "Build the evolutionary cluster search extension - DOES NOT WORK CURRENTLY"
   OFF )
 
-option(ENABLE_MOLECULAR
-       "Whether or not to compile the molecular version of XtalOpt"
-       OFF)
-
-option(RDKIT_STATIC
-       "Whether or not to statically compile RDKit. Does nothing if ENABLE_MOLECULAR is off"
-       OFF)
-
 if(BUILD_INDEPENDENT_PACKAGE)
   set(ENABLE_RPATH ON)
   set(INSTALL_DEPENDENCIES ON)
@@ -170,10 +162,6 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC"  )
 endif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-
-if(ENABLE_MOLECULAR)
-  add_definitions(-DENABLE_MOLECULAR)
-endif(ENABLE_MOLECULAR)
 
 add_subdirectory(external)
 include_directories(external)

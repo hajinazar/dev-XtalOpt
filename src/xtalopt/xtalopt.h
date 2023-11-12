@@ -150,16 +150,6 @@ public:
                          bool includeCrossover = true,
                          bool includeMitosis = true,
                          bool mitosisMutation = false);
-#ifdef ENABLE_MOLECULAR
-  // Randomly pick an index from the vector where the values in the vector
-  // are weights. Lower values have a higher weight.
-  static long long randomlyPickWeightedIndex(const std::vector<double>& v);
-  std::string chooseMolecularConformer();
-  minIADs generateMolecularMinIADs(const GlobalSearch::Molecule& mol) const;
-  Xtal* generateRandomMolecularXtal(uint generation, uint id, uint FU);
-  Xtal* generateRandomMolecularXtal(uint generation, uint id, uint FU,
-                                    const std::string& confFile);
-#endif // ENABLE_MOLECULAR
 
   Xtal* generateEmptyXtalWithLattice(uint FU);
 

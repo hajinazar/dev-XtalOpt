@@ -37,10 +37,6 @@
 #include <globalsearch/utilities/passwordprompt.h>
 #include <globalsearch/utilities/utilityfunctions.h>
 
-#ifdef ENABLE_MOLECULAR
-#include <globalsearch/molecular/conformergenerator.h>
-#endif // ENABLE_MOLECULAR
-
 #include <QDebug>
 #include <QFile>
 #include <QThread>
@@ -66,11 +62,6 @@ namespace GlobalSearch {
 
 OptBase::OptBase(AbstractDialog* parent)
   : QObject(parent),
-#ifdef ENABLE_MOLECULAR
-    m_initialMolFile(""), m_conformerOutDir(""), m_numConformersToGenerate(0),
-    m_rmsdThreshold(0.1), m_maxOptIters(1000), m_mmffOptConfs(false),
-    m_pruneConfsAfterOpt(true),
-#endif // ENABLE_MOLECULAR
     cutoff(-1), testingMode(false), test_nRunsStart(1), test_nRunsEnd(100),
     test_nStructs(600), stateFileMutex(new QMutex), readOnly(false),
     m_idString("Generic"),
@@ -80,9 +71,6 @@ OptBase::OptBase(AbstractDialog* parent)
     m_dialog(parent), m_tracker(new Tracker(this)), m_queueThread(new QThread),
     m_queue(new QueueManager(m_queueThread, this)), m_numOptSteps(0),
     m_schemaVersion(3), m_usingGUI(true),
-#ifdef ENABLE_MOLECULAR
-    m_molecularMode(false),
-#endif // ENABLE_MOLECULAR
     m_logErrorDirs(false), m_calculateHardness(false),
     m_hardnessFitnessWeight(-1.0),
     m_networkAccessManager(std::make_shared<QNetworkAccessManager>()),
@@ -1203,39 +1191,6 @@ int OptBase::optimizerIndex(const Optimizer* optimizer) const
   }
   return -1;
 }
-
-#ifdef ENABLE_MOLECULAR
-
-long long OptBase::generateConformers()
-{
-  // First, try to open the sdf file
-  std::ifstream sdfIstream(m_initialMolFile);
-
-  if (!sdfIstream.is_open()) {
-    std::cerr << "Error: failed to open initial SDF file: " << m_initialMolFile
-              << "\n";
-    return -1;
-  }
-
-  // Perform a few sanity checks
-  if (m_numConformersToGenerate == 0) {
-    std::cerr << "Error: " << __FUNCTION__ << " was asked to generate 0 "
-              << "conformers.\n";
-    return -1;
-  }
-
-  if (m_rmsdThreshold < 0.0) {
-    std::cerr << "Error: rmsd threshold, " << m_rmsdThreshold << " is less "
-              << "than zero!\n";
-    return -1;
-  }
-
-  return ConformerGenerator::generateConformers(
-    sdfIstream, m_conformerOutDir, m_numConformersToGenerate, m_maxOptIters,
-    m_rmsdThreshold, m_pruneConfsAfterOpt);
-}
-
-#endif // ENABLE_MOLECULAR
 
 void OptBase::clearOptSteps()
 {

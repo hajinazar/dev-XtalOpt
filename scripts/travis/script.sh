@@ -17,10 +17,6 @@ else
   export DISPLAY=:99.0
   sh -e /etc/init.d/xvfb start
   sleep 3
-  # Only compile molecular if this is not a tag
-  if [[ -z "$TRAVIS_TAG" ]]; then
-    CMAKE_FLAGS="$CMAKE_FLAGS -DENABLE_MOLECULAR=ON"
-  fi
 fi
 
 CMAKE_FLAGS="$CMAKE_FLAGS -DBUILD_INDEPENDENT_PACKAGE=ON"
