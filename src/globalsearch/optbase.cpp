@@ -297,6 +297,7 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
                      QList<double> features_wgt,
                      QList<OptBase::FeatureType> features_opt)
 {
+  const double zero     = 1.0e-8; // threshold for zero spread
   // This function is modified for multi-objective case;
   //   it has default values for some input parameters in optbase.h
   QList<QPair<Structure*, double>> probs;
@@ -373,17 +374,19 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
   // So, all probs shouldn't be "nan" anymore; unless there is an unfortunate
   //   case in which the ratio still diverges because of small denaminator, etc.
   //                           -----------------
-  // If they are all nan, that means all the probs are equal. Just
-  // return an equal list
+  // In any case; if all the probs are equal (including "nan"), just return a uniform list
   bool allNan = true;
+  bool allEqual = true;
+  double refProb = probs[0].second;
   for (const auto& prob: probs) {
     if (!std::isnan(prob.second)) {
       allNan = false;
-      break;
+      if (fabs(prob.second - refProb) > zero)
+        allEqual = false;
     }
   }
 
-  if (allNan) {
+  if (allNan || allEqual) {
     double dref = 1.0 / probs.size();
     double sum = 0.0;
 
