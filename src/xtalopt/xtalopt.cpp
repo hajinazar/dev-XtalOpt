@@ -224,6 +224,7 @@ bool XtalOpt::startSearch()
 #endif // ENABLE_SSH
 
   // Here we go!
+
   QString formattedTime = QDateTime::currentDateTime().toString("MMMM dd, yyyy   hh:mm:ss");
   QByteArray formattedTimeMsg = formattedTime.toLocal8Bit();
 
@@ -355,7 +356,7 @@ bool XtalOpt::startSearch()
 
       // Randomly select a formula unit
       uint randomFU =
-        formulaUnitsList.at(rand() % int(formulaUnitsList.size()));
+        formulaUnitsList.at(getRandUInt(0, int(formulaUnitsList.size()) - 1));
       // Randomly select a possible spg
       uint randomSpg =
         pickRandomSpgFromPossibleOnes(); // pickRandomSpgFromPossibleOnes();
@@ -1883,7 +1884,7 @@ Xtal* XtalOpt::generateRandomXtal(uint generation, uint id)
 
   // We will assume modulo bias will be small since formula unit ranges are
   // typically small. Pick random formula units.
-  uint randomListIndex = rand() % int(tempFormulaUnitsList.size());
+  uint randomListIndex = getRandUInt(0, int(tempFormulaUnitsList.size()) -1 );
 
   uint FU = tempFormulaUnitsList.at(randomListIndex);
 
@@ -2293,7 +2294,7 @@ Xtal* XtalOpt::H_getMutatedXtal(QList<Structure*>& structures, int FU,
         // If the probability fails, delete xtal and continue
         if (r <= chance_of_mitosis / 100.0) {
           // Select an index randomly from the possibleMitosisFU_index
-          uint randomListIndex = rand() % int(possibleMitosisFU_index.size());
+          uint randomListIndex = getRandUInt(0, int(possibleMitosisFU_index.size()) - 1);
           uint selectedIndex = possibleMitosisFU_index.at(randomListIndex);
           // Use that selected index to choose the formula units
           uint formulaUnits = formulaUnitsList.at(selectedIndex);
@@ -4741,7 +4742,7 @@ uint XtalOpt::pickRandomSpgFromPossibleOnes()
   }
 
   // Pick a random index from the list
-  size_t idx = rand() % int(possibleSpgs.size());
+  size_t idx = getRandUInt(0, int(possibleSpgs.size()) - 1);
 
   // Return the spacegroup at this index
   return possibleSpgs.at(idx);

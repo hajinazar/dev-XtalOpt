@@ -17,39 +17,52 @@
 #ifndef GLOBALSEARCH_RANDOM_H
 #define GLOBALSEARCH_RANDOM_H
 
-#include <random>
+#include <cstdlib>
+#include <time.h>
 
 namespace GlobalSearch {
 
-static std::mt19937& getMt19937Generator()
-{
-  thread_local std::mt19937 _generator(std::random_device{}());
-  return _generator;
+// Robert Jenkins' 96 bit Mix Function
+static unsigned long mix(unsigned long a, unsigned long b, unsigned long c) {
+    a=a-b;  a=a-c;  a=a^(c >> 13);
+    b=b-c;  b=b-a;  b=b^(a << 8);
+    c=c-a;  c=c-b;  c=c^(b >> 13);
+    a=a-b;  a=a-c;  a=a^(c >> 12);
+    b=b-c;  b=b-a;  b=b^(a << 16);
+    c=c-a;  c=c-b;  c=c^(b >> 5);
+    a=a-b;  a=a-c;  a=a^(c >> 3);
+    b=b-c;  b=b-a;  b=b^(a << 10);
+    c=c-a;  c=c-b;  c=c^(b >> 15);
+    return c;
 }
 
-// Seed the generator
-static inline void seedMt19937Generator(unsigned int s)
-{
-  getMt19937Generator().seed(s);
+static void seed_rand_mix(int cseed = -1) {
+  unsigned long seed;
+  if (cseed >= 0) {
+    seed = (unsigned long) cseed;
+  } else {
+    seed = mix(clock(), time(NULL), getpid());
+  }
+  srand(seed);
 }
 
 static inline double getRandDouble(double min = 0.0, double max = 1.0)
 {
-  std::uniform_real_distribution<double> distribution(min, max);
-  return distribution(getMt19937Generator());
+  double f = (double)rand() / RAND_MAX;
+  return min + f * (max - min);
 }
 
 static inline int getRandInt(int min = INT_MIN, int max = INT_MAX)
 {
-  std::uniform_int_distribution<int> distribution(min, max);
-  return distribution(getMt19937Generator());
+  int f = rand() / RAND_MAX;
+  return min + f * (max - min);
 }
 
 static inline unsigned int getRandUInt(unsigned int min = 0,
                                        unsigned int max = UINT_MAX)
 {
-  std::uniform_int_distribution<unsigned int> distribution(min, max);
-  return distribution(getMt19937Generator());
+  int f = rand() / RAND_MAX;
+  return (unsigned int)(min + f * (max - min));
 }
 }
 

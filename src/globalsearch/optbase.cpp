@@ -76,7 +76,7 @@ OptBase::OptBase(AbstractDialog* parent)
     m_networkAccessManager(std::make_shared<QNetworkAccessManager>()),
     m_aflowML(make_unique<AflowML>(m_networkAccessManager, this)),
     m_calculateFeatures(false), m_features_num(0),
-    m_softExit(false), m_hardExit(false), m_localQueue(false)
+    m_softExit(false), m_hardExit(false), m_localQueue(false), m_randomSeed(-1)
 {
   // Connections
   connect(this, SIGNAL(sessionStarted()), m_queueThread, SLOT(start()),

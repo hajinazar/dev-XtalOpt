@@ -44,7 +44,7 @@ private slots:
   {
     m_dialog = 0;
     m_opt = 0;
-    seedMt19937Generator(0);
+    seed_rand_mix(0);
   }
   // Called after the last test function is executed.
   void cleanupTestCase(){};

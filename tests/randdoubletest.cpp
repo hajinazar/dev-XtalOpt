@@ -58,11 +58,11 @@ private slots:
   // Tests
   void generateImageDefault();
 
-// generateImageSystem() crashes on Windows for some reason? We don't use
-// std::rand() in our program, though, so it probably doesn't matter
-#ifndef WIN32
+
+
+
   void generateImageSystem();
-#endif
+
 };
 
 void RandDoubleTest::initTestCase()
@@ -136,12 +136,12 @@ void RandDoubleTest::generateImageDefault()
   createAndSaveImage(m_size, hits, "RandDoubleTest-default.png");
 }
 
-// This test crashes on Windows for some reason? We don't use
-// std::rand() in our program, though, so it probably doesn't matter
-#ifndef WIN32
+
+
+
 void RandDoubleTest::generateImageSystem()
 {
-  std::srand(time(0));
+  GlobalSearch::seed_rand_mix();
 
   // Create matrix to store hits
   std::vector<std::vector<unsigned int>> hits;
@@ -158,15 +158,15 @@ void RandDoubleTest::generateImageSystem()
   QBENCHMARK
   {
     for (int i = 0; i < m_numPoints; i++) {
-      x = (int)((std::rand() / (double)RAND_MAX) * m_size);
-      y = (int)((std::rand() / (double)RAND_MAX) * m_size);
+      x = (int)(GlobalSearch::getRandDouble(0.0, 1.0) * m_size);
+      y = (int)(GlobalSearch::getRandDouble(0.0, 1.0) * m_size);
       hits[x][y]++;
     }
   }
 
   createAndSaveImage(m_size, hits, "RandDoubleTest-system.png");
 }
-#endif
+
 
 QTEST_MAIN(RandDoubleTest)
 

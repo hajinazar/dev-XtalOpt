@@ -38,6 +38,7 @@ static const QStringList keywords = { "features",
                                       "softExit",
                                       "hardExit",
                                       "localQueue",
+                                      "randomSeed",
                                       "empiricalFormula",
                                       "formulaUnits",
                                       "aMin",
@@ -473,6 +474,7 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
     options.value("chanceOfFutureMitosis", "50").toUInt();
   xtalopt.m_softExit = toBool(options.value("softExit", "false"));
   xtalopt.m_localQueue = toBool(options.value("localQueue", "false"));
+  xtalopt.m_randomSeed = options.value("randomSeed", "-1").toInt();
 
   // MULTI-OBJECTIVE RELATED ENTRIES.
   // Process the optimization features (and weights) for energy/aflow-hardness/features.
@@ -1341,6 +1343,7 @@ void XtalOptCLIOptions::writeInitialRuntimeFile(XtalOpt& xtalopt)
 
   text += QString("softExit = ") + fromBool(xtalopt.m_softExit) + "\n";
   text += QString("localQueue = ") + fromBool(xtalopt.m_localQueue) + "\n";
+  text += QString("randomSeed = ") + QString::number(xtalopt.m_randomSeed) + "\n";
   text += QString("featuresReDo = ") + fromBool(xtalopt.m_featuresReDo) + "\n";
 
   text += QString("\n# Mutator Settings\n");
@@ -1576,6 +1579,8 @@ void XtalOptCLIOptions::processRuntimeOptions(
       xtalopt.m_hardExit = toBool(options[option]);
     } else if (CICompare("localQueue", option)) {
       xtalopt.m_localQueue = toBool(options[option]);
+    } else if (CICompare("randomSeed", option)) {
+      xtalopt.m_randomSeed = options[option].toInt();
     } else if (CICompare("featuresReDo", option)) {
       xtalopt.m_featuresReDo = toBool(options[option]);
     } else {

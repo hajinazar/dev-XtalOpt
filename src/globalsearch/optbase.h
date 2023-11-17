@@ -607,6 +607,9 @@ public:
    */
   void performTheExit(int dealy = 0);
 
+  /// To allow a user-defined random number seed (for reproducing the results, cli only)
+  int m_randomSeed;
+
   /// Quit once maximum number of structures are generated (cli mode only)
   bool m_softExit;
 

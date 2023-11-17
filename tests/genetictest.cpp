@@ -111,8 +111,8 @@ int numSwaps(const std::vector<Atom>& atoms1, const std::vector<Atom>& atoms2,
 void GeneticTest::exchange()
 {
   // Seed the random number generators for consistent testing
-  srand(0);
-  GlobalSearch::seedMt19937Generator(0);
+  GlobalSearch::seed_rand_mix(0);
+
 
   // The tolerance for our tests
   double tol = 1.e-6;

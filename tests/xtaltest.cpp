@@ -303,8 +303,8 @@ void XtalTest::equalityOperatorTest_huge()
 void XtalTest::niggliReduceTest()
 {
   // Seed the random number generator to ensure similar results each run
-  seedMt19937Generator(0);
-  srand(0);
+  seed_rand_mix(0);
+
 
   Xtal* xtal = 0;
 
@@ -333,12 +333,12 @@ void XtalTest::niggliReduceTest()
   const double minAngle = 45.0;
   const double maxAngle = 135.0;
   for (unsigned int i = 0; i < 1000; i++) {
-    const double a = getRandDouble() * (maxLength - minLength) + minLength;
-    const double b = getRandDouble() * (maxLength - minLength) + minLength;
-    const double c = getRandDouble() * (maxLength - minLength) + minLength;
-    const double alpha = getRandDouble() * (maxAngle - minAngle) + minAngle;
-    const double beta = getRandDouble() * (maxAngle - minAngle) + minAngle;
-    const double gamma = getRandDouble() * (maxAngle - minAngle) + minAngle;
+    const double a = getRandDouble(minLength, maxLength);
+    const double b = getRandDouble(minLength, maxLength);
+    const double c = getRandDouble(minLength, maxLength);
+    const double alpha = getRandDouble(minAngle, maxAngle);
+    const double beta = getRandDouble(minAngle, maxAngle);
+    const double gamma = getRandDouble(minAngle, maxAngle);
     // is the cell valid?
     UnitCell tmp(alpha, beta, gamma, a, b, c);
     if (tmp.cellMatrix().determinant() <= 0 ||
@@ -390,7 +390,7 @@ struct CellParam
 void XtalTest::fixAnglesTest()
 {
   // Seed the random number generator to ensure similar results each run
-  seedMt19937Generator(0);
+  seed_rand_mix(0);
 
   Xtal xtal;
   const double minLength = 10.0;
@@ -454,7 +454,7 @@ void XtalTest::fixAnglesTest()
 void XtalTest::getRandomRepresentationTest()
 {
   // Seed the random number generator to ensure similar results between tests
-  seedMt19937Generator(0);
+  seed_rand_mix(0);
 
   // Parameters:
   const int iterations = 250;
@@ -705,8 +705,8 @@ Direct\n\
   // Now a uniform translation to each structure. Initialize the
   // random number generator to the same value to ensure consistent
   // results.
-  srand(0);
-  Vector3 uTranslation(rand(), rand(), rand());
+  seed_rand_mix(0);
+  Vector3 uTranslation(getRandDouble(), getRandDouble(), getRandDouble());
   uTranslation.normalize();
   // Now loop through all structures in rutile seeds, creating new
   // xtals with random noise
@@ -723,7 +723,7 @@ Direct\n\
     curUTranslation = uTranslation * i;
     std::vector<Atom>& currentAtoms = rutiles.last()->atoms();
     for (auto& atom : currentAtoms) {
-      curNTranslation << rand(), rand(), rand();
+      curNTranslation << getRandDouble(), getRandDouble(), getRandDouble();
       curNTranslation.normalize();
       curNTranslation *= coordNoiseMax;
       atom.setPos(atom.pos() + curUTranslation + curNTranslation);

@@ -137,8 +137,8 @@ void RandSpgTest::cleanup()
 void RandSpgTest::generateXtals()
 {
   // Seed the random number generators for consistent testing
-  srand(0);
-  GlobalSearch::seedMt19937Generator(0);
+  GlobalSearch::seed_rand_mix(0);
+
 
   // We'll use 2 formula units
   size_t formulaUnits = 2;

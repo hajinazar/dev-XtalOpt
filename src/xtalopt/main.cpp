@@ -22,6 +22,8 @@
 #include <xtalopt/ui/dialog.h>
 #include <xtalopt/xtalopt.h>
 
+#include <globalsearch/random.h>
+
 int main(int argc, char* argv[])
 {
   // Unfortunately, it is becoming more and more difficult to run
@@ -151,6 +153,7 @@ int main(int argc, char* argv[])
 
     if (!XtalOpt::XtalOptCLIOptions::readOptions(inputfile, xtalopt))
       return 1;
+    GlobalSearch::seed_rand_mix(xtalopt.m_randomSeed);
     if (!xtalopt.startSearch())
       return 1;
   }
@@ -195,11 +198,14 @@ int main(int argc, char* argv[])
     xtalopt.m_softExit = false;
     XtalOpt::XtalOptCLIOptions::writeInitialRuntimeFile(xtalopt);
 
+    GlobalSearch::seed_rand_mix(xtalopt.m_randomSeed);
+
     // Emit that we are starting a session
     emit xtalopt.sessionStarted();
   }
   // If we are using the GUI, show the dialog...
   else {
+    GlobalSearch::seed_rand_mix();
     d = std::move(
       make_unique<XtalOpt::XtalOptDialog>(nullptr, Qt::Window, true, &xtalopt));
     xtalopt.setDialog(d.get());
