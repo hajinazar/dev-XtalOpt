@@ -3409,6 +3409,17 @@ void XtalOpt::interpretKeyword(QString& line, Structure* structure)
       rep += QString::number(coords.y()) + " ";
       rep += QString::number(coords.z()) + "\n";
     }
+  } else if (line == "coordsFracTag") {
+    const std::vector<Atom>& atoms = structure->atoms();
+    std::vector<Atom>::const_iterator it;
+    int tag = 0;
+    for (it = atoms.begin(); it != atoms.end(); it++) {
+      const Vector3 coords = xtal->cartToFrac((*it).pos());
+      rep += QString::number(tag++) + " ";
+      rep += QString::number(coords.x()) + " ";
+      rep += QString::number(coords.y()) + " ";
+      rep += QString::number(coords.z()) + "\n";
+    }
   } else if (line == "gulpFracShell") {
     const std::vector<Atom>& atoms = structure->atoms();
     std::vector<Atom>::const_iterator it;
@@ -3506,6 +3517,8 @@ QString XtalOpt::getTemplateKeywordHelp_xtalopt()
   out << "Crystal specific information:\n"
       << "%POSCAR% -- VASP poscar generator\n"
       << "%coordsFrac% -- fractional coordinate data\n\t[symbol] [x] [y] [z]\n"
+      << "%coordsFracTag% -- fractional coordinate data with order tag\n"
+         "\t[tag: 0..number of atoms] [x] [y] [z]\n"
       << "%coordsFracId% -- fractional coordinate data with atomic "
          "number\n\t[symbol] [atomic number] [x] [y] [z]\n"
       << "%gulpFracShell% -- fractional coordinates for use in GULP core/shell "
