@@ -61,6 +61,18 @@
 
 #define ANGSTROM_TO_BOHR 1.889725989
 
+// OKOK to test the openbabel
+#ifdef WIN32
+#define USING_OBDLL
+#endif
+#include <openbabel/atom.h>
+#include <openbabel/babelconfig.h>
+#include <openbabel/mol.h>
+#include <openbabel/obconversion.h>
+#include <cstdio>
+using namespace OpenBabel;
+//
+
 using namespace GlobalSearch;
 
 namespace XtalOpt {
@@ -126,8 +138,72 @@ XtalOpt::~XtalOpt()
   m_initWC = 0;
 }
 
+//OKOK to test the openbabel
+static inline int test_atom(int inpn, char* inps)
+{
+  int defaultchoice = 1;
+  
+  int choice = defaultchoice;
+
+  if (inpn > 1) {
+    if(sscanf(inps, "%d", &choice) != 1) {
+      printf("Couldn't parse that input as a number\n");
+      return -1;
+    }
+  }
+  std::cout << "# Unit tests for OBAtom \n";
+
+  double *coordPtr;
+
+  OBAtom emptyAtom, testAtom1, testAtom2;
+
+  switch(choice) {
+  case 1:
+    break;
+  case 2:
+    // OBAtom isolation tests (no connection to residue, bond, molecule...)
+
+    // Beat up on SetIdx
+    testAtom1.SetIdx(0);
+    std::cout <<  testAtom1.GetIdx() << "\n";
+    testAtom1.SetIdx(-1);
+    std::cout <<  testAtom1.GetIdx() << "\n";
+    testAtom1.SetIdx(1);
+    std::cout <<  "ok 3\n";
+    break;
+  case 3:
+    // Beat up on atomic number
+    testAtom1.SetAtomicNum(0);
+    std::cout <<  testAtom1.GetAtomicNum() << "\n";
+    testAtom1.SetAtomicNum(-1);
+    std::cout <<  testAtom1.GetAtomicNum() << "\n";
+    testAtom1.SetAtomicNum(200);
+    std::cout <<  testAtom1.GetAtomicNum() << "\n";
+    testAtom1.SetAtomicNum(300);
+    std::cout <<  testAtom1.GetAtomicNum() << "\n";
+    testAtom1.SetAtomicNum(1);
+    std::cout <<  "ok 4\n";
+    break;
+  case 4:
+    // PR#1373650
+    coordPtr = testAtom1.GetCoordinate();
+    std::cout <<  "ok 5\n";
+    testAtom1.SetCoordPtr(&coordPtr);
+    std::cout <<  "ok 6\n";
+    break;
+  default:
+    std::cout << "Test number " << choice << " does not exist!\n";
+    return -1;
+  }
+
+  return(0);
+}
+
 bool XtalOpt::startSearch()
 {
+  // OKOK to test the openbabel
+  test_atom(1, "5");
+
   // Let's make sure it doesn't glitch if the user presses "Begin"
   // too many times in a row.
   static std::mutex startMutex;
