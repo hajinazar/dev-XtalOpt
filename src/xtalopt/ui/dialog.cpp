@@ -159,8 +159,8 @@ void XtalOptDialog::startSearch()
 void XtalOptDialog::showTutorialDialog() const
 {
   QMessageBox mbox;
-  mbox.setText("There is a tutorial available for new XtalOpt users at\n\n"
-               "http://xtalopt.github.io/tut.html"
+  mbox.setText("There is a user manual available for new XtalOpt users at\n\n"
+               "https://xtalopt.github.io/xtalopt.html"
                "\n\nWould you like to go there now?");
   mbox.setIcon(QMessageBox::Information);
   QPushButton* yes = mbox.addButton(tr("&Yes"), QMessageBox::YesRole);
@@ -174,7 +174,7 @@ void XtalOptDialog::showTutorialDialog() const
 
   if (clicked == yes) {
     QDesktopServices::openUrl(
-      QUrl("http://xtalopt.github.io/tut.html", QUrl::TolerantMode));
+      QUrl("https://xtalopt.github.io/xtalopt.html", QUrl::TolerantMode));
   } else if (clicked == never) {
     QSettings settings;
     settings.setValue("xtalopt/showTutorialLink", false);
