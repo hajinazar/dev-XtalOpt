@@ -31,6 +31,10 @@ int main(int argc, char* argv[])
   // determine whether we instantiate a QApplication or
   // QCoreApplication)
 
+  // This needs to be set before initializing QApplication for proper
+  // detection of high-DPI to avoid scaling issues on Windows OS.
+  QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
   // Because we run into great difficulties, let's examine the arguments
   // manually and determine whether or not we are in CLI mode first, and
   // then perform the rest of the QCommandLineParser actions
@@ -203,6 +207,11 @@ int main(int argc, char* argv[])
     d = std::move(
       make_unique<XtalOpt::XtalOptDialog>(nullptr, Qt::Window, true, &xtalopt));
     xtalopt.setDialog(d.get());
+#ifdef _WIN32
+    d->setStyleSheet("QWidget{font-size: 10pt;}");
+#else
+    d->setStyleSheet("QWidget{font-size: 12pt;}");
+#endif
     d->show();
   }
 
