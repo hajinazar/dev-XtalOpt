@@ -6,13 +6,13 @@
 XtalOpt
 =========
 
-XtalOpt searches for stable or metastable crystal structures, optionally with desired properties or characteristics, using an evolutionary algorithm. It is licensed with the "New" BSD license.
+XtalOpt searches for stable or metastable crystal structures, optionally with desired properties or characteristics, using an evolutionary algorithm.
 
-More information can be found at http://xtalopt.github.io.
+More information can be found at https://xtalopt.github.io.
 
 # License
 
-The "New" BSD License. See COPYING.
+XtalOpt is published under the "New" BSD License. See LICENSE file.
 
 # Authors
 

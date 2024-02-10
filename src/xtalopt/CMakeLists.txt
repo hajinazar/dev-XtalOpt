@@ -87,11 +87,11 @@ endif(APPLE)
 
 install(FILES
         ${CMAKE_SOURCE_DIR}/README.md
-        ${CMAKE_SOURCE_DIR}/COPYING
+        ${CMAKE_SOURCE_DIR}/LICENSE
+        ${CMAKE_SOURCE_DIR}/ChangeLog
         DESTINATION "${adjusted_install_prefix}")
 install(DIRECTORY
-        ${CMAKE_SOURCE_DIR}/ChangeLogs
-        ${CMAKE_SOURCE_DIR}/samples
+        ${CMAKE_SOURCE_DIR}/schemes
         DESTINATION "${adjusted_install_prefix}")
 
 # Get all dependencies and perform the "bundle" for Mac OSX
