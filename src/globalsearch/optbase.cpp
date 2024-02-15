@@ -205,7 +205,12 @@ static inline double calculateProb(QString strucID,
                                    double hardnessWeight,
                                    double currentHardness,
                                    double lowestHardness,
-                                   double highestHardness)
+                                   double highestHardness
+#ifdef FEATURES_DEBUG
+                                   ,
+                                   QString *outs
+#endif
+                                   )
 {
   // General note: if the spread for any feature/property is zero (is less than 1.0e-8);
   //   we take its contribution to be zero so it does not suppress the effect of the other
@@ -223,7 +228,6 @@ static inline double calculateProb(QString strucID,
   double partialFitns;            // (raw) contribution of a single feature to total fitness
   double correctFitns;            // corrected contrib. of a single feature (if zero spread?)
   const double zero     = 1.0e-8; // threshold for zero spread
-  QString outs = "";              // auxiliary variable for debug output
 
   // ===== multi-objective features
   // If no features calculation; features_num is 0 at this point.
@@ -243,7 +247,7 @@ static inline double calculateProb(QString strucID,
       fitnessTotal += features_wgt[i] * correctFitns;
 
 #ifdef FEATURES_DEBUG
-outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
+*outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
  .arg(i+1,2).arg(features_opt[i],2).arg(features_val[i],10,'f',5)
  .arg(features_min[i],10,'f',5).arg(features_max[i],10,'f',5).arg(partialFitns,7,'f',5)
  .arg(features_wgt[i],5,'f',3).arg(features_wgt[i] * correctFitns,7,'f',5);
@@ -261,7 +265,7 @@ outs += QString("NOTE: feat %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %
     fitnessTotal += hardnessWeight * correctFitns;
 
 #ifdef FEATURES_DEBUG
-outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
+*outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
   .arg(-1,2).arg(1,2).arg(currentHardness,10,'f',5).arg(lowestHardness,10,'f',5)
   .arg(highestHardness,10,'f',5).arg(partialFitns,7,'f',5).arg(hardnessWeight,5,'f',3)
   .arg(hardnessWeight * correctFitns,7,'f',5);
@@ -276,56 +280,95 @@ outs += QString("NOTE: hard %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %
   fitnessTotal += (1.0 - weightsTotal) * correctFitns;
 
 #ifdef FEATURES_DEBUG
-outs += QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
+*outs += QString("NOTE: enth %1 opt %2 val %3 min %4 max %5 ctr %6 wgt %7 - ftn %8\n")
   .arg(0,2).arg(0,2).arg(currentEnthalpy,10,'f',5).arg(lowestEnthalpy,10,'f',5)
   .arg(highestEnthalpy,10,'f',5).arg(partialFitns,7,'f',5).arg(1.0-weightsTotal,5,'f',3)
   .arg((1.0 - weightsTotal) * correctFitns,7,'f',5);
-outs += QString("NOTE: struc %1   oldFitness %2   newFitness %3")
+*outs += QString("NOTE: struc %1   oldFitness %2   newFitness %3\n")
   .arg(strucID,8).arg(correctFitns,8,'f',6).arg(fitnessTotal,8,'f',6);
-qDebug().noquote() << outs;
+//qDebug().noquote() << outs;
 #endif
 
   // Finally, return the calculated total fitness
   return fitnessTotal;
 }
 
+static inline int dominationNumber(Structure* s1,
+                                 const QList<Structure*>& structures,
+                                 int    features_num,
+                                 QList<OptBase::FeatureType> features_opt)
+{
+  int dominant = 0;
+  for (const auto& s2: structures) {
+    int better = 0;
+    int worst  = 0;
+    const auto& enthalpy1 = s1->getEnthalpyPerFU();
+    const auto& hardness1 = -1.0 * s1->vickersHardness();
+    const auto& enthalpy2 = s2->getEnthalpyPerFU();
+    const auto& hardness2 = -1.0 * s2->vickersHardness();
+    if (enthalpy2 < enthalpy1) better++;
+    if (hardness2 < hardness1) better++;
+    if (enthalpy2 > enthalpy1) worst++;
+    if (hardness2 > hardness1) worst++;
+    for (int i = 0; i< features_num; i++) {
+      double fit1 = s1->getStrucFeatValues(i);
+      double fit2 = s2->getStrucFeatValues(i);
+      if (features_opt[i] == OptBase::FT_Max) {
+        fit1 *= -1.0;
+        fit2 *= -1.0;
+      }
+      if (fit2 < fit1) better++;
+      if (fit2 > fit1) worst++;
+    }
+    if (better >= 1 && worst == 0)
+      dominant++;
+  }
+  return dominant;
+}
+
 QList<QPair<Structure*, double>>
-OptBase::getProbabilityList(const QList<Structure*>& structures,
+OptBase::getProbabilityList(const QList<Structure*>& orig_strucs,
                      size_t popSize,
                      double hardnessWeight,
                      int    features_num,
                      QList<double> features_wgt,
                      QList<OptBase::FeatureType> features_opt)
 {
-  const double zero     = 1.0e-8; // threshold for zero spread
   // This function is modified for multi-objective case;
   //   it has default values for some input parameters in optbase.h
+
   QList<QPair<Structure*, double>> probs;
-  if (structures.isEmpty() || popSize == 0)
+#ifdef FEATURES_DEBUG
+  QString outs = "";
+#endif
+
+  // Handle some special situations
+  if (orig_strucs.isEmpty() || popSize == 0)
     return probs;
 
-  if (structures.size() == 1) {
-    probs.append(QPair<Structure*, double>(structures[0], 1.0));
+  if (orig_strucs.size() == 1) {
+    probs.append(QPair<Structure*, double>(orig_strucs[0], 1.0));
     return probs;
   }
 
+  // Find the lowest and highest of each feature
+  //
   // Since enthalpy can be negative, we will make -DBL_MAX the starting value
   // for highestEnthalpy. But since hardness can't be negative, we will use
   // DBL_MIN as the starting value for highestHardness.
+  //
+  // For multi-objective case, we can have negative values (in general!)
   double lowestEnthalpy  =  DBL_MAX;
   double highestEnthalpy = -DBL_MAX;
   double lowestHardness  =  DBL_MAX;
   double highestHardness =  DBL_MIN;
-  // For multi-objective case
   QList<double> features_min = {};
   QList<double> features_max = {};
   for (int i = 0; i< features_num; i++) {
     features_min.push_back(DBL_MAX);
     features_max.push_back(-DBL_MAX);
   }
-
-  // Find the lowest and highest of each
-  for (const auto& s: structures) {
+  for (const auto& s: orig_strucs) {
     QReadLocker lock(&s->lock());
     const auto& enthalpy = s->getEnthalpyPerFU();
     if (enthalpy < lowestEnthalpy)
@@ -347,46 +390,101 @@ OptBase::getProbabilityList(const QList<Structure*>& structures,
     }
   }
 
-  // Now calculate the probability of each structure
-  for (const auto& s: structures) {
-    QReadLocker lock(&s->lock());
-
-    double prob = calculateProb(s->getIDString(),
-                                features_num,
-                                features_opt,
-                                features_wgt,
-                                s->getStrucFeatValuesVec(),
-                                features_min,
-                                features_max,
-                                s->getEnthalpyPerFU(),
-                                lowestEnthalpy,
-                                highestEnthalpy,
-                                hardnessWeight,
-                                s->vickersHardness(),
-                                lowestHardness,
-                                highestHardness);
-
-    probs.append(QPair<Structure*, double>(s, prob));
+  // Calculates the probabilities for all structures
+  QList<double> prob_list;
+  for (const auto& s: orig_strucs) {
+      QReadLocker lock(&s->lock());
+      double prob = calculateProb(s->getIDString(),
+          features_num, features_opt, features_wgt,
+          s->getStrucFeatValuesVec(), features_min, features_max,
+          s->getEnthalpyPerFU(), lowestEnthalpy, highestEnthalpy,
+          hardnessWeight, s->vickersHardness(), lowestHardness, highestHardness
+#ifdef FEATURES_DEBUG
+          , &outs
+#endif
+          );
+      prob_list.append(prob);
   }
+
+  // Find structures in each Pareto front; and 
+  // [optionally] rescale the probabilities: devide the raw prob. by the Pareto front index.
+  bool allDone = false;
+  int  paretoFront = 1;
+  QList<Structure*> structures;
+  for (const auto& s: orig_strucs)
+    structures.append(s);
+#ifdef FEATURES_DEBUG
+  outs += QString("\nNOTE: Pareto+Probs: \n");
+#endif
+  while (!allDone) {
+    QList<Structure*> tmp_strucs;
+    QList<double> tmp_probs;
+    // Needed for analysis of Pareto optimal solutions
+    QList<int> dominant = {};
+    for (const auto& s: structures)
+      dominant.append(dominationNumber(s, structures, features_num, features_opt));
+    // Create corrected list of the pool (the Pareto optimal solutions)
+    int nsize = structures.size();
+    int i = 0;
+    int r = 0;
+    for (const auto& s: structures) {
+      if (dominant[i] == 0) {
+#ifdef FEATURES_DEBUG
+        outs += QString(" %1   %2   %3    %4")
+          .arg(s->getIDString(), 10).arg(prob_list[i], 12, 'f', 4)
+          .arg(prob_list[i] / paretoFront, 12, 'f', 4).arg(paretoFront, 5);
+        outs += QString(" %1").arg(s->getEnthalpyPerFU(), 12, 'f', 4);
+        for (int j = 0; j < features_num; j++)
+          outs += QString(" %1").arg(s->getStrucFeatValues(j), 12, 'f', 4);
+        outs += QString("\n");
+#endif
+        // Re-scaling of the prob. happens here!
+        probs.append(QPair<Structure*, double>(s, prob_list[i] / paretoFront));
+        r++;
+      }
+      else {
+        tmp_strucs.append(s);
+        tmp_probs.append(prob_list[i]);
+      }
+      i++;
+    }
+#ifdef FEATURES_DEBUG
+    outs += QString("NOTE: number of pareto structures %1 and front %2 and removed %3 (should have %4 and i is %5)\n")
+      .arg(nsize, 10).arg(paretoFront, 10).arg(r, 10).arg(nsize - r, 10).arg(i, 10);
+#endif
+    if (structures.isEmpty() || r == 0)
+      allDone = true;
+    else {
+      structures.clear();
+      prob_list.clear();
+      for (int i = 0; i < tmp_strucs.size(); i++) {
+        structures.append(tmp_strucs[i]);
+        prob_list.append(tmp_probs[i]);
+      }
+      ++paretoFront;
+    }
+  }
+
+#ifdef FEATURES_DEBUG
+  qDebug().noquote() << outs;
+#endif
 
   // =======================================================================
   // The probs are set to zero if the spread is zero (i.e., less than 1e-8).
   // So, all probs shouldn't be "nan" anymore; unless there is an unfortunate
   //   case in which the ratio still diverges because of small denaminator, etc.
   //                           -----------------
-  // In any case; if all the probs are equal (including "nan"), just return a uniform list
+  // If they are all nan, that means all the probs are equal. Just
+  // return an equal list
   bool allNan = true;
-  bool allEqual = true;
-  double refProb = probs[0].second;
   for (const auto& prob: probs) {
     if (!std::isnan(prob.second)) {
       allNan = false;
-      if (fabs(prob.second - refProb) > zero)
-        allEqual = false;
+      break;
     }
   }
 
-  if (allNan || allEqual) {
+  if (allNan) {
     double dref = 1.0 / probs.size();
     double sum = 0.0;
 
