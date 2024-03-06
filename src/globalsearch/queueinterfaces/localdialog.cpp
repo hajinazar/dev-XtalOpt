@@ -54,10 +54,11 @@ LocalQueueInterfaceConfigDialog::LocalQueueInterfaceConfigDialog(
   // Create workdir prompt
   m_workdir_layout = new QHBoxLayout();
 
-  m_label1 = new QLabel(tr("Local working directory:"), this);
+  m_label1 = new QLabel(tr("Local working directory:   "), this);
   m_workdir_layout->addWidget(m_label1);
 
   m_edit_workdir = new QLineEdit(this);
+  m_edit_workdir->setMinimumWidth(350);
   m_workdir_layout->addWidget(m_edit_workdir);
 
   m_vlayout->addItem(m_workdir_layout);
@@ -65,7 +66,7 @@ LocalQueueInterfaceConfigDialog::LocalQueueInterfaceConfigDialog(
   // Create description prompt
   m_desc_layout = new QHBoxLayout();
 
-  m_label2 = new QLabel(tr("Search description:"), this);
+  m_label2 = new QLabel(tr("Search description:   "), this);
   m_desc_layout->addWidget(m_label2);
 
   m_edit_description = new QLineEdit(this);
