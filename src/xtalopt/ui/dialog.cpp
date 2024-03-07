@@ -110,15 +110,24 @@ void XtalOptDialog::setMolecule(GlobalSearch::Molecule* molecule)
   m_molecule = molecule;
 }
 
-void XtalOptDialog::closeEvent(QCloseEvent *bar)
+void XtalOptDialog::closeEvent(QCloseEvent *e)
 {
+  // Show "quit" dialog before closing main window
   QMessageBox::StandardButton reply;
   reply = QMessageBox::question(this, "Quit", "Quit XtalOpt now?",
                                 QMessageBox::Yes|QMessageBox::No);
   if (reply == QMessageBox::Yes)
-    bar->accept();
+    e->accept();
   else
-    bar->ignore();
+    e->ignore();
+}
+
+void XtalOptDialog::keyPressEvent(QKeyEvent *e)
+{
+  // Prevent closing with "Esc" key: applies only to the "main window"
+  if (e->key() == Qt::Key_Escape)
+    return;
+  QDialog::keyPressEvent(e);
 }
 
 void XtalOptDialog::beginPlotOnlyMode()

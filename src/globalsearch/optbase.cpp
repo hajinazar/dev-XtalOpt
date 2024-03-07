@@ -75,7 +75,7 @@ OptBase::OptBase(AbstractDialog* parent)
     m_hardnessFitnessWeight(-1.0),
     m_networkAccessManager(std::make_shared<QNetworkAccessManager>()),
     m_aflowML(make_unique<AflowML>(m_networkAccessManager, this)),
-    m_calculateFeatures(false), m_features_num(0),
+    m_calculateFeatures(false), m_features_num(0), m_featuresReDo(false),
     m_softExit(false), m_hardExit(false), m_localQueue(false)
 {
   // Connections

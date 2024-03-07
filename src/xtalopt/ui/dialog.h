@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QCloseEvent>
+#include <QKeyEvent>
 
 namespace Ui {
 class XtalOptDialog;
@@ -58,7 +59,8 @@ public slots:
 
 private slots:
   void startSearch() override;
-  void closeEvent(QCloseEvent *bar) override;
+  void closeEvent(QCloseEvent *e) override;
+  void keyPressEvent(QKeyEvent *e) override;
 
 signals:
 

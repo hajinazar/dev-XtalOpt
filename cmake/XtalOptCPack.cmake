@@ -24,7 +24,12 @@ set(CPACK_NSIS_HELP_LINK "https:\\\\xtalopt.github.io")
 set(CPACK_NSIS_URL_INFO_ABOUT "https:\\\\xtalopt.github.io")
 set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\xtalopt.exe")
 set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/src/xtalopt/images\\\\xtalopt-logo.ico")
-set(CPACK_PACKAGE_ICON  "${CMAKE_SOURCE_DIR}/src/xtalopt/images\\\\xtalopt-logo.png")
+# APPLE/LINUX logos
+if(APPLE)
+  set(CPACK_PACKAGE_ICON  "${CMAKE_SOURCE_DIR}/src/xtalopt/images/xtalopt-logo.icns")
+else()
+  set(CPACK_PACKAGE_ICON  "${CMAKE_SOURCE_DIR}/src/xtalopt/images/xtalopt-logo.png")
+endif()
 set(CPACK_NSIS_MODIFY_PATH ON)
 
 include(CPack)
