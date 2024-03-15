@@ -493,9 +493,9 @@ bool Xtal::isNiggliReduced(const double a, const double b, const double c,
   double A = a * a;
   double B = b * b;
   double C = c * c;
-  double xi = 2 * b * c * cos(alpha * DEG_TO_RAD);
-  double eta = 2 * a * c * cos(beta * DEG_TO_RAD);
-  double zeta = 2 * a * b * cos(gamma * DEG_TO_RAD);
+  double xi = 2 * b * c * cos(alpha * DEG2RAD);
+  double eta = 2 * a * c * cos(beta * DEG2RAD);
+  double zeta = 2 * a * b * cos(gamma * DEG2RAD);
 
   // comparison tolerance
   // This may not be exactly the same as pow(origVolume, 2.0/3.0), but we'll
@@ -1387,18 +1387,18 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       bond1.normalize();
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate 120 degrees
-      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
@@ -1413,25 +1413,25 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // Same as Bent
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate to 120 degrees from bond 1
-      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
 
       // 3rd Neighbor
       // rotate in opposite direction
-      Vector3 bond3 = bond1 - v2 * tan(120.0 * DEG_TO_RAD);
+      Vector3 bond3 = bond1 - v2 * tan(120.0 * DEG2RAD);
       bond3.normalize();
       bond3 *= dist;
       addAtom(atomicNum, (a1Coords + bond3));
@@ -1441,18 +1441,18 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 2nd Neighbor
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate to 109.5 degrees from bond 1
-      Vector3 bond2 = bond1 - v2 * tan(70.5 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(70.5 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
@@ -1467,7 +1467,7 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       v2 = bond1.cross(bond2);
       v2.normalize();
       // make bond 109.5 degrees from bond 1 & 2
-      Vector3 bond3 = v2 + v1 * tan((70.5 / 2) * DEG_TO_RAD);
+      Vector3 bond3 = v2 + v1 * tan((70.5 / 2) * DEG2RAD);
       bond3.normalize();
       bond3 *= dist;
       addAtom(atomicNum, (a1Coords + bond3));
@@ -1477,11 +1477,11 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 2nd Neighbor
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector perpendicular to the plane
       Vector3 v1 = bond1.cross(tempCoords);
@@ -1501,18 +1501,18 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 2nd Neighbor
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate to 109.5 degrees from bond 1
-      Vector3 bond2 = bond1 - v2 * tan(70.5 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(70.5 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
@@ -1527,14 +1527,14 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       v2 = bond1.cross(bond2);
       v2.normalize();
       // make bond 109.5 degrees from bond 1 & 2
-      Vector3 bond3 = v2 + v1 * tan((70.5 / 2) * DEG_TO_RAD);
+      Vector3 bond3 = v2 + v1 * tan((70.5 / 2) * DEG2RAD);
       bond3.normalize();
       bond3 *= dist;
       addAtom(atomicNum, (a1Coords + bond3));
 
       // 4th Neighbor
       // make bond 109.5 degrees from bond 1, 2 & 3
-      Vector3 bond4 = -v2 + v1 * tan((70.5 / 2) * DEG_TO_RAD);
+      Vector3 bond4 = -v2 + v1 * tan((70.5 / 2) * DEG2RAD);
       bond4.normalize();
       bond4 *= dist;
       addAtom(atomicNum, (a1Coords + bond4));
@@ -1548,11 +1548,11 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 3rd Neighbor
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector perpendicular to the plane
       Vector3 v1 = bond1.cross(tempCoords);
@@ -1570,18 +1570,18 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // Same as Bent
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate to 120 degrees from bond 1
-      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
@@ -1609,25 +1609,25 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // Same as Bent -- 120 degrees
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector for manipulation
       Vector3 v1 = bond1.cross(tempCoords);
       Vector3 v2 = bond1.cross(v1);
       v2.normalize();
       // Rotate to 120 degrees from bond 1
-      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG_TO_RAD);
+      Vector3 bond2 = bond1 - v2 * tan(60.0 * DEG2RAD);
       bond2.normalize();
       bond2 *= dist;
       addAtom(atomicNum, (a1Coords + bond2));
 
       // 3rd Neighbor
       // Rotate to 120 degrees from bond 1 the other way
-      Vector3 bond3 = bond1 - v2 * tan(120.0 * DEG_TO_RAD);
+      Vector3 bond3 = bond1 - v2 * tan(120.0 * DEG2RAD);
       bond3.normalize();
       bond3 *= dist;
       addAtom(atomicNum, (a1Coords + bond3));
@@ -1656,11 +1656,11 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 90 degrees from atoms 2 & 3
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector perpendicular to the plane
       Vector3 bond2 = bond1.cross(tempCoords);
@@ -1694,11 +1694,11 @@ bool Xtal::molUnitBuilder(Vector3 a1Coords, unsigned int atomicNum, int valence,
       // 90 degrees from atoms 2 & 3
       // Generate new random coordinates
       tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+      double angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       // Make sure the new vector is acceptable
       while (angle < 45.0 || angle > 135.0) {
         tempCoords = Vector3(getRandDouble(), getRandDouble(), getRandDouble());
-        angle = fabs(acos(bond1.dot(tempCoords)) * RAD_TO_DEG);
+        angle = fabs(acos(bond1.dot(tempCoords)) * RAD2DEG);
       }
       // Get new vector perpendicular to the plane
       Vector3 bond2 = bond1.cross(tempCoords);

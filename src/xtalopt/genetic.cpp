@@ -30,8 +30,6 @@ using namespace GlobalSearch;
 
 namespace XtalOpt {
 
-const double PI = 3.141592653589793;
-
 Xtal* XtalOptGenetic::crossover(Xtal* xtal1, Xtal* xtal2,
                                 double minimumContribution, double& percent1)
 {

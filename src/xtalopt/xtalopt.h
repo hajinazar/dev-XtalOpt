@@ -17,17 +17,12 @@
 
 #include <globalsearch/macros.h>
 #include <globalsearch/optbase.h>
+#include <globalsearch/constants.h>
 
 #include <QtConcurrent>
 
 #include <memory>
 #include <mutex>
-
-// Convenience...
-// static const double DEG_TO_RAD = 3.14159265359 / 180.0;
-static const double DEG_TO_RAD = 3.14159265358979323846 / 180.0;
-// static const double RAD_TO_DEG = 180.0 / 3.14159265359;
-static const double RAD_TO_DEG = 180.0 / 3.14159265358979323846;
 
 // Forward declarations...
 struct latticeStruct;
@@ -199,6 +194,9 @@ public:
   // to be used for generating a plot in the CLI mode.
   bool plotDir(const QDir& dataDir);
 
+  // Returns the sum of vdW sphere volume of atoms times the scl (if it's non-zero)
+  double getScaledVolumePerFU(double scl = 0.0);
+
   // This function parses the feature-related input and initializes relevant variables
   bool processFeaturesInfo();
 
@@ -241,7 +239,8 @@ public:
     new_a_max, // new_min and new_max are formula unit corrected
     new_b_min, new_b_max, new_c_min, new_c_max, alpha_min, alpha_max, beta_min,
     beta_max, gamma_min, gamma_max, vol_min, vol_max, vol_fixed, new_vol_min,
-    new_vol_max, scaleFactor, minRadius;
+    new_vol_max, scaleFactor, minRadius,
+    vol_scaled_min, vol_scaled_max;
 
   int divisions, // Number of divisions for mitosis
     ax,          // Number of divisions for cell vector 'a'
@@ -252,6 +251,7 @@ public:
   double tol_xcAngle;
   double tol_spg;
 
+  bool using_scaled_volume;
   bool using_fixed_volume;
   bool using_interatomicDistanceLimit;
   bool using_mitotic_growth;

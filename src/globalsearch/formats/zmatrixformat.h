@@ -15,6 +15,8 @@
 #ifndef GLOBALSEARCH_ZMATRIX_FORMAT_H
 #define GLOBALSEARCH_ZMATRIX_FORMAT_H
 
+#include <globalsearch/constants.h>
+
 #include <iostream>
 #include <vector>
 

@@ -459,6 +459,9 @@ bool XtalOpt::save(QString filename, bool notify)
   settings->setValue("limits/scaleFactor", scaleFactor);
   settings->setValue("limits/minRadius", minRadius);
   settings->setValue("using/fixedVolume", using_fixed_volume);
+  settings->setValue("using/scaledVolume", using_scaled_volume);
+  settings->setValue("limits/volume/scaled_min", vol_scaled_min);
+  settings->setValue("limits/volume/scaled_max", vol_scaled_max);
   settings->setValue("using/mitosis", using_mitosis);
   settings->setValue("using/subcellPrint", using_subcellPrint);
   settings->setValue("limits/divisions", divisions);
@@ -962,6 +965,9 @@ bool XtalOpt::readSettings(const QString& filename)
   scaleFactor = settings->value("limits/scaleFactor", 0.5).toDouble();
   minRadius = settings->value("limits/minRadius", 0.25).toDouble();
   using_fixed_volume = settings->value("using/fixedVolume", false).toBool();
+  using_scaled_volume = settings->value("using/scaledVolume", false).toBool();
+  vol_scaled_max = settings->value("limits/volume/scaled_max", 0.0).toDouble();
+  vol_scaled_min = settings->value("limits/volume/scaled_min", 0.0).toDouble();
   using_interatomicDistanceLimit =
     settings->value("using/interatomicDistanceLimit", false).toBool();
   using_customIAD = settings->value("using/customIAD").toBool();
@@ -3341,11 +3347,11 @@ void XtalOpt::interpretKeyword(QString& line, Structure* structure)
   else if (line == "c")
     rep += QString::number(xtal->getC());
   else if (line == "alphaRad")
-    rep += QString::number(xtal->getAlpha() * DEG_TO_RAD);
+    rep += QString::number(xtal->getAlpha() * DEG2RAD);
   else if (line == "betaRad")
-    rep += QString::number(xtal->getBeta() * DEG_TO_RAD);
+    rep += QString::number(xtal->getBeta() * DEG2RAD);
   else if (line == "gammaRad")
-    rep += QString::number(xtal->getGamma() * DEG_TO_RAD);
+    rep += QString::number(xtal->getGamma() * DEG2RAD);
   else if (line == "alphaDeg")
     rep += QString::number(xtal->getAlpha());
   else if (line == "betaDeg")
@@ -4181,6 +4187,25 @@ void XtalOpt::resetDuplicates_()
   checkForDuplicates();
 }
 
+double XtalOpt::getScaledVolumePerFU(double scl)
+{
+  // This function returns the scaled volume per FU as the:
+  //       scl * (sum of vol of vdW sphere of atoms)
+  double scl_vol = 0.0;
+
+  QList<uint> atomicNums = this->comp.keys();
+  for (int i = 0; i < atomicNums.size(); i++)
+    if (atomicNums[i] != 0) {
+      double q = this->comp.value(atomicNums[i]).quantity;
+      double r = ElemInfoDatabase::_vdwRadii[atomicNums[i]];
+      scl_vol += q * 4.0 / 3.0 * PI * pow(r, 3.0);
+    }
+
+  scl_vol *= ((scl > 1e-5) ? scl : 1.0);
+
+  return scl_vol;
+}
+
 bool XtalOpt::processFeaturesInfo()
 {
   // This function processes the feature/aflow-hardness entries from the CLI
@@ -4925,6 +4950,9 @@ void XtalOpt::printOptionSettings(QTextStream& stream) const
 
   stream << "\n  volumeMin: " << vol_min << "\n";
   stream << "  volumeMax: " << vol_max << "\n";
+
+  stream << "\n scaledVolMin: " << vol_scaled_min << "\n";
+  stream << "   scaledVolMax: " << vol_scaled_max << "\n";
 
   stream << "\n  usingRadiiInteratomicDistanceLimit: "
          << toString(using_interatomicDistanceLimit) << "\n";

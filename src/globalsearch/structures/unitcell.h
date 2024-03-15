@@ -20,11 +20,10 @@
 
 #include <globalsearch/matrix.h>
 #include <globalsearch/vector.h>
+#include <globalsearch/constants.h>
 
 namespace GlobalSearch {
-static const double PI = 3.14159265359;
-static const double DEG2RAD = PI / 180.0;
-static const double RAD2DEG = 180.0 / PI;
+
 
 /**
  * @class UnitCell unitcell.h

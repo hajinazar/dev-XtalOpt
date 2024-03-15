@@ -15,6 +15,7 @@
 #ifndef GENETIC_H
 #define GENETIC_H
 
+#include <globalsearch/constants.h>
 #include <gapc/structures/protectedcluster.h>
 
 namespace GAPC {

@@ -404,7 +404,7 @@ ProtectedCluster* GAPCGenetic::twist(ProtectedCluster* pc,
     minimumRotation + (RANDDOUBLE() * (360.0 - (2.0 * minimumRotation)));
 
   twisters_pos = rotateCoordinates(
-    twisters_pos, createRotationMatrix(0, 0, 1, rotationDeg * DEG_TO_RAD));
+    twisters_pos, createRotationMatrix(0, 0, 1, rotationDeg * DEG2RAD));
 
 #ifdef DUMP_STRUCTURES
   vs.clear();

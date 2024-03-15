@@ -598,9 +598,9 @@ void RandomDock::randomlyRotateCoordinates(QList<Eigen::Vector3d>& coords)
   center /= static_cast<float>(coords.size());
 
   // Get random angles
-  double X = RANDDOUBLE() * 2 * 3.14159265;
-  double Y = RANDDOUBLE() * 2 * 3.14159265;
-  double Z = RANDDOUBLE() * 2 * 3.14159265;
+  double X = RANDDOUBLE() * 2.0 * PI;
+  double Y = RANDDOUBLE() * 2.0 * PI;
+  double Z = RANDDOUBLE() * 2.0 * PI;
 
   // Build rotation matrix
   Eigen::Matrix3d rx, ry, rz, rot;
@@ -623,8 +623,8 @@ void RandomDock::randomlyDisplaceCoordinates(QList<Eigen::Vector3d>& coords,
   INIT_RANDOM_GENERATOR();
   // Get random spherical coordinates
   double rho = RANDDOUBLE() * (radiusMax - radiusMin) + radiusMin;
-  double theta = RANDDOUBLE() * 2 * 3.14159265;
-  double phi = RANDDOUBLE() * 2 * 3.14159265;
+  double theta = RANDDOUBLE() * 2.0 * PI;
+  double phi = RANDDOUBLE() * 2.0 * PI;
 
   // convert to cartesian coordinates
   double x = rho * sin(phi) * cos(theta);
@@ -650,7 +650,7 @@ void RandomDock::DRotateCoordinates(QList<Eigen::Vector3d>& coords)
   center /= static_cast<float>(coords.size());
 
   // Get random angles
-  double theta = RANDDOUBLE() * 2 * 3.14159265;
+  double theta = RANDDOUBLE() * 2.0 * PI;
 
   // Build rotation matrix
   Eigen::Matrix3d rot;
@@ -669,8 +669,8 @@ void RandomDock::DDisplaceCoordinates(QList<Eigen::Vector3d>& coords,
 {
   INIT_RANDOM_GENERATOR();
   // Get random 2D coordinates
-  double pi = RANDDOUBLE() * 2 * 3.14159265;
-  double phi = RANDDOUBLE() * 2 * 3.14159265;
+  double pi = RANDDOUBLE() * 2.0 * PI;
+  double phi = RANDDOUBLE() * 2.0 * PI;
   double dx = cos(phi) * (radiusMax - radiusMin) + radiusMin;
   double dy = sin(pi) * (radiusMax - radiusMin) + radiusMin;
 

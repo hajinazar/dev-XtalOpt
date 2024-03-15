@@ -16,6 +16,7 @@
 #define XTAL_H
 
 #include <globalsearch/structure.h>
+#include <globalsearch/constants.h>
 
 #include <xtalopt/xtalopt.h>
 

@@ -73,7 +73,8 @@ set( globalsearch_SRCS
 )
 endif()
 
-add_library(globalsearch STATIC ${globalsearch_SRCS} ${moc_files})
+add_library(globalsearch STATIC ${globalsearch_SRCS} ${moc_files}
+  constants.h)
 
 set(GLOBALSEARCH_LINK_LIBS
     ${GLOBALSEARCH_LINK_LIBS}

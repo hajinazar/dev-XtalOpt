@@ -33,7 +33,9 @@ using namespace GlobalSearch;
 
 namespace XtalOpt {
 
-static const QStringList keywords = { "features",
+static const QStringList keywords = { "scaledVolMin",
+                                      "scaledVolMax",
+                                      "features",
                                       "featuresReDo",
                                       "softExit",
                                       "hardExit",
@@ -353,9 +355,20 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.gamma_max = options.value("gammaMax", "120.0").toFloat();
   xtalopt.vol_min = options.value("volumeMin", "1.0").toFloat();
   xtalopt.vol_max = options.value("volumeMax", "100000.0").toFloat();
-
-  // Check for fixed volume
-  if (fabs(xtalopt.vol_min - xtalopt.vol_max) < 1.e-5) {
+  xtalopt.vol_scaled_min = options.value("scaledVolMin", "0.0").toFloat();
+  xtalopt.vol_scaled_max = options.value("scaledVolMax", "0.0").toFloat();
+  // If scaled volume is the case, we adjust the main
+  //   vol_max/vol_min (which will be used later on) right away.
+  if (xtalopt.vol_scaled_min > 1.e-5 && xtalopt.vol_scaled_max > 1.e-5) {
+    if (xtalopt.vol_scaled_min > xtalopt.vol_scaled_max)
+      xtalopt.vol_scaled_max = xtalopt.vol_scaled_min;
+    double tmpvolmax = xtalopt.getScaledVolumePerFU(xtalopt.vol_scaled_max);
+    double tmpvolmin = xtalopt.getScaledVolumePerFU(xtalopt.vol_scaled_min);
+    xtalopt.vol_max = (tmpvolmax > 1.e-5) ? tmpvolmax : xtalopt.vol_max;
+    xtalopt.vol_min = (tmpvolmin > 1.e-5) ? tmpvolmin : xtalopt.vol_min;
+    xtalopt.using_scaled_volume = true;
+  } else if (fabs(xtalopt.vol_min - xtalopt.vol_max) < 1.e-5) {
+   // Check for fixed volume
     xtalopt.using_fixed_volume = true;
     xtalopt.vol_fixed = xtalopt.vol_min;
   } else {
@@ -1293,6 +1306,8 @@ void XtalOptCLIOptions::writeInitialRuntimeFile(XtalOpt& xtalopt)
   text += QString("gammaMax = ") + QString::number(xtalopt.gamma_max) + "\n";
   text += QString("volumeMin = ") + QString::number(xtalopt.vol_min) + "\n";
   text += QString("volumeMax = ") + QString::number(xtalopt.vol_max) + "\n";
+  text += QString("scaledVolMax = ") + QString::number(xtalopt.vol_scaled_max) + "\n";
+  text += QString("scaledVolMin = ") + QString::number(xtalopt.vol_scaled_min) + "\n";
   text += QString("usingRadiiInteratomicDistanceLimit = ") +
           fromBool(xtalopt.using_interatomicDistanceLimit) + "\n";
   text += QString("radiiScalingFactor = ") +
@@ -1458,6 +1473,10 @@ void XtalOptCLIOptions::processRuntimeOptions(
       xtalopt.vol_min = options[option].toFloat();
     } else if (CICompare("volumeMax", option)) {
       xtalopt.vol_max = options[option].toFloat();
+    } else if (CICompare("scaledVolMax", option)) {
+      xtalopt.vol_scaled_max = options[option].toFloat();
+    } else if (CICompare("scaledVolMin", option)) {
+      xtalopt.vol_scaled_min = options[option].toFloat();
     } else if (CICompare("usingRadiiInteratomicDistanceLimit", option)) {
       xtalopt.using_interatomicDistanceLimit = toBool(options[option]);
     } else if (CICompare("radiiScalingFactor", option)) {

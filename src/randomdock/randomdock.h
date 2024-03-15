@@ -16,6 +16,7 @@
 #define RANDOMDOCK_H
 
 #include <globalsearch/optbase.h>
+#include <globalsearch/constants.h>
 
 #include <Eigen/Geometry>
 

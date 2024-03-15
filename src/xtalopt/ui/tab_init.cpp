@@ -82,6 +82,12 @@ TabInit::TabInit(GlobalSearch::AbstractDialog* parent, XtalOpt* p)
           SLOT(updateDimensions()));
   connect(ui.cb_fixedVolume, SIGNAL(toggled(bool)), this,
           SLOT(updateDimensions()));
+  connect(ui.cb_scaledVolume, SIGNAL(stateChanged(int)), this,
+          SLOT(updateScaledVolume()));
+  connect(ui.spin_scaledVolMax, SIGNAL(valueChanged(double)), this,
+          SLOT(updateDimensions()));
+  connect(ui.spin_scaledVolMin, SIGNAL(valueChanged(double)), this,
+          SLOT(updateDimensions()));
 
   // Mitosis
   connect(ui.cb_mitosis, SIGNAL(toggled(bool)), this,
@@ -150,6 +156,30 @@ TabInit::~TabInit()
 {
   if (m_spgOptions)
     delete m_spgOptions;
+}
+
+void TabInit::updateScaledVolume()
+{
+  if (ui.cb_scaledVolume->isChecked()) {
+    if (ui.cb_fixedVolume->isChecked()) {
+      ui.cb_scaledVolume->setCheckState(Qt::Unchecked);
+      return;
+    }
+    ui.spin_scaledVolMin->setEnabled(true);
+    ui.spin_scaledVolMax->setEnabled(true);
+    ui.cb_fixedVolume->setEnabled(false);
+    ui.cb_fixedVolume->setCheckState(Qt::Unchecked);
+    ui.spin_fixedVolume->setEnabled(false);
+    //ui.spin_vol_min->setEnabled(false);
+    //ui.spin_vol_max->setEnabled(false);
+  } else {
+    ui.spin_scaledVolMin->setEnabled(false);
+    ui.spin_scaledVolMax->setEnabled(false);
+    ui.cb_fixedVolume->setEnabled(true);
+    //ui.spin_vol_min->setEnabled(true);
+    //ui.spin_vol_max->setEnabled(true);
+  }
+  updateDimensions();
 }
 
 void TabInit::writeSettings(const QString& filename)
@@ -291,6 +321,15 @@ void TabInit::updateGUI()
   ui.cb_checkStepOpt->setChecked(xtalopt->using_checkStepOpt);
   ui.cb_useMolUnit->setChecked(xtalopt->using_molUnit);
   ui.cb_allowRandSpg->setChecked(xtalopt->using_randSpg);
+
+  ui.cb_scaledVolume->setChecked(xtalopt->using_scaled_volume);
+  ui.spin_scaledVolMax->setValue(xtalopt->vol_scaled_max);
+  ui.spin_scaledVolMin->setValue(xtalopt->vol_scaled_min);
+  ui.spin_vol_min->setValue(xtalopt->vol_min);
+  ui.spin_vol_max->setValue(xtalopt->vol_max);
+  ui.spin_fixedVolume->setValue(xtalopt->vol_fixed);
+  ui.cb_fixedVolume->setChecked(xtalopt->using_fixed_volume);
+
   m_updateGuiInProgress = false;
 
   updateComposition();
@@ -573,6 +612,28 @@ void TabInit::updateDimensions()
     ui.spin_gamma_max->setValue(ui.spin_gamma_min->value());
   if (ui.spin_vol_min->value() > ui.spin_vol_max->value())
     ui.spin_vol_max->setValue(ui.spin_vol_min->value());
+
+  if (ui.spin_scaledVolMin->value() > ui.spin_scaledVolMax->value())
+    ui.spin_scaledVolMax->setValue(ui.spin_scaledVolMin->value());
+  xtalopt->vol_scaled_max = ui.spin_scaledVolMax->value();
+  xtalopt->vol_scaled_min = ui.spin_scaledVolMin->value();
+  xtalopt->using_scaled_volume = ui.cb_scaledVolume->isChecked();
+
+  if (xtalopt->using_scaled_volume) {
+    // If scaled volume is the case, we adjust the main
+    //   vol_max/vol_min (which will be used later on) right away.
+    double tmpvolmax = xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_max);
+    double tmpvolmin = xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_min);
+    if (tmpvolmin > 1.e-5)
+      ui.spin_vol_min->setValue(tmpvolmin);
+    if (tmpvolmax > 1.e-5)
+      ui.spin_vol_max->setValue(tmpvolmax);
+  }
+
+  xtalopt->vol_min = ui.spin_vol_min->value();
+  xtalopt->vol_max = ui.spin_vol_max->value();
+  xtalopt->using_fixed_volume = ui.cb_fixedVolume->isChecked();
+  xtalopt->vol_fixed = ui.spin_fixedVolume->value();
 
   // Assign variables
   xtalopt->a_min = ui.spin_a_min->value();
