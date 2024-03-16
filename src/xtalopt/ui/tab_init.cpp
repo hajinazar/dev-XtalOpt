@@ -170,14 +170,10 @@ void TabInit::updateScaledVolume()
     ui.cb_fixedVolume->setEnabled(false);
     ui.cb_fixedVolume->setCheckState(Qt::Unchecked);
     ui.spin_fixedVolume->setEnabled(false);
-    //ui.spin_vol_min->setEnabled(false);
-    //ui.spin_vol_max->setEnabled(false);
   } else {
     ui.spin_scaledVolMin->setEnabled(false);
     ui.spin_scaledVolMax->setEnabled(false);
     ui.cb_fixedVolume->setEnabled(true);
-    //ui.spin_vol_min->setEnabled(true);
-    //ui.spin_vol_max->setEnabled(true);
   }
   updateDimensions();
 }
