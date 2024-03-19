@@ -76,7 +76,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>28</height>
+          <height>25</height>
          </size>
         </property>
         <property name="baseSize">
@@ -136,7 +136,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>28</height>
+          <height>25</height>
          </size>
         </property>
         <property name="baseSize">
@@ -583,7 +583,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>18</height>
+          <height>25</height>
          </size>
         </property>
         <property name="font">
@@ -663,7 +663,7 @@ able to create offspring that meet this restriction.</string>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>18</height>
+          <height>25</height>
          </size>
         </property>
         <property name="font">
@@ -977,7 +977,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>9999.989999999999782</double>
@@ -1007,7 +1007,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
@@ -1092,7 +1092,7 @@ able to create offspring that meet this restriction.</string>
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If set, and with non-zero values for minimum and maximum scaling factor, the unit cell volume limits will be set to the total volume of van der Waals spheres of all atoms in one formula unit times the scaling factors.&lt;/p&gt;&lt;p&gt;If the scaling factors are equal, or the minimum is greater than maximum, this will correspond to a &amp;quot;fixed volume&amp;quot; setting.&lt;/p&gt;&lt;p&gt;As an example, the minimum and maximum of the scaling factor can be 0.8 and 1.2.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
-         <string>Scaled volume (times vdW sphere)</string>
+         <string>Scaled volume (vdW spheres per FU)</string>
         </property>
        </widget>
       </item>
@@ -1134,7 +1134,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
@@ -1161,7 +1161,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
@@ -1191,7 +1191,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
@@ -1218,7 +1218,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
@@ -1296,7 +1296,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>999.990000000000009</double>
@@ -1326,7 +1326,7 @@ able to create offspring that meet this restriction.</string>
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
@@ -1353,7 +1353,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>9999.989999999999782</double>
@@ -1380,7 +1380,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
@@ -1407,7 +1407,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>1000000.000000000000000</double>
@@ -1524,7 +1524,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>9999.989999999999782</double>
@@ -1551,7 +1551,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
@@ -1608,7 +1608,7 @@ able to create offspring that meet this restriction.</string>
          <string>Use this to specify a starting volume for the structure before optimizing.</string>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>999999.000000000000000</double>
@@ -1638,7 +1638,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>999.990000000000009</double>
@@ -1665,7 +1665,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>1000000.000000000000000</double>
@@ -1692,7 +1692,7 @@ able to create offspring that meet this restriction.</string>
          </font>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>5</number>
         </property>
         <property name="maximum">
          <double>180.000000000000000</double>
