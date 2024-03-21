@@ -194,8 +194,9 @@ public:
   // to be used for generating a plot in the CLI mode.
   bool plotDir(const QDir& dataDir);
 
-  // Returns the sum of vdW sphere volume of atoms times the scl (if it's non-zero)
-  double getScaledVolumePerFU(double scl = 0.0);
+  // Returns the sum of vdW sphere volume of atoms times the scl factors
+  void getScaledVolumePerFU(double& scl_min, double& scl_max,
+                            double& vol_min, double& vol_max);
 
   // This function parses the feature-related input and initializes relevant variables
   bool processFeaturesInfo();
@@ -251,7 +252,6 @@ public:
   double tol_xcAngle;
   double tol_spg;
 
-  bool using_scaled_volume;
   bool using_fixed_volume;
   bool using_interatomicDistanceLimit;
   bool using_mitotic_growth;

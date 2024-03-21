@@ -355,19 +355,17 @@ bool XtalOptCLIOptions::processOptions(const QHash<QString, QString>& options,
   xtalopt.gamma_max = options.value("gammaMax", "120.0").toFloat();
   xtalopt.vol_min = options.value("volumeMin", "1.0").toFloat();
   xtalopt.vol_max = options.value("volumeMax", "100000.0").toFloat();
-  xtalopt.vol_scaled_min = options.value("scaledVolMin", "0.0").toFloat();
-  xtalopt.vol_scaled_max = options.value("scaledVolMax", "0.0").toFloat();
+
   // If scaled volume is the case, we adjust the main
   //   vol_max/vol_min (which will be used later on) right away.
-  if (xtalopt.vol_scaled_min > 1.e-5 && xtalopt.vol_scaled_max > 1.e-5) {
-    if (xtalopt.vol_scaled_min > xtalopt.vol_scaled_max)
-      xtalopt.vol_scaled_max = xtalopt.vol_scaled_min;
-    double tmpvolmax = xtalopt.getScaledVolumePerFU(xtalopt.vol_scaled_max);
-    double tmpvolmin = xtalopt.getScaledVolumePerFU(xtalopt.vol_scaled_min);
-    xtalopt.vol_max = (tmpvolmax > 1.e-5) ? tmpvolmax : xtalopt.vol_max;
-    xtalopt.vol_min = (tmpvolmin > 1.e-5) ? tmpvolmin : xtalopt.vol_min;
-    xtalopt.using_scaled_volume = true;
-  } else if (fabs(xtalopt.vol_min - xtalopt.vol_max) < 1.e-5) {
+  xtalopt.vol_scaled_min = options.value("scaledVolMin", "0.0").toFloat();
+  xtalopt.vol_scaled_max = options.value("scaledVolMax", "0.0").toFloat();
+  if (xtalopt.vol_scaled_min > 1.e-5 || xtalopt.vol_scaled_max > 1.e-5) {
+    xtalopt.getScaledVolumePerFU(xtalopt.vol_scaled_min, xtalopt.vol_scaled_max,
+                                 xtalopt.vol_min, xtalopt.vol_max);
+  }
+
+  if (fabs(xtalopt.vol_min - xtalopt.vol_max) < 1.e-5) {
    // Check for fixed volume
     xtalopt.using_fixed_volume = true;
     xtalopt.vol_fixed = xtalopt.vol_min;

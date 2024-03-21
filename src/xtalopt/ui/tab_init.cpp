@@ -318,7 +318,6 @@ void TabInit::updateGUI()
   ui.cb_useMolUnit->setChecked(xtalopt->using_molUnit);
   ui.cb_allowRandSpg->setChecked(xtalopt->using_randSpg);
 
-  ui.cb_scaledVolume->setChecked(xtalopt->using_scaled_volume);
   ui.spin_scaledVolMax->setValue(xtalopt->vol_scaled_max);
   ui.spin_scaledVolMin->setValue(xtalopt->vol_scaled_min);
   ui.spin_vol_min->setValue(xtalopt->vol_min);
@@ -609,21 +608,16 @@ void TabInit::updateDimensions()
   if (ui.spin_vol_min->value() > ui.spin_vol_max->value())
     ui.spin_vol_max->setValue(ui.spin_vol_min->value());
 
-  if (ui.spin_scaledVolMin->value() > ui.spin_scaledVolMax->value())
-    ui.spin_scaledVolMax->setValue(ui.spin_scaledVolMin->value());
+  // If scaled volume is the case, we adjust the main
+  //   vol_max/vol_min (which will be used later on) right away.
+  // This will take effect only if composition is set!
   xtalopt->vol_scaled_max = ui.spin_scaledVolMax->value();
   xtalopt->vol_scaled_min = ui.spin_scaledVolMin->value();
-  xtalopt->using_scaled_volume = ui.cb_scaledVolume->isChecked();
-
-  if (xtalopt->using_scaled_volume) {
-    // If scaled volume is the case, we adjust the main
-    //   vol_max/vol_min (which will be used later on) right away.
-    double tmpvolmax = xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_max);
-    double tmpvolmin = xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_min);
-    if (tmpvolmin > 1.e-5)
-      ui.spin_vol_min->setValue(tmpvolmin);
-    if (tmpvolmax > 1.e-5)
-      ui.spin_vol_max->setValue(tmpvolmax);
+  if (ui.cb_scaledVolume->isChecked()) {
+    xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_min, xtalopt->vol_scaled_max,
+                                  xtalopt->vol_min, xtalopt->vol_max);
+    ui.spin_vol_min->setValue(xtalopt->vol_min);
+    ui.spin_vol_max->setValue(xtalopt->vol_max);
   }
 
   xtalopt->vol_min = ui.spin_vol_min->value();

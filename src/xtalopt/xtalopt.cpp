@@ -459,7 +459,6 @@ bool XtalOpt::save(QString filename, bool notify)
   settings->setValue("limits/scaleFactor", scaleFactor);
   settings->setValue("limits/minRadius", minRadius);
   settings->setValue("using/fixedVolume", using_fixed_volume);
-  settings->setValue("using/scaledVolume", using_scaled_volume);
   settings->setValue("limits/volume/scaled_min", vol_scaled_min);
   settings->setValue("limits/volume/scaled_max", vol_scaled_max);
   settings->setValue("using/mitosis", using_mitosis);
@@ -965,7 +964,6 @@ bool XtalOpt::readSettings(const QString& filename)
   scaleFactor = settings->value("limits/scaleFactor", 0.5).toDouble();
   minRadius = settings->value("limits/minRadius", 0.25).toDouble();
   using_fixed_volume = settings->value("using/fixedVolume", false).toBool();
-  using_scaled_volume = settings->value("using/scaledVolume", false).toBool();
   vol_scaled_max = settings->value("limits/volume/scaled_max", 0.0).toDouble();
   vol_scaled_min = settings->value("limits/volume/scaled_min", 0.0).toDouble();
   using_interatomicDistanceLimit =
@@ -4187,23 +4185,39 @@ void XtalOpt::resetDuplicates_()
   checkForDuplicates();
 }
 
-double XtalOpt::getScaledVolumePerFU(double scl)
+void XtalOpt::getScaledVolumePerFU(double& scl_min, double& scl_max,
+                                   double& vol_min, double& vol_max)
 {
-  // This function returns the scaled volume per FU as the:
+  // This function returns the scaled volumes per FU as the:
   //       scl * (sum of vol of vdW sphere of atoms)
-  double scl_vol = 0.0;
-
+  // It takes effect only if the composition is set!
   QList<uint> atomicNums = this->comp.keys();
+  if (atomicNums.size() == 0)
+    return;
+
+  // First, find the equivalent vdW volume per FU
+  double vdw_vol = 0.0;
   for (int i = 0; i < atomicNums.size(); i++)
     if (atomicNums[i] != 0) {
       double q = this->comp.value(atomicNums[i]).quantity;
       double r = ElemInfoDatabase::_vdwRadii[atomicNums[i]];
-      scl_vol += q * 4.0 / 3.0 * PI * pow(r, 3.0);
+      vdw_vol += q * 4.0 / 3.0 * PI * pow(r, 3.0);
     }
+  if (vdw_vol < 1.e-5)
+    return;
 
-  scl_vol *= ((scl > 1e-5) ? scl : 1.0);
-
-  return scl_vol;
+  // Now, sort out the situation with scaling factors
+  if (scl_min < 1.e-5 && scl_max > 1.e-5) {
+    vol_min = 1.0;
+    vol_max = vdw_vol * scl_max;
+  } else if (scl_min > 1.e-5 && scl_max < scl_min) {
+    scl_max = scl_min;
+    vol_min = vdw_vol * scl_min;
+    vol_max = vdw_vol * scl_max;
+  } else if (scl_min > 1.e-5 && scl_max > 1.e-5) {
+    vol_min = vdw_vol * scl_min;
+    vol_max = vdw_vol * scl_max;
+  }
 }
 
 bool XtalOpt::processFeaturesInfo()
