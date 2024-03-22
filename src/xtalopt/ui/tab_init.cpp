@@ -84,9 +84,9 @@ TabInit::TabInit(GlobalSearch::AbstractDialog* parent, XtalOpt* p)
           SLOT(updateDimensions()));
   connect(ui.cb_scaledVolume, SIGNAL(stateChanged(int)), this,
           SLOT(updateScaledVolume()));
-  connect(ui.spin_scaledVolMax, SIGNAL(valueChanged(double)), this,
+  connect(ui.spin_volumeScaleMax, SIGNAL(valueChanged(double)), this,
           SLOT(updateDimensions()));
-  connect(ui.spin_scaledVolMin, SIGNAL(valueChanged(double)), this,
+  connect(ui.spin_volumeScaleMin, SIGNAL(valueChanged(double)), this,
           SLOT(updateDimensions()));
 
   // Mitosis
@@ -165,14 +165,14 @@ void TabInit::updateScaledVolume()
       ui.cb_scaledVolume->setCheckState(Qt::Unchecked);
       return;
     }
-    ui.spin_scaledVolMin->setEnabled(true);
-    ui.spin_scaledVolMax->setEnabled(true);
+    ui.spin_volumeScaleMin->setEnabled(true);
+    ui.spin_volumeScaleMax->setEnabled(true);
     ui.cb_fixedVolume->setEnabled(false);
     ui.cb_fixedVolume->setCheckState(Qt::Unchecked);
     ui.spin_fixedVolume->setEnabled(false);
   } else {
-    ui.spin_scaledVolMin->setEnabled(false);
-    ui.spin_scaledVolMax->setEnabled(false);
+    ui.spin_volumeScaleMin->setEnabled(false);
+    ui.spin_volumeScaleMax->setEnabled(false);
     ui.cb_fixedVolume->setEnabled(true);
   }
   updateDimensions();
@@ -318,8 +318,8 @@ void TabInit::updateGUI()
   ui.cb_useMolUnit->setChecked(xtalopt->using_molUnit);
   ui.cb_allowRandSpg->setChecked(xtalopt->using_randSpg);
 
-  ui.spin_scaledVolMax->setValue(xtalopt->vol_scaled_max);
-  ui.spin_scaledVolMin->setValue(xtalopt->vol_scaled_min);
+  ui.spin_volumeScaleMax->setValue(xtalopt->vol_scale_max);
+  ui.spin_volumeScaleMin->setValue(xtalopt->vol_scale_min);
   ui.spin_vol_min->setValue(xtalopt->vol_min);
   ui.spin_vol_max->setValue(xtalopt->vol_max);
   ui.spin_fixedVolume->setValue(xtalopt->vol_fixed);
@@ -611,10 +611,10 @@ void TabInit::updateDimensions()
   // If scaled volume is the case, we adjust the main
   //   vol_max/vol_min (which will be used later on) right away.
   // This will take effect only if composition is set!
-  xtalopt->vol_scaled_max = ui.spin_scaledVolMax->value();
-  xtalopt->vol_scaled_min = ui.spin_scaledVolMin->value();
+  xtalopt->vol_scale_max = ui.spin_volumeScaleMax->value();
+  xtalopt->vol_scale_min = ui.spin_volumeScaleMin->value();
   if (ui.cb_scaledVolume->isChecked()) {
-    xtalopt->getScaledVolumePerFU(xtalopt->vol_scaled_min, xtalopt->vol_scaled_max,
+    xtalopt->getScaledVolumePerFU(xtalopt->vol_scale_min, xtalopt->vol_scale_max,
                                   xtalopt->vol_min, xtalopt->vol_max);
     ui.spin_vol_min->setValue(xtalopt->vol_min);
     ui.spin_vol_max->setValue(xtalopt->vol_max);

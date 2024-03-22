@@ -241,7 +241,7 @@ public:
     new_b_min, new_b_max, new_c_min, new_c_max, alpha_min, alpha_max, beta_min,
     beta_max, gamma_min, gamma_max, vol_min, vol_max, vol_fixed, new_vol_min,
     new_vol_max, scaleFactor, minRadius,
-    vol_scaled_min, vol_scaled_max;
+    vol_scale_min, vol_scale_max;
 
   int divisions, // Number of divisions for mitosis
     ax,          // Number of divisions for cell vector 'a'

@@ -459,8 +459,8 @@ bool XtalOpt::save(QString filename, bool notify)
   settings->setValue("limits/scaleFactor", scaleFactor);
   settings->setValue("limits/minRadius", minRadius);
   settings->setValue("using/fixedVolume", using_fixed_volume);
-  settings->setValue("limits/volume/scaled_min", vol_scaled_min);
-  settings->setValue("limits/volume/scaled_max", vol_scaled_max);
+  settings->setValue("limits/volume/scale_min", vol_scale_min);
+  settings->setValue("limits/volume/scale_max", vol_scale_max);
   settings->setValue("using/mitosis", using_mitosis);
   settings->setValue("using/subcellPrint", using_subcellPrint);
   settings->setValue("limits/divisions", divisions);
@@ -964,8 +964,8 @@ bool XtalOpt::readSettings(const QString& filename)
   scaleFactor = settings->value("limits/scaleFactor", 0.5).toDouble();
   minRadius = settings->value("limits/minRadius", 0.25).toDouble();
   using_fixed_volume = settings->value("using/fixedVolume", false).toBool();
-  vol_scaled_max = settings->value("limits/volume/scaled_max", 0.0).toDouble();
-  vol_scaled_min = settings->value("limits/volume/scaled_min", 0.0).toDouble();
+  vol_scale_max = settings->value("limits/volume/scale_max", 0.0).toDouble();
+  vol_scale_min = settings->value("limits/volume/scale_min", 0.0).toDouble();
   using_interatomicDistanceLimit =
     settings->value("using/interatomicDistanceLimit", false).toBool();
   using_customIAD = settings->value("using/customIAD").toBool();
@@ -4965,8 +4965,8 @@ void XtalOpt::printOptionSettings(QTextStream& stream) const
   stream << "\n  volumeMin: " << vol_min << "\n";
   stream << "  volumeMax: " << vol_max << "\n";
 
-  stream << "\n scaledVolMin: " << vol_scaled_min << "\n";
-  stream << "   scaledVolMax: " << vol_scaled_max << "\n";
+  stream << "\n volumeScaleMin: " << vol_scale_min << "\n";
+  stream << "   volumeScaleMax: " << vol_scale_max << "\n";
 
   stream << "\n  usingRadiiInteratomicDistanceLimit: "
          << toString(using_interatomicDistanceLimit) << "\n";

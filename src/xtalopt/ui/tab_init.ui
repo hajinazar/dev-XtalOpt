@@ -1280,7 +1280,7 @@ able to create offspring that meet this restriction.</string>
        </widget>
       </item>
       <item row="9" column="3">
-       <widget class="QDoubleSpinBox" name="spin_scaledVolMax">
+       <widget class="QDoubleSpinBox" name="spin_volumeScaleMax">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1622,7 +1622,7 @@ able to create offspring that meet this restriction.</string>
        </widget>
       </item>
       <item row="9" column="1">
-       <widget class="QDoubleSpinBox" name="spin_scaledVolMin">
+       <widget class="QDoubleSpinBox" name="spin_volumeScaleMin">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -1747,8 +1747,8 @@ able to create offspring that meet this restriction.</string>
   <tabstop>cb_fixedVolume</tabstop>
   <tabstop>spin_fixedVolume</tabstop>
   <tabstop>cb_scaledVolume</tabstop>
-  <tabstop>spin_scaledVolMin</tabstop>
-  <tabstop>spin_scaledVolMax</tabstop>
+  <tabstop>spin_volumeScaleMin</tabstop>
+  <tabstop>spin_volumeScaleMax</tabstop>
   <tabstop>pushButton_addMolUnit</tabstop>
   <tabstop>pushButton_removeMolUnit</tabstop>
   <tabstop>pushButton_removeAllMolUnit</tabstop>
